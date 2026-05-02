@@ -3,20 +3,28 @@ info:
   # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: Relationship Compatibility Planner API
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: sessions
+    description: Compatibility session operations
+  - name: questions
+    description: Question bank operations
+  - name: responses
+    description: Partner response operations
+  - name: reports
+    description: Compatibility report operations
+
 paths:
   /healthz:
     get:
       operationId: healthCheck
       tags: [health]
       summary: Health check
-      description: Returns server health status
       responses:
         "200":
           description: Healthy
@@ -24,6 +32,131 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  /questions:
+    get:
+      operationId: listQuestions
+      tags: [questions]
+      summary: Get all questions grouped by category
+      responses:
+        "200":
+          description: List of questions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Question"
+
+  /sessions:
+    post:
+      operationId: createSession
+      tags: [sessions]
+      summary: Create a new compatibility session (couple link)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateSessionBody"
+      responses:
+        "201":
+          description: Session created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Session"
+
+  /sessions/{sessionCode}:
+    get:
+      operationId: getSession
+      tags: [sessions]
+      summary: Get a session by its share code
+      parameters:
+        - name: sessionCode
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Session found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Session"
+        "404":
+          description: Session not found
+
+  /sessions/{sessionCode}/responses:
+    post:
+      operationId: submitResponses
+      tags: [responses]
+      summary: Submit a partner's answers
+      parameters:
+        - name: sessionCode
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SubmitResponsesBody"
+      responses:
+        "201":
+          description: Responses recorded
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PartnerResponseSet"
+
+  /sessions/{sessionCode}/report:
+    get:
+      operationId: getReport
+      tags: [reports]
+      summary: Get the compatibility report for a completed session
+      parameters:
+        - name: sessionCode
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Compatibility report
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CompatibilityReport"
+        "202":
+          description: Report not ready yet (one or both partners haven't completed)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReportNotReady"
+
+  /sessions/{sessionCode}/status:
+    get:
+      operationId: getSessionStatus
+      tags: [sessions]
+      summary: Check completion status for both partners in a session
+      parameters:
+        - name: sessionCode
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Session status
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SessionStatus"
+
 components:
   schemas:
     HealthStatus:
@@ -31,6 +164,192 @@ components:
       properties:
         status:
           type: string
-      required:
-        - status
+      required: [status]
 
+    Question:
+      type: object
+      properties:
+        id:
+          type: integer
+        category:
+          type: string
+          enum: [values, life_plans, finances, family, lifestyle, communication, intimacy, growth]
+        text:
+          type: string
+        type:
+          type: string
+          enum: [scale, choice, open]
+        options:
+          type: array
+          items:
+            type: string
+          nullable: true
+        weight:
+          type: number
+          description: Importance weight for scoring (1-3)
+      required: [id, category, text, type, weight]
+
+    Session:
+      type: object
+      properties:
+        id:
+          type: integer
+        sessionCode:
+          type: string
+        partner1Name:
+          type: string
+        partner2Name:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        partner1CompletedAt:
+          type: string
+          format: date-time
+          nullable: true
+        partner2CompletedAt:
+          type: string
+          format: date-time
+          nullable: true
+      required: [id, sessionCode, partner1Name, createdAt]
+
+    CreateSessionBody:
+      type: object
+      properties:
+        partner1Name:
+          type: string
+      required: [partner1Name]
+
+    SubmitResponsesBody:
+      type: object
+      properties:
+        partnerSlot:
+          type: string
+          enum: [partner1, partner2]
+        partnerName:
+          type: string
+        answers:
+          type: array
+          items:
+            $ref: "#/components/schemas/Answer"
+      required: [partnerSlot, partnerName, answers]
+
+    Answer:
+      type: object
+      properties:
+        questionId:
+          type: integer
+        value:
+          type: string
+          description: Scale value (1-5), choice option text, or open text
+      required: [questionId, value]
+
+    PartnerResponseSet:
+      type: object
+      properties:
+        id:
+          type: integer
+        sessionId:
+          type: integer
+        partnerSlot:
+          type: string
+        partnerName:
+          type: string
+        submittedAt:
+          type: string
+          format: date-time
+      required: [id, sessionId, partnerSlot, partnerName, submittedAt]
+
+    SessionStatus:
+      type: object
+      properties:
+        sessionCode:
+          type: string
+        partner1Name:
+          type: string
+        partner2Name:
+          type: string
+          nullable: true
+        partner1Completed:
+          type: boolean
+        partner2Completed:
+          type: boolean
+        bothCompleted:
+          type: boolean
+      required: [sessionCode, partner1Name, partner1Completed, partner2Completed, bothCompleted]
+
+    CompatibilityReport:
+      type: object
+      properties:
+        sessionCode:
+          type: string
+        partner1Name:
+          type: string
+        partner2Name:
+          type: string
+        overallScore:
+          type: number
+          description: 0-100 compatibility score
+        categoryScores:
+          type: array
+          items:
+            $ref: "#/components/schemas/CategoryScore"
+        alignedAreas:
+          type: array
+          items:
+            $ref: "#/components/schemas/AlignmentItem"
+        differingAreas:
+          type: array
+          items:
+            $ref: "#/components/schemas/AlignmentItem"
+        discussionPrompts:
+          type: array
+          items:
+            type: string
+        summary:
+          type: string
+      required: [sessionCode, partner1Name, partner2Name, overallScore, categoryScores, alignedAreas, differingAreas, discussionPrompts, summary]
+
+    CategoryScore:
+      type: object
+      properties:
+        category:
+          type: string
+        label:
+          type: string
+        score:
+          type: number
+        alignment:
+          type: string
+          enum: [high, medium, low]
+      required: [category, label, score, alignment]
+
+    AlignmentItem:
+      type: object
+      properties:
+        questionId:
+          type: integer
+        questionText:
+          type: string
+        category:
+          type: string
+        partner1Answer:
+          type: string
+        partner2Answer:
+          type: string
+        note:
+          type: string
+          nullable: true
+      required: [questionId, questionText, category, partner1Answer, partner2Answer]
+
+    ReportNotReady:
+      type: object
+      properties:
+        message:
+          type: string
+        partner1Completed:
+          type: boolean
+        partner2Completed:
+          type: boolean
+      required: [message, partner1Completed, partner2Completed]

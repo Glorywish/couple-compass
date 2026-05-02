@@ -1,0 +1,31 @@
+kind = "web"
+previewPath = "/"
+title = "Relationship Compatibility Planner"
+version = "1.0.0"
+id = "artifacts/compatibility-planner"
+router = "path"
+
+[[integratedSkills]]
+name = "react-vite"
+version = "1.0.0"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 22066
+
+[services.development]
+run = "pnpm --filter @workspace/compatibility-planner run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/compatibility-planner", "run", "build" ]
+publicDir = "artifacts/compatibility-planner/dist/public"
+serve = "static"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "22066"
+BASE_PATH = "/"
