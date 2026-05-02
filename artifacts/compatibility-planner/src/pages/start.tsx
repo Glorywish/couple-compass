@@ -131,7 +131,7 @@ export default function StartPage() {
               <p className="text-sm text-muted-foreground mb-4">Ready to start your own answers?</p>
               <Button
                 size="lg"
-                onClick={() => setLocation(`/questionnaire/${session.sessionCode}/partner1`)}
+                onClick={() => setLocation(`/questionnaire/${session.sessionCode}/partner1?name=${encodeURIComponent(session.partner1Name)}`)}
                 data-testid="button-start-questionnaire"
                 className="w-full py-6 h-auto text-base gap-2"
               >

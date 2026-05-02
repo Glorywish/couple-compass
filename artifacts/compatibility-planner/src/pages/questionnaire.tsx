@@ -1,7 +1,7 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useParams, useLocation, useSearch } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowRight, ArrowLeft } from "lucide-react";
+import { ArrowRight, ArrowLeft, Save } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { Textarea } from "@/components/ui/textarea";
@@ -19,9 +19,40 @@ const CATEGORY_LABELS: Record<string, string> = {
   growth: "Personal Growth",
 };
 
-const SCALE_LABELS = ["Not at all", "Slightly", "Moderately", "Very", "Extremely"];
-
 type Answer = { questionId: number; value: string };
+
+function storageKey(sessionCode: string, partnerSlot: string) {
+  return `cp_answers_${sessionCode}_${partnerSlot}`;
+}
+
+function loadFromStorage(sessionCode: string, partnerSlot: string): Map<number, string> {
+  try {
+    const raw = localStorage.getItem(storageKey(sessionCode, partnerSlot));
+    if (!raw) return new Map();
+    const obj = JSON.parse(raw) as Record<string, string>;
+    return new Map(Object.entries(obj).map(([k, v]) => [parseInt(k, 10), v]));
+  } catch {
+    return new Map();
+  }
+}
+
+function saveToStorage(sessionCode: string, partnerSlot: string, answers: Map<number, string>) {
+  try {
+    const obj: Record<string, string> = {};
+    answers.forEach((v, k) => { obj[String(k)] = v; });
+    localStorage.setItem(storageKey(sessionCode, partnerSlot), JSON.stringify(obj));
+  } catch {
+    // ignore storage errors
+  }
+}
+
+function clearStorage(sessionCode: string, partnerSlot: string) {
+  try {
+    localStorage.removeItem(storageKey(sessionCode, partnerSlot));
+  } catch {
+    // ignore
+  }
+}
 
 export default function QuestionnairePage() {
   const params = useParams<{ sessionCode: string; partnerSlot: string }>();
@@ -34,10 +65,13 @@ export default function QuestionnairePage() {
   const { data: allQuestions, isLoading } = useListQuestions();
   const submitResponses = useSubmitResponses();
 
-  const [partnerName] = useState(nameFromUrl);
+  const partnerName = nameFromUrl || (params.partnerSlot === "partner1" ? "Partner 1" : "Partner 2");
   const [categoryIndex, setCategoryIndex] = useState(0);
-  const [answers, setAnswers] = useState<Map<number, string>>(new Map());
+  const [answers, setAnswers] = useState<Map<number, string>>(() =>
+    loadFromStorage(params.sessionCode, params.partnerSlot)
+  );
   const [direction, setDirection] = useState(1);
+  const [lastSaved, setLastSaved] = useState<Date | null>(null);
 
   const categories = allQuestions
     ? [...new Set(allQuestions.map((q) => q.category))]
@@ -47,16 +81,51 @@ export default function QuestionnairePage() {
   const categoryQuestions = allQuestions?.filter((q) => q.category === currentCategory) ?? [];
   const totalCategories = categories.length;
 
-  const allCurrentAnswered = categoryQuestions.every((q) => answers.has(q.id));
+  // Auto-register defaults when a category loads:
+  // - scale → "3" (neutral midpoint)
+  // - open  → "" (optional, never blocks progress)
+  useEffect(() => {
+    if (!allQuestions || categoryQuestions.length === 0) return;
+    setAnswers((prev) => {
+      let changed = false;
+      const next = new Map(prev);
+      for (const q of categoryQuestions) {
+        if (!next.has(q.id)) {
+          if (q.type === "scale") {
+            next.set(q.id, "3");
+            changed = true;
+          } else if (q.type === "open") {
+            next.set(q.id, "");
+            changed = true;
+          }
+        }
+      }
+      return changed ? next : prev;
+    });
+  }, [categoryIndex, allQuestions]);
 
-  const setAnswer = (questionId: number, value: string) => {
+  // Persist to localStorage whenever answers change
+  useEffect(() => {
+    if (answers.size === 0) return;
+    saveToStorage(params.sessionCode, params.partnerSlot, answers);
+    setLastSaved(new Date());
+  }, [answers]);
+
+  const setAnswer = useCallback((questionId: number, value: string) => {
     setAnswers((prev) => new Map(prev).set(questionId, value));
-  };
+  }, []);
+
+  // Open questions are optional (blank is fine). Scale auto-defaults. Only choice questions require explicit selection.
+  const allCurrentAnswered = categoryQuestions.every((q) => {
+    if (q.type === "choice") return answers.has(q.id) && answers.get(q.id) !== "";
+    return answers.has(q.id); // scale and open are always pre-registered
+  });
 
   const handleNext = () => {
     if (categoryIndex < totalCategories - 1) {
       setDirection(1);
       setCategoryIndex((i) => i + 1);
+      window.scrollTo({ top: 0, behavior: "smooth" });
     } else {
       handleSubmit();
     }
@@ -66,6 +135,7 @@ export default function QuestionnairePage() {
     if (categoryIndex > 0) {
       setDirection(-1);
       setCategoryIndex((i) => i - 1);
+      window.scrollTo({ top: 0, behavior: "smooth" });
     }
   };
 
@@ -80,16 +150,23 @@ export default function QuestionnairePage() {
         sessionCode: params.sessionCode,
         data: {
           partnerSlot: params.partnerSlot as "partner1" | "partner2",
-          partnerName: partnerName || (params.partnerSlot === "partner1" ? "Partner 1" : "Partner 2"),
+          partnerName,
           answers: answerArray,
         },
       },
       {
         onSuccess: () => {
+          clearStorage(params.sessionCode, params.partnerSlot);
           setLocation(`/waiting/${params.sessionCode}/${params.partnerSlot}`);
         },
-        onError: () => {
-          toast({ title: "Submission failed", description: "Please try again.", variant: "destructive" });
+        onError: (error) => {
+          const message =
+            error instanceof Error ? error.message : "Please try again.";
+          toast({
+            title: "Submission failed",
+            description: message,
+            variant: "destructive",
+          });
         },
       }
     );
@@ -106,7 +183,9 @@ export default function QuestionnairePage() {
     );
   }
 
-  const progress = ((categoryIndex) / totalCategories) * 100;
+  const progress = (categoryIndex / Math.max(1, totalCategories)) * 100;
+  const savedAnswersCount = answers.size;
+  const hasSavedProgress = savedAnswersCount > 0;
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -126,9 +205,17 @@ export default function QuestionnairePage() {
             <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider">
               {CATEGORY_LABELS[currentCategory] ?? currentCategory}
             </span>
-            <span className="text-xs text-muted-foreground">
-              {categoryIndex + 1} of {totalCategories}
-            </span>
+            <div className="flex items-center gap-3">
+              {lastSaved && (
+                <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                  <Save size={10} />
+                  Saved
+                </span>
+              )}
+              <span className="text-xs text-muted-foreground">
+                {categoryIndex + 1} of {totalCategories}
+              </span>
+            </div>
           </div>
           <div className="flex gap-1.5">
             {categories.map((_, i) => (
@@ -141,6 +228,18 @@ export default function QuestionnairePage() {
             ))}
           </div>
         </div>
+
+        {/* Restored progress notice */}
+        {hasSavedProgress && categoryIndex === 0 && savedAnswersCount > 5 && (
+          <motion.div
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-accent/40 border border-primary/10 rounded-xl px-4 py-3 mb-6 text-sm text-foreground flex items-center gap-2"
+          >
+            <Save size={14} className="text-primary shrink-0" />
+            Your previous progress has been restored automatically.
+          </motion.div>
+        )}
 
         {/* Questions */}
         <div className="flex-1">
@@ -178,26 +277,27 @@ export default function QuestionnairePage() {
                         min={1}
                         max={5}
                         step={1}
-                        value={answers.has(q.id) ? [parseInt(answers.get(q.id)!)] : [3]}
+                        value={[parseInt(answers.get(q.id) ?? "3", 10)]}
                         onValueChange={([v]) => setAnswer(q.id, String(v))}
                         data-testid={`slider-${q.id}`}
-                        className="mb-2"
+                        className="mb-3"
                       />
-                      <div className="flex justify-between">
+                      <div className="flex justify-between px-0.5">
                         {[1, 2, 3, 4, 5].map((v) => (
-                          <span
+                          <button
                             key={v}
-                            className={`text-xs transition-colors ${
-                              answers.get(q.id) === String(v) ? "text-primary font-semibold" : "text-muted-foreground"
+                            onClick={() => setAnswer(q.id, String(v))}
+                            data-testid={`scale-btn-${q.id}-${v}`}
+                            className={`w-8 h-8 rounded-full text-sm font-medium transition-all duration-150 ${
+                              answers.get(q.id) === String(v)
+                                ? "bg-primary text-primary-foreground scale-110"
+                                : "bg-muted text-muted-foreground hover:bg-accent hover:text-accent-foreground"
                             }`}
                           >
                             {v}
-                          </span>
+                          </button>
                         ))}
                       </div>
-                      {!answers.has(q.id) && (
-                        <p className="text-xs text-muted-foreground mt-2 italic">Move the slider to record your answer</p>
-                      )}
                     </div>
                   )}
 
