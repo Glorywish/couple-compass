@@ -7,17 +7,7 @@ import { Slider } from "@/components/ui/slider";
 import { Textarea } from "@/components/ui/textarea";
 import { useListQuestions, useSubmitResponses } from "@workspace/api-client-react";
 import { useToast } from "@/hooks/use-toast";
-
-const CATEGORY_LABELS: Record<string, string> = {
-  values: "Core Values",
-  life_plans: "Life Plans",
-  finances: "Finances",
-  family: "Family & Children",
-  lifestyle: "Lifestyle",
-  communication: "Communication",
-  intimacy: "Intimacy & Affection",
-  growth: "Personal Growth",
-};
+import { useI18n } from "@/lib/i18n";
 
 type Answer = { questionId: number; value: string };
 
@@ -41,17 +31,11 @@ function saveToStorage(sessionCode: string, partnerSlot: string, answers: Map<nu
     const obj: Record<string, string> = {};
     answers.forEach((v, k) => { obj[String(k)] = v; });
     localStorage.setItem(storageKey(sessionCode, partnerSlot), JSON.stringify(obj));
-  } catch {
-    // ignore storage errors
-  }
+  } catch { /* ignore */ }
 }
 
 function clearStorage(sessionCode: string, partnerSlot: string) {
-  try {
-    localStorage.removeItem(storageKey(sessionCode, partnerSlot));
-  } catch {
-    // ignore
-  }
+  try { localStorage.removeItem(storageKey(sessionCode, partnerSlot)); } catch { /* ignore */ }
 }
 
 export default function QuestionnairePage() {
@@ -61,6 +45,8 @@ export default function QuestionnairePage() {
   const nameFromUrl = urlParams.get("name") ?? "";
   const [, setLocation] = useLocation();
   const { toast } = useToast();
+  const { data } = useI18n();
+  const t = data.ui.questionnaire;
 
   const { data: allQuestions, isLoading } = useListQuestions();
   const submitResponses = useSubmitResponses();
@@ -81,9 +67,7 @@ export default function QuestionnairePage() {
   const categoryQuestions = allQuestions?.filter((q) => q.category === currentCategory) ?? [];
   const totalCategories = categories.length;
 
-  // Auto-register defaults when a category loads:
-  // - scale → "3" (neutral midpoint)
-  // - open  → "" (optional, never blocks progress)
+  // Auto-register defaults: scale→"3", open→""
   useEffect(() => {
     if (!allQuestions || categoryQuestions.length === 0) return;
     setAnswers((prev) => {
@@ -91,20 +75,15 @@ export default function QuestionnairePage() {
       const next = new Map(prev);
       for (const q of categoryQuestions) {
         if (!next.has(q.id)) {
-          if (q.type === "scale") {
-            next.set(q.id, "3");
-            changed = true;
-          } else if (q.type === "open") {
-            next.set(q.id, "");
-            changed = true;
-          }
+          if (q.type === "scale") { next.set(q.id, "3"); changed = true; }
+          else if (q.type === "open") { next.set(q.id, ""); changed = true; }
         }
       }
       return changed ? next : prev;
     });
   }, [categoryIndex, allQuestions]);
 
-  // Persist to localStorage whenever answers change
+  // Persist to localStorage
   useEffect(() => {
     if (answers.size === 0) return;
     saveToStorage(params.sessionCode, params.partnerSlot, answers);
@@ -115,10 +94,10 @@ export default function QuestionnairePage() {
     setAnswers((prev) => new Map(prev).set(questionId, value));
   }, []);
 
-  // Open questions are optional (blank is fine). Scale auto-defaults. Only choice questions require explicit selection.
+  // Only choice questions block progression
   const allCurrentAnswered = categoryQuestions.every((q) => {
     if (q.type === "choice") return answers.has(q.id) && answers.get(q.id) !== "";
-    return answers.has(q.id); // scale and open are always pre-registered
+    return answers.has(q.id);
   });
 
   const handleNext = () => {
@@ -160,13 +139,8 @@ export default function QuestionnairePage() {
           setLocation(`/waiting/${params.sessionCode}/${params.partnerSlot}`);
         },
         onError: (error) => {
-          const message =
-            error instanceof Error ? error.message : "Please try again.";
-          toast({
-            title: "Submission failed",
-            description: message,
-            variant: "destructive",
-          });
+          const message = error instanceof Error ? error.message : data.ui.errors.tryAgain;
+          toast({ title: data.ui.errors.submitFailed, description: message, variant: "destructive" });
         },
       }
     );
@@ -177,19 +151,18 @@ export default function QuestionnairePage() {
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
           <div className="w-8 h-8 rounded-full border-2 border-primary border-t-transparent animate-spin mx-auto mb-4" />
-          <p className="text-muted-foreground">Loading questions...</p>
+          <p className="text-muted-foreground">{t.loading}</p>
         </div>
       </div>
     );
   }
 
   const progress = (categoryIndex / Math.max(1, totalCategories)) * 100;
-  const savedAnswersCount = answers.size;
-  const hasSavedProgress = savedAnswersCount > 0;
+  const categoryLabel = data.ui.categories[currentCategory as keyof typeof data.ui.categories] ?? currentCategory;
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      {/* Top progress bar */}
+      {/* Progress bar */}
       <div className="w-full h-1 bg-muted">
         <motion.div
           className="h-full bg-primary rounded-full"
@@ -203,17 +176,17 @@ export default function QuestionnairePage() {
         <div className="mb-8">
           <div className="flex items-center justify-between mb-1">
             <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider">
-              {CATEGORY_LABELS[currentCategory] ?? currentCategory}
+              {categoryLabel}
             </span>
             <div className="flex items-center gap-3">
               {lastSaved && (
                 <span className="flex items-center gap-1 text-xs text-muted-foreground">
                   <Save size={10} />
-                  Saved
+                  {t.saved}
                 </span>
               )}
               <span className="text-xs text-muted-foreground">
-                {categoryIndex + 1} of {totalCategories}
+                {categoryIndex + 1} {t.of} {totalCategories}
               </span>
             </div>
           </div>
@@ -229,15 +202,15 @@ export default function QuestionnairePage() {
           </div>
         </div>
 
-        {/* Restored progress notice */}
-        {hasSavedProgress && categoryIndex === 0 && savedAnswersCount > 5 && (
+        {/* Restored notice */}
+        {answers.size > 5 && categoryIndex === 0 && (
           <motion.div
             initial={{ opacity: 0, y: -8 }}
             animate={{ opacity: 1, y: 0 }}
             className="bg-accent/40 border border-primary/10 rounded-xl px-4 py-3 mb-6 text-sm text-foreground flex items-center gap-2"
           >
             <Save size={14} className="text-primary shrink-0" />
-            Your previous progress has been restored automatically.
+            {t.restored}
           </motion.div>
         )}
 
@@ -253,84 +226,87 @@ export default function QuestionnairePage() {
               transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
               className="space-y-8"
             >
-              <h2 className="text-2xl font-serif text-foreground mb-6">
-                {CATEGORY_LABELS[currentCategory] ?? currentCategory}
-              </h2>
-              {categoryQuestions.map((q, idx) => (
-                <motion.div
-                  key={q.id}
-                  initial={{ opacity: 0, y: 16 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: idx * 0.06, duration: 0.4 }}
-                  className="bg-card border border-border rounded-2xl p-6"
-                  data-testid={`question-card-${q.id}`}
-                >
-                  <p className="text-foreground font-medium mb-4 leading-relaxed">{q.text}</p>
+              <h2 className="text-2xl font-serif text-foreground mb-6">{categoryLabel}</h2>
 
-                  {q.type === "scale" && (
-                    <div>
-                      <div className="flex justify-between text-xs text-muted-foreground mb-3">
-                        <span>Not at all</span>
-                        <span>Extremely</span>
+              {categoryQuestions.map((q, idx) => {
+                const qTranslation = data.questions[q.id];
+                const questionText = qTranslation?.text ?? q.text;
+                const questionOptions = qTranslation?.options ?? (q.options ? JSON.parse(q.options) : null);
+
+                return (
+                  <motion.div
+                    key={q.id}
+                    initial={{ opacity: 0, y: 16 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: idx * 0.06, duration: 0.4 }}
+                    className="bg-card border border-border rounded-2xl p-6"
+                    data-testid={`question-card-${q.id}`}
+                  >
+                    <p className="text-foreground font-medium mb-4 leading-relaxed">{questionText}</p>
+
+                    {q.type === "scale" && (
+                      <div>
+                        <div className="flex justify-between text-xs text-muted-foreground mb-3">
+                          <span>{t.scaleMin}</span>
+                          <span>{t.scaleMax}</span>
+                        </div>
+                        <Slider
+                          min={1} max={5} step={1}
+                          value={[parseInt(answers.get(q.id) ?? "3", 10)]}
+                          onValueChange={([v]) => setAnswer(q.id, String(v))}
+                          data-testid={`slider-${q.id}`}
+                          className="mb-3"
+                        />
+                        <div className="flex justify-between px-0.5">
+                          {[1, 2, 3, 4, 5].map((v) => (
+                            <button
+                              key={v}
+                              onClick={() => setAnswer(q.id, String(v))}
+                              data-testid={`scale-btn-${q.id}-${v}`}
+                              className={`w-8 h-8 rounded-full text-sm font-medium transition-all duration-150 ${
+                                answers.get(q.id) === String(v)
+                                  ? "bg-primary text-primary-foreground scale-110"
+                                  : "bg-muted text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+                              }`}
+                            >
+                              {v}
+                            </button>
+                          ))}
+                        </div>
                       </div>
-                      <Slider
-                        min={1}
-                        max={5}
-                        step={1}
-                        value={[parseInt(answers.get(q.id) ?? "3", 10)]}
-                        onValueChange={([v]) => setAnswer(q.id, String(v))}
-                        data-testid={`slider-${q.id}`}
-                        className="mb-3"
-                      />
-                      <div className="flex justify-between px-0.5">
-                        {[1, 2, 3, 4, 5].map((v) => (
+                    )}
+
+                    {q.type === "choice" && questionOptions && (
+                      <div className="space-y-2">
+                        {questionOptions.map((opt: string, optIdx: number) => (
                           <button
-                            key={v}
-                            onClick={() => setAnswer(q.id, String(v))}
-                            data-testid={`scale-btn-${q.id}-${v}`}
-                            className={`w-8 h-8 rounded-full text-sm font-medium transition-all duration-150 ${
-                              answers.get(q.id) === String(v)
-                                ? "bg-primary text-primary-foreground scale-110"
-                                : "bg-muted text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+                            key={optIdx}
+                            onClick={() => setAnswer(q.id, String(optIdx))}
+                            data-testid={`choice-${q.id}-${optIdx}`}
+                            className={`w-full text-left px-4 py-3 rounded-xl border text-sm transition-all duration-150 ${
+                              answers.get(q.id) === String(optIdx)
+                                ? "border-primary bg-accent text-primary font-medium"
+                                : "border-border bg-background hover:bg-accent/40 text-foreground"
                             }`}
                           >
-                            {v}
+                            {opt}
                           </button>
                         ))}
                       </div>
-                    </div>
-                  )}
+                    )}
 
-                  {q.type === "choice" && q.options && (
-                    <div className="space-y-2">
-                      {q.options.map((opt: string) => (
-                        <button
-                          key={opt}
-                          onClick={() => setAnswer(q.id, opt)}
-                          data-testid={`choice-${q.id}-${opt}`}
-                          className={`w-full text-left px-4 py-3 rounded-xl border text-sm transition-all duration-150 ${
-                            answers.get(q.id) === opt
-                              ? "border-primary bg-accent text-primary font-medium"
-                              : "border-border bg-background hover:bg-accent/40 text-foreground"
-                          }`}
-                        >
-                          {opt}
-                        </button>
-                      ))}
-                    </div>
-                  )}
-
-                  {q.type === "open" && (
-                    <Textarea
-                      value={answers.get(q.id) ?? ""}
-                      onChange={(e) => setAnswer(q.id, e.target.value)}
-                      placeholder="Share your thoughts..."
-                      data-testid={`textarea-${q.id}`}
-                      className="min-h-[100px] resize-none"
-                    />
-                  )}
-                </motion.div>
-              ))}
+                    {q.type === "open" && (
+                      <Textarea
+                        value={answers.get(q.id) ?? ""}
+                        onChange={(e) => setAnswer(q.id, e.target.value)}
+                        placeholder={t.placeholder}
+                        data-testid={`textarea-${q.id}`}
+                        className="min-h-[100px] resize-none"
+                      />
+                    )}
+                  </motion.div>
+                );
+              })}
             </motion.div>
           </AnimatePresence>
         </div>
@@ -345,7 +321,7 @@ export default function QuestionnairePage() {
             className="gap-2"
           >
             <ArrowLeft size={16} />
-            Back
+            {data.ui.back}
           </Button>
           <Button
             onClick={handleNext}
@@ -354,10 +330,10 @@ export default function QuestionnairePage() {
             className="flex-1 gap-2"
           >
             {submitResponses.isPending
-              ? "Submitting..."
+              ? data.ui.submitting
               : categoryIndex === totalCategories - 1
-              ? "Submit answers"
-              : "Next section"}
+              ? data.ui.submit
+              : data.ui.next}
             <ArrowRight size={16} />
           </Button>
         </div>

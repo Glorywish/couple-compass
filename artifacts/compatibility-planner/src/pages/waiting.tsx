@@ -4,11 +4,14 @@ import { motion } from "framer-motion";
 import { Heart, Check } from "lucide-react";
 import { useGetSessionStatus, getGetSessionStatusQueryKey } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
+import { useI18n } from "@/lib/i18n";
 
 export default function WaitingPage() {
   const params = useParams<{ sessionCode: string; partnerSlot: string }>();
   const [, setLocation] = useLocation();
   const queryClient = useQueryClient();
+  const { data } = useI18n();
+  const t = data.ui.waiting;
 
   const { data: status } = useGetSessionStatus(params.sessionCode, {
     query: {
@@ -49,15 +52,12 @@ export default function WaitingPage() {
           </div>
 
           <h1 className="text-3xl font-serif text-foreground mb-3">
-            {status?.bothCompleted ? "Both done! Loading your report..." : "Waiting for your partner"}
+            {status?.bothCompleted ? t.titleDone : t.title}
           </h1>
           <p className="text-muted-foreground mb-12 leading-relaxed">
-            {status?.bothCompleted
-              ? "Generating your compatibility report now..."
-              : "Your answers are in. Once your partner finishes, your report will be ready automatically."}
+            {status?.bothCompleted ? t.descDone : t.desc}
           </p>
 
-          {/* Status cards */}
           <div className="grid grid-cols-2 gap-4 mb-10">
             <div
               className={`rounded-2xl border p-5 transition-all ${
@@ -75,7 +75,9 @@ export default function WaitingPage() {
                 )}
               </div>
               <div className="text-sm font-medium text-foreground">{myName ?? "You"}</div>
-              <div className="text-xs text-muted-foreground mt-0.5">{myDone ? "Completed" : "In progress"}</div>
+              <div className="text-xs text-muted-foreground mt-0.5">
+                {myDone ? t.completed : t.inProgress}
+              </div>
             </div>
 
             <div
@@ -94,13 +96,13 @@ export default function WaitingPage() {
                 )}
               </div>
               <div className="text-sm font-medium text-foreground">{partnerName ?? "Partner"}</div>
-              <div className="text-xs text-muted-foreground mt-0.5">{partnerDone ? "Completed" : "Waiting..."}</div>
+              <div className="text-xs text-muted-foreground mt-0.5">
+                {partnerDone ? t.completed : t.waitingStatus}
+              </div>
             </div>
           </div>
 
-          <p className="text-xs text-muted-foreground">
-            This page updates automatically every 5 seconds
-          </p>
+          <p className="text-xs text-muted-foreground">{t.pollNote}</p>
         </motion.div>
       </div>
     </div>

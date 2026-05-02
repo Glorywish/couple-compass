@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { db } from "@workspace/db";
 import { sessionsTable, partnerResponsesTable, answersTable, questionsTable } from "@workspace/db";
-import { eq, and } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 
 const reportsRouter = Router();
 
@@ -16,17 +16,40 @@ const CATEGORY_LABELS: Record<string, string> = {
   growth: "Personal Growth",
 };
 
+/**
+ * Normalize a stored answer value to a 1–5 scale for comparison.
+ * Supports both:
+ *   - new format: choice answers stored as option INDEX string ("0","1","2"…)
+ *   - legacy format: choice answers stored as option TEXT
+ */
 function normalizeToScale(value: string, type: string, options: string[] | null): number {
   if (type === "scale") {
     const n = parseInt(value, 10);
     return isNaN(n) ? 3 : Math.min(5, Math.max(1, n));
   }
   if (type === "choice" && options && options.length > 0) {
+    // Try numeric index first (new multilingual format)
+    const numIdx = parseInt(value, 10);
+    if (!isNaN(numIdx) && numIdx >= 0 && numIdx < options.length) {
+      return 1 + (numIdx / Math.max(1, options.length - 1)) * 4;
+    }
+    // Fallback: legacy text-based format
     const idx = options.indexOf(value);
     if (idx === -1) return 3;
     return 1 + (idx / Math.max(1, options.length - 1)) * 4;
   }
   return -1;
+}
+
+/** Convert a stored answer value to a human-readable English string for display in prompts. */
+function displayValue(value: string, type: string, options: string[] | null): string {
+  if (type === "choice" && options) {
+    const numIdx = parseInt(value, 10);
+    if (!isNaN(numIdx) && numIdx >= 0 && numIdx < options.length) return options[numIdx];
+    return value; // legacy text value
+  }
+  if (type === "scale") return `${value}/5`;
+  return value || "(no response)";
 }
 
 function scoreDifference(v1: number, v2: number): number {
@@ -46,10 +69,14 @@ function alignmentLabel(score: number): "high" | "medium" | "low" {
   return "low";
 }
 
-function generateSummary(overallScore: number, p1Name: string, p2Name: string, categoryScores: Array<{ label: string; alignment: string }>): string {
-  const highCount = categoryScores.filter(c => c.alignment === "high").length;
-  const lowCount = categoryScores.filter(c => c.alignment === "low").length;
-
+function generateSummary(
+  overallScore: number,
+  p1Name: string,
+  p2Name: string,
+  categoryScores: Array<{ label: string; alignment: string }>
+): string {
+  const highCount = categoryScores.filter((c) => c.alignment === "high").length;
+  const lowCount = categoryScores.filter((c) => c.alignment === "low").length;
   if (overallScore >= 80) {
     return `${p1Name} and ${p2Name} show strong overall compatibility with deep alignment across most life areas. With ${highCount} highly aligned categories, you share a strong foundation of shared values and vision. Keep nurturing open dialogue around the areas where you differ — your differences can be your greatest strengths.`;
   } else if (overallScore >= 60) {
@@ -86,15 +113,11 @@ reportsRouter.get("/sessions/:sessionCode/report", async (req, res) => {
       .from(partnerResponsesTable)
       .where(eq(partnerResponsesTable.sessionId, session.id));
 
-    const p1Set = responseSets.find(r => r.partnerSlot === "partner1");
-    const p2Set = responseSets.find(r => r.partnerSlot === "partner2");
+    const p1Set = responseSets.find((r) => r.partnerSlot === "partner1");
+    const p2Set = responseSets.find((r) => r.partnerSlot === "partner2");
 
     if (!p1Set || !p2Set) {
-      res.status(202).json({
-        message: "Response data incomplete.",
-        partner1Completed,
-        partner2Completed,
-      });
+      res.status(202).json({ message: "Response data incomplete.", partner1Completed, partner2Completed });
       return;
     }
 
@@ -102,8 +125,8 @@ reportsRouter.get("/sessions/:sessionCode/report", async (req, res) => {
     const p2Answers = await db.select().from(answersTable).where(eq(answersTable.responseId, p2Set.id));
     const questions = await db.select().from(questionsTable);
 
-    const p1Map = new Map(p1Answers.map(a => [a.questionId, a.value]));
-    const p2Map = new Map(p2Answers.map(a => [a.questionId, a.value]));
+    const p1Map = new Map(p1Answers.map((a) => [a.questionId, a.value]));
+    const p2Map = new Map(p2Answers.map((a) => [a.questionId, a.value]));
 
     const categoryScoreMap: Record<string, { totalWeight: number; weightedScore: number }> = {};
     const alignedAreas: Array<object> = [];
@@ -114,7 +137,7 @@ reportsRouter.get("/sessions/:sessionCode/report", async (req, res) => {
       const v2 = p2Map.get(q.id);
       if (v1 === undefined || v2 === undefined) continue;
 
-      const opts = q.options ? JSON.parse(q.options) : null;
+      const opts = q.options ? (JSON.parse(q.options) as string[]) : null;
       const s1 = normalizeToScale(v1, q.type, opts);
       const s2 = normalizeToScale(v2, q.type, opts);
       const score = scoreDifference(s1, s2);
@@ -134,31 +157,37 @@ reportsRouter.get("/sessions/:sessionCode/report", async (req, res) => {
         note: null,
       };
 
-      if (score >= 0.75) {
-        alignedAreas.push(item);
-      } else if (score < 0.6) {
-        differingAreas.push(item);
-      }
+      if (score >= 0.75) alignedAreas.push(item);
+      else if (score < 0.6) differingAreas.push(item);
     }
 
-    const categoryScores = Object.entries(categoryScoreMap).map(([category, data]) => {
-      const score = data.totalWeight > 0 ? (data.weightedScore / data.totalWeight) * 100 : 50;
+    const categoryScores = Object.entries(categoryScoreMap).map(([category, d]) => {
+      const score = d.totalWeight > 0 ? (d.weightedScore / d.totalWeight) * 100 : 50;
       return {
         category,
         label: CATEGORY_LABELS[category] ?? category,
         score: Math.round(score),
-        alignment: alignmentLabel(data.weightedScore / data.totalWeight),
+        alignment: alignmentLabel(d.weightedScore / d.totalWeight),
       };
     });
 
-    const allWeightedScores = categoryScores.reduce((sum, c) => sum + c.score, 0);
-    const overallScore = categoryScores.length > 0 ? Math.round(allWeightedScores / categoryScores.length) : 50;
+    const overallScore =
+      categoryScores.length > 0
+        ? Math.round(categoryScores.reduce((s, c) => s + c.score, 0) / categoryScores.length)
+        : 50;
 
+    // Build discussion prompts with human-readable answer values (handles index-based choices)
+    const questionMap = new Map(questions.map((q) => [q.id, q]));
     const discussionPrompts: string[] = [];
-    for (const item of differingAreas.slice(0, 5)) {
-      const d = item as { questionText: string; partner1Answer: string; partner2Answer: string };
+    for (const raw of differingAreas.slice(0, 5)) {
+      const item = raw as { questionId: number; questionText: string; partner1Answer: string; partner2Answer: string };
+      const q = questionMap.get(item.questionId);
+      const opts = q?.options ? (JSON.parse(q.options) as string[]) : null;
+      const type = q?.type ?? "open";
+      const a1 = displayValue(item.partner1Answer, type, opts);
+      const a2 = displayValue(item.partner2Answer, type, opts);
       discussionPrompts.push(
-        `You gave different answers to: "${d.questionText}". ${session.partner1Name} said "${d.partner1Answer}" while ${session.partner2Name ?? "your partner"} said "${d.partner2Answer}". What does this mean to each of you?`
+        `You gave different answers to: "${item.questionText}". ${session.partner1Name} said "${a1}" while ${session.partner2Name ?? "your partner"} said "${a2}". What does this mean to each of you?`
       );
     }
     if (discussionPrompts.length < 3) {

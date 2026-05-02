@@ -5,9 +5,9 @@ import { ArrowLeft, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useGetSession } from "@workspace/api-client-react";
-import { getGetSessionQueryKey } from "@workspace/api-client-react";
+import { useGetSession, getGetSessionQueryKey } from "@workspace/api-client-react";
 import { useToast } from "@/hooks/use-toast";
+import { useI18n } from "@/lib/i18n";
 
 export default function JoinPage() {
   const [, setLocation] = useLocation();
@@ -19,6 +19,8 @@ export default function JoinPage() {
   const [name, setName] = useState("");
   const [submitted, setSubmitted] = useState(false);
   const { toast } = useToast();
+  const { data } = useI18n();
+  const t = data.ui.join;
 
   const { data: session, isError, isLoading } = useGetSession(
     code.toUpperCase().trim(),
@@ -33,7 +35,7 @@ export default function JoinPage() {
 
   useEffect(() => {
     if (submitted && isError) {
-      toast({ title: "Session not found", description: "Please check your code and try again.", variant: "destructive" });
+      toast({ title: data.ui.errors.sessionNotFound, variant: "destructive" });
       setSubmitted(false);
     }
   }, [isError, submitted]);
@@ -53,7 +55,7 @@ export default function JoinPage() {
           data-testid="button-back-home"
         >
           <ArrowLeft size={16} />
-          Back
+          {data.ui.back}
         </button>
 
         <motion.div
@@ -61,33 +63,31 @@ export default function JoinPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
         >
-          <h1 className="text-4xl font-serif text-foreground mb-2">Join a session</h1>
-          <p className="text-muted-foreground mb-10 leading-relaxed">
-            Enter the session code your partner shared with you, then your name to get started.
-          </p>
+          <h1 className="text-4xl font-serif text-foreground mb-2">{t.title}</h1>
+          <p className="text-muted-foreground mb-10 leading-relaxed">{t.desc}</p>
 
           <form onSubmit={handleJoin} className="space-y-6">
             <div className="space-y-2">
-              <Label htmlFor="code">Session code</Label>
+              <Label htmlFor="code">{t.codeLabel}</Label>
               <Input
                 id="code"
                 data-testid="input-session-code"
                 value={code}
                 onChange={(e) => setCode(e.target.value.toUpperCase())}
-                placeholder="e.g. A1B2C3D4"
+                placeholder={t.codePlaceholder}
                 className="text-xl font-mono py-6 h-auto tracking-widest uppercase"
                 maxLength={8}
                 autoFocus={!prefilledCode}
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="name">Your name</Label>
+              <Label htmlFor="name">{t.nameLabel}</Label>
               <Input
                 id="name"
                 data-testid="input-partner2-name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="e.g. James"
+                placeholder={t.namePlaceholder}
                 className="text-lg py-6 h-auto"
                 autoFocus={!!prefilledCode}
               />
@@ -99,7 +99,7 @@ export default function JoinPage() {
               data-testid="button-join-session"
               className="w-full py-6 h-auto text-base gap-2"
             >
-              {isLoading ? "Checking code..." : "Join and start"}
+              {isLoading ? t.checking : t.btn}
               {!isLoading && <ArrowRight size={18} />}
             </Button>
           </form>

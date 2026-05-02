@@ -2,15 +2,14 @@ import { useLocation } from "wouter";
 import { Heart, ArrowRight, Users, FileText, Sparkles } from "lucide-react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
+import { useI18n } from "@/lib/i18n";
+
+const STEP_ICONS = [Users, Heart, FileText];
 
 export default function Home() {
   const [, setLocation] = useLocation();
-
-  const steps = [
-    { icon: Users, title: "Create a session", desc: "Partner 1 enters their name and gets a shareable code" },
-    { icon: Heart, title: "Both answer together", desc: "Each partner completes 40 thoughtful questions privately" },
-    { icon: FileText, title: "Receive your report", desc: "See your compatibility score, aligned values, and discussion prompts" },
-  ];
+  const { data } = useI18n();
+  const t = data.ui;
 
   return (
     <div className="min-h-screen bg-background">
@@ -25,15 +24,14 @@ export default function Home() {
           >
             <div className="inline-flex items-center gap-2 bg-accent text-accent-foreground text-sm px-4 py-1.5 rounded-full mb-8 border border-primary/10">
               <Sparkles size={14} />
-              <span>For couples who want to go deeper</span>
+              <span>{t.home.badge}</span>
             </div>
             <h1 className="text-5xl md:text-6xl font-serif font-medium text-foreground leading-tight mb-6">
-              Are you truly aligned<br />
-              <span className="text-primary italic">before you say yes?</span>
+              {t.home.title1}<br />
+              <span className="text-primary italic">{t.home.title2}</span>
             </h1>
             <p className="text-lg text-muted-foreground max-w-xl mx-auto leading-relaxed mb-10">
-              A thoughtful questionnaire for couples exploring compatibility across values, life plans,
-              finances, family, and more. Not a quiz — a conversation starter that matters.
+              {t.home.desc}
             </p>
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
               <Button
@@ -42,7 +40,7 @@ export default function Home() {
                 data-testid="button-start-session"
                 className="gap-2 text-base px-8 py-6 h-auto"
               >
-                Begin together
+                {t.home.cta1}
                 <ArrowRight size={18} />
               </Button>
               <Button
@@ -52,7 +50,7 @@ export default function Home() {
                 data-testid="button-join-session"
                 className="gap-2 text-base px-8 py-6 h-auto"
               >
-                Join with a code
+                {t.home.cta2}
               </Button>
             </div>
           </motion.div>
@@ -66,25 +64,28 @@ export default function Home() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.3 }}
         >
-          <h2 className="text-2xl font-serif text-center text-foreground mb-2">How it works</h2>
-          <p className="text-muted-foreground text-center mb-12">Three steps to a clearer picture</p>
+          <h2 className="text-2xl font-serif text-center text-foreground mb-2">{t.home.howTitle}</h2>
+          <p className="text-muted-foreground text-center mb-12">{t.home.howDesc}</p>
           <div className="grid md:grid-cols-3 gap-6">
-            {steps.map((step, i) => (
-              <motion.div
-                key={i}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.4 + i * 0.12 }}
-                className="bg-card border border-border rounded-2xl p-6 text-center"
-              >
-                <div className="w-12 h-12 rounded-full bg-accent flex items-center justify-center mx-auto mb-4">
-                  <step.icon size={20} className="text-primary" />
-                </div>
-                <div className="text-xs font-medium text-muted-foreground mb-2">Step {i + 1}</div>
-                <h3 className="font-serif text-lg text-foreground mb-2">{step.title}</h3>
-                <p className="text-sm text-muted-foreground leading-relaxed">{step.desc}</p>
-              </motion.div>
-            ))}
+            {t.home.steps.map((step, i) => {
+              const Icon = STEP_ICONS[i];
+              return (
+                <motion.div
+                  key={i}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: 0.4 + i * 0.12 }}
+                  className="bg-card border border-border rounded-2xl p-6 text-center"
+                >
+                  <div className="w-12 h-12 rounded-full bg-accent flex items-center justify-center mx-auto mb-4">
+                    <Icon size={20} className="text-primary" />
+                  </div>
+                  <div className="text-xs font-medium text-muted-foreground mb-2">Step {i + 1}</div>
+                  <h3 className="font-serif text-lg text-foreground mb-2">{step.title}</h3>
+                  <p className="text-sm text-muted-foreground leading-relaxed">{step.desc}</p>
+                </motion.div>
+              );
+            })}
           </div>
         </motion.div>
       </div>
@@ -92,10 +93,10 @@ export default function Home() {
       {/* Categories */}
       <div className="bg-accent/30 border-y border-border py-14">
         <div className="max-w-3xl mx-auto px-6 text-center">
-          <h2 className="text-2xl font-serif text-foreground mb-3">8 dimensions of compatibility</h2>
-          <p className="text-muted-foreground text-sm mb-8">Covering the areas that matter most for long-term alignment</p>
+          <h2 className="text-2xl font-serif text-foreground mb-3">{t.home.dimensionsTitle}</h2>
+          <p className="text-muted-foreground text-sm mb-8">{t.home.dimensionsDesc}</p>
           <div className="flex flex-wrap justify-center gap-2">
-            {["Core Values", "Life Plans", "Finances", "Family & Children", "Lifestyle", "Communication", "Intimacy", "Personal Growth"].map((cat) => (
+            {Object.values(t.categories).map((cat) => (
               <span key={cat} className="bg-card border border-border text-sm text-foreground px-4 py-1.5 rounded-full">
                 {cat}
               </span>
@@ -106,15 +107,15 @@ export default function Home() {
 
       {/* Footer CTA */}
       <div className="max-w-3xl mx-auto px-6 py-16 text-center">
-        <h2 className="text-2xl font-serif text-foreground mb-3">Ready to start the conversation?</h2>
-        <p className="text-muted-foreground mb-8">It takes about 15 minutes. The insights last a lifetime.</p>
+        <h2 className="text-2xl font-serif text-foreground mb-3">{t.home.footerCta1}</h2>
+        <p className="text-muted-foreground mb-8">{t.home.footerCta2}</p>
         <Button
           size="lg"
           onClick={() => setLocation("/start")}
           data-testid="button-footer-cta"
           className="gap-2 text-base px-8 py-6 h-auto"
         >
-          Start now
+          {t.home.footerBtn}
           <ArrowRight size={18} />
         </Button>
       </div>

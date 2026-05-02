@@ -4,6 +4,8 @@ import { ArrowLeft, Heart, TrendingUp, TrendingDown, MessageCircle, Share2 } fro
 import { Button } from "@/components/ui/button";
 import { useGetReport, getGetReportQueryKey } from "@workspace/api-client-react";
 import { useToast } from "@/hooks/use-toast";
+import { useI18n } from "@/lib/i18n";
+import type { LocaleData } from "@/locales/types";
 
 const CATEGORY_COLORS: Record<string, string> = {
   high: "bg-green-100 text-green-800 border-green-200",
@@ -11,11 +13,13 @@ const CATEGORY_COLORS: Record<string, string> = {
   low: "bg-red-100 text-red-800 border-red-200",
 };
 
-const ALIGNMENT_LABELS: Record<string, string> = {
-  high: "Strong alignment",
-  medium: "Some differences",
-  low: "Needs discussion",
-};
+function translateAnswer(questionId: number, value: string, questions: LocaleData["questions"]): string {
+  const q = questions[questionId];
+  if (!q || !q.options) return value;
+  const idx = parseInt(value, 10);
+  if (!isNaN(idx) && idx >= 0 && idx < q.options.length) return q.options[idx];
+  return value;
+}
 
 function ScoreRing({ score }: { score: number }) {
   const radius = 54;
@@ -28,13 +32,7 @@ function ScoreRing({ score }: { score: number }) {
       <svg width="140" height="140" className="-rotate-90">
         <circle cx="70" cy="70" r={radius} fill="none" stroke="hsl(var(--muted))" strokeWidth="8" />
         <motion.circle
-          cx="70"
-          cy="70"
-          r={radius}
-          fill="none"
-          stroke={color}
-          strokeWidth="8"
-          strokeLinecap="round"
+          cx="70" cy="70" r={radius} fill="none" stroke={color} strokeWidth="8" strokeLinecap="round"
           strokeDasharray={circumference}
           initial={{ strokeDashoffset: circumference }}
           animate={{ strokeDashoffset: offset }}
@@ -61,6 +59,8 @@ export default function ReportPage() {
   const params = useParams<{ sessionCode: string }>();
   const [, setLocation] = useLocation();
   const { toast } = useToast();
+  const { data } = useI18n();
+  const t = data.ui.report;
 
   const { data: report, isLoading, isError } = useGetReport(params.sessionCode, {
     query: {
@@ -79,7 +79,7 @@ export default function ReportPage() {
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
           <div className="w-8 h-8 rounded-full border-2 border-primary border-t-transparent animate-spin mx-auto mb-4" />
-          <p className="text-muted-foreground">Generating your report...</p>
+          <p className="text-muted-foreground">{t.loading}</p>
         </div>
       </div>
     );
@@ -89,22 +89,21 @@ export default function ReportPage() {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center p-6">
         <div className="text-center max-w-sm">
-          <h2 className="text-2xl font-serif text-foreground mb-3">Report not ready yet</h2>
-          <p className="text-muted-foreground mb-6">Both partners need to complete the questionnaire before the report is generated.</p>
-          <Button onClick={() => setLocation("/")} variant="outline">Back to home</Button>
+          <h2 className="text-2xl font-serif text-foreground mb-3">{t.notReady}</h2>
+          <p className="text-muted-foreground mb-6">{t.notReadyDesc}</p>
+          <Button onClick={() => setLocation("/")} variant="outline">{t.backHome}</Button>
         </div>
       </div>
     );
   }
 
   const scoreLabel =
-    report.overallScore >= 80 ? "Highly compatible" :
-    report.overallScore >= 60 ? "Good compatibility" :
-    report.overallScore >= 40 ? "Some differences" : "Worth discussing";
+    report.overallScore >= 80 ? t.scoreLabels.high :
+    report.overallScore >= 60 ? t.scoreLabels.good :
+    report.overallScore >= 40 ? t.scoreLabels.some : t.scoreLabels.discuss;
 
   return (
     <div className="min-h-screen bg-background pb-16">
-      {/* Header */}
       <div className="bg-gradient-to-br from-accent/40 via-background to-primary/5 border-b border-border">
         <div className="max-w-3xl mx-auto px-6 py-10">
           <button
@@ -113,7 +112,7 @@ export default function ReportPage() {
             data-testid="button-back-home"
           >
             <ArrowLeft size={16} />
-            Back to home
+            {t.backHome}
           </button>
 
           <motion.div
@@ -126,14 +125,14 @@ export default function ReportPage() {
               <Heart size={14} className="text-primary" />
               <span>{report.partner1Name} &amp; {report.partner2Name}</span>
             </div>
-            <h1 className="text-4xl font-serif text-foreground mb-2">Your Compatibility Report</h1>
-            <p className="text-muted-foreground mb-10">Based on 40 questions across 8 life dimensions</p>
+            <h1 className="text-4xl font-serif text-foreground mb-2">{t.title}</h1>
+            <p className="text-muted-foreground mb-10">{t.basedOn}</p>
 
             <div className="flex flex-col items-center">
               <ScoreRing score={report.overallScore} />
               <div className="mt-4">
                 <div className="text-lg font-medium text-foreground">{scoreLabel}</div>
-                <div className="text-sm text-muted-foreground">Overall compatibility score</div>
+                <div className="text-sm text-muted-foreground">{t.scoreLabel}</div>
               </div>
             </div>
 
@@ -151,37 +150,40 @@ export default function ReportPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2, duration: 0.5 }}
         >
-          <h2 className="text-2xl font-serif text-foreground mb-6">Scores by category</h2>
+          <h2 className="text-2xl font-serif text-foreground mb-6">{t.scoresTitle}</h2>
           <div className="grid sm:grid-cols-2 gap-3">
-            {report.categoryScores.map((cat, i) => (
-              <motion.div
-                key={cat.category}
-                initial={{ opacity: 0, x: -16 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.3 + i * 0.05 }}
-                className="bg-card border border-border rounded-xl p-4"
-                data-testid={`category-score-${cat.category}`}
-              >
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm font-medium text-foreground">{cat.label}</span>
-                  <span className={`text-xs px-2 py-0.5 rounded-full border font-medium ${CATEGORY_COLORS[cat.alignment]}`}>
-                    {ALIGNMENT_LABELS[cat.alignment]}
-                  </span>
-                </div>
-                <div className="w-full bg-muted rounded-full h-2">
-                  <motion.div
-                    className={`h-2 rounded-full ${
-                      cat.alignment === "high" ? "bg-green-500" :
-                      cat.alignment === "medium" ? "bg-amber-500" : "bg-red-400"
-                    }`}
-                    initial={{ width: 0 }}
-                    animate={{ width: `${cat.score}%` }}
-                    transition={{ delay: 0.4 + i * 0.05, duration: 0.8, ease: "easeOut" }}
-                  />
-                </div>
-                <div className="text-right text-xs text-muted-foreground mt-1">{cat.score}%</div>
-              </motion.div>
-            ))}
+            {report.categoryScores.map((cat, i) => {
+              const catLabel = data.ui.categories[cat.category as keyof typeof data.ui.categories] ?? cat.label;
+              return (
+                <motion.div
+                  key={cat.category}
+                  initial={{ opacity: 0, x: -16 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.3 + i * 0.05 }}
+                  className="bg-card border border-border rounded-xl p-4"
+                  data-testid={`category-score-${cat.category}`}
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm font-medium text-foreground">{catLabel}</span>
+                    <span className={`text-xs px-2 py-0.5 rounded-full border font-medium ${CATEGORY_COLORS[cat.alignment]}`}>
+                      {t.alignmentLabels[cat.alignment as keyof typeof t.alignmentLabels]}
+                    </span>
+                  </div>
+                  <div className="w-full bg-muted rounded-full h-2">
+                    <motion.div
+                      className={`h-2 rounded-full ${
+                        cat.alignment === "high" ? "bg-green-500" :
+                        cat.alignment === "medium" ? "bg-amber-500" : "bg-red-400"
+                      }`}
+                      initial={{ width: 0 }}
+                      animate={{ width: `${cat.score}%` }}
+                      transition={{ delay: 0.4 + i * 0.05, duration: 0.8, ease: "easeOut" }}
+                    />
+                  </div>
+                  <div className="text-right text-xs text-muted-foreground mt-1">{cat.score}%</div>
+                </motion.div>
+              );
+            })}
           </div>
         </motion.section>
 
@@ -194,7 +196,7 @@ export default function ReportPage() {
           >
             <div className="flex items-center gap-2 mb-4">
               <TrendingUp size={20} className="text-green-600" />
-              <h2 className="text-2xl font-serif text-foreground">Where you align</h2>
+              <h2 className="text-2xl font-serif text-foreground">{t.alignedTitle}</h2>
             </div>
             <div className="space-y-3">
               {report.alignedAreas.map((item, i) => (
@@ -206,10 +208,18 @@ export default function ReportPage() {
                   className="bg-green-50 border border-green-100 rounded-xl p-4"
                   data-testid={`aligned-item-${item.questionId}`}
                 >
-                  <p className="text-sm font-medium text-foreground mb-2">{item.questionText}</p>
-                  <div className="flex gap-4 text-xs text-muted-foreground">
-                    <span><span className="font-medium text-foreground">{report.partner1Name}:</span> {item.partner1Answer}</span>
-                    <span><span className="font-medium text-foreground">{report.partner2Name}:</span> {item.partner2Answer}</span>
+                  <p className="text-sm font-medium text-foreground mb-2">
+                    {data.questions[item.questionId]?.text ?? item.questionText}
+                  </p>
+                  <div className="flex flex-wrap gap-4 text-xs text-muted-foreground">
+                    <span>
+                      <span className="font-medium text-foreground">{report.partner1Name}:</span>{" "}
+                      {translateAnswer(item.questionId, item.partner1Answer, data.questions)}
+                    </span>
+                    <span>
+                      <span className="font-medium text-foreground">{report.partner2Name}:</span>{" "}
+                      {translateAnswer(item.questionId, item.partner2Answer, data.questions)}
+                    </span>
                   </div>
                 </motion.div>
               ))}
@@ -226,7 +236,7 @@ export default function ReportPage() {
           >
             <div className="flex items-center gap-2 mb-4">
               <TrendingDown size={20} className="text-amber-600" />
-              <h2 className="text-2xl font-serif text-foreground">Areas to explore</h2>
+              <h2 className="text-2xl font-serif text-foreground">{t.differingTitle}</h2>
             </div>
             <div className="space-y-3">
               {report.differingAreas.map((item, i) => (
@@ -238,10 +248,18 @@ export default function ReportPage() {
                   className="bg-amber-50 border border-amber-100 rounded-xl p-4"
                   data-testid={`differing-item-${item.questionId}`}
                 >
-                  <p className="text-sm font-medium text-foreground mb-2">{item.questionText}</p>
-                  <div className="flex gap-4 text-xs text-muted-foreground">
-                    <span><span className="font-medium text-foreground">{report.partner1Name}:</span> {item.partner1Answer}</span>
-                    <span><span className="font-medium text-foreground">{report.partner2Name}:</span> {item.partner2Answer}</span>
+                  <p className="text-sm font-medium text-foreground mb-2">
+                    {data.questions[item.questionId]?.text ?? item.questionText}
+                  </p>
+                  <div className="flex flex-wrap gap-4 text-xs text-muted-foreground">
+                    <span>
+                      <span className="font-medium text-foreground">{report.partner1Name}:</span>{" "}
+                      {translateAnswer(item.questionId, item.partner1Answer, data.questions)}
+                    </span>
+                    <span>
+                      <span className="font-medium text-foreground">{report.partner2Name}:</span>{" "}
+                      {translateAnswer(item.questionId, item.partner2Answer, data.questions)}
+                    </span>
                   </div>
                 </motion.div>
               ))}
@@ -257,7 +275,7 @@ export default function ReportPage() {
         >
           <div className="flex items-center gap-2 mb-4">
             <MessageCircle size={20} className="text-primary" />
-            <h2 className="text-2xl font-serif text-foreground">Conversation starters</h2>
+            <h2 className="text-2xl font-serif text-foreground">{t.promptsTitle}</h2>
           </div>
           <div className="space-y-3">
             {report.discussionPrompts.map((prompt, i) => (
@@ -284,7 +302,7 @@ export default function ReportPage() {
             className="gap-2"
           >
             <Share2 size={16} />
-            Share this report
+            {t.shareBtn}
           </Button>
         </div>
       </div>

@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useCreateSession } from "@workspace/api-client-react";
 import { useToast } from "@/hooks/use-toast";
+import { useI18n } from "@/lib/i18n";
 
 export default function StartPage() {
   const [, setLocation] = useLocation();
@@ -14,14 +15,16 @@ export default function StartPage() {
   const [session, setSession] = useState<{ sessionCode: string; partner1Name: string } | null>(null);
   const [copied, setCopied] = useState(false);
   const { toast } = useToast();
+  const { data } = useI18n();
+  const t = data.ui.start;
 
   const createSession = useCreateSession({
     mutation: {
-      onSuccess: (data) => {
-        setSession({ sessionCode: data.sessionCode, partner1Name: data.partner1Name });
+      onSuccess: (d) => {
+        setSession({ sessionCode: d.sessionCode, partner1Name: d.partner1Name });
       },
       onError: () => {
-        toast({ title: "Something went wrong", description: "Could not create a session. Please try again.", variant: "destructive" });
+        toast({ title: data.ui.errors.createFailed, variant: "destructive" });
       },
     },
   });
@@ -33,7 +36,7 @@ export default function StartPage() {
   };
 
   const shareUrl = session
-    ? `${window.location.origin}/join?code=${session.sessionCode}`
+    ? `${window.location.origin}${import.meta.env.BASE_URL}join?code=${session.sessionCode}`
     : "";
 
   const handleCopy = () => {
@@ -52,7 +55,7 @@ export default function StartPage() {
           data-testid="button-back-home"
         >
           <ArrowLeft size={16} />
-          Back
+          {data.ui.back}
         </button>
 
         {!session ? (
@@ -61,19 +64,17 @@ export default function StartPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
           >
-            <h1 className="text-4xl font-serif text-foreground mb-2">Start your session</h1>
-            <p className="text-muted-foreground mb-10 leading-relaxed">
-              Enter your name to create a session. You'll get a code to share with your partner so they can join.
-            </p>
+            <h1 className="text-4xl font-serif text-foreground mb-2">{t.title}</h1>
+            <p className="text-muted-foreground mb-10 leading-relaxed">{t.desc}</p>
             <form onSubmit={handleCreate} className="space-y-6">
               <div className="space-y-2">
-                <Label htmlFor="name">Your name</Label>
+                <Label htmlFor="name">{t.label}</Label>
                 <Input
                   id="name"
                   data-testid="input-partner1-name"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  placeholder="e.g. Sarah"
+                  placeholder={t.placeholder}
                   className="text-lg py-6 h-auto"
                   autoFocus
                 />
@@ -85,7 +86,7 @@ export default function StartPage() {
                 data-testid="button-create-session"
                 className="w-full py-6 h-auto text-base gap-2"
               >
-                {createSession.isPending ? "Creating..." : "Create session"}
+                {createSession.isPending ? t.creating : t.btn}
                 {!createSession.isPending && <ArrowRight size={18} />}
               </Button>
             </form>
@@ -97,15 +98,15 @@ export default function StartPage() {
             transition={{ duration: 0.5 }}
           >
             <div className="bg-accent/30 rounded-2xl border border-primary/10 p-6 mb-8 text-center">
-              <p className="text-sm text-muted-foreground mb-2">Session code</p>
+              <p className="text-sm text-muted-foreground mb-2">{t.codeLabel}</p>
               <div className="text-5xl font-mono font-bold text-primary tracking-widest" data-testid="text-session-code">
                 {session.sessionCode}
               </div>
             </div>
-            <h1 className="text-3xl font-serif text-foreground mb-3">Session created, {session.partner1Name}</h1>
-            <p className="text-muted-foreground mb-8 leading-relaxed">
-              Share this link with your partner so they can join. Once they've got the link, you can both start the questionnaire independently.
-            </p>
+            <h1 className="text-3xl font-serif text-foreground mb-3">
+              {t.created}, {session.partner1Name}
+            </h1>
+            <p className="text-muted-foreground mb-8 leading-relaxed">{t.shareDesc}</p>
 
             <div className="space-y-3 mb-8">
               <div className="flex gap-2">
@@ -122,20 +123,20 @@ export default function StartPage() {
                   className="shrink-0 gap-2"
                 >
                   {copied ? <Check size={16} className="text-green-600" /> : <Copy size={16} />}
-                  {copied ? "Copied" : "Copy"}
+                  {copied ? t.copiedBtn : t.copyBtn}
                 </Button>
               </div>
             </div>
 
             <div className="border-t border-border pt-6">
-              <p className="text-sm text-muted-foreground mb-4">Ready to start your own answers?</p>
+              <p className="text-sm text-muted-foreground mb-4">{t.readyText}</p>
               <Button
                 size="lg"
                 onClick={() => setLocation(`/questionnaire/${session.sessionCode}/partner1?name=${encodeURIComponent(session.partner1Name)}`)}
                 data-testid="button-start-questionnaire"
                 className="w-full py-6 h-auto text-base gap-2"
               >
-                Start my questionnaire
+                {t.startBtn}
                 <ArrowRight size={18} />
               </Button>
             </div>

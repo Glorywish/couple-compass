@@ -10,7 +10,7 @@ const zh: LocaleData = {
     settings: { title: "设置", language: "语言" },
     home: {
       badge: "为想要深入了解彼此的伴侣",
-      title1: "在说"我愿意"之前，",
+      title1: "在说「我愿意」之前，",
       title2: "你们真的志同道合吗？",
       desc: "一份深思熟虑的问卷，帮助伴侣探索在价值观、人生规划、财务、家庭等方面的契合度。不是测验——而是一次真正重要的对话。",
       cta1: "一起开始",
@@ -111,7 +111,7 @@ const zh: LocaleData = {
     2: { text: "你如何平衡职业成功与个人时间？", options: ["职业是我的首要任务", "职业重要但注重平衡", "个人生活优先"] },
     3: { text: "住在大家庭附近对你有多重要？", options: null },
     4: { text: "你在多大程度上将财务安全置于冒险和风险之上？", options: null },
-    5: { text: "描述"家"对你意味着什么。", options: null },
+    5: { text: "描述「家」对你意味着什么。", options: null },
     6: { text: "10年后你希望住在哪里？", options: ["和现在同一座城市", "国内另一座城市", "国外", "没有偏好"] },
     7: { text: "拥有自己的房产对你有多重要？", options: null },
     8: { text: "你如何看待其中一方暂停职业生涯来抚养孩子？", options: null },
