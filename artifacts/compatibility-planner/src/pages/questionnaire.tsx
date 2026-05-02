@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useParams, useLocation, useSearch } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowRight, ArrowLeft, Save } from "lucide-react";
+import { ArrowRight, ArrowLeft, Save, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { Textarea } from "@/components/ui/textarea";
@@ -11,13 +11,16 @@ import { useI18n } from "@/lib/i18n";
 
 type Answer = { questionId: number; value: string };
 
-function storageKey(sessionCode: string, partnerSlot: string) {
+function answersKey(sessionCode: string, partnerSlot: string) {
   return `cp_answers_${sessionCode}_${partnerSlot}`;
 }
+function phaseKey(sessionCode: string, partnerSlot: string) {
+  return `cp_phase_${sessionCode}_${partnerSlot}`;
+}
 
-function loadFromStorage(sessionCode: string, partnerSlot: string): Map<number, string> {
+function loadAnswers(sessionCode: string, partnerSlot: string): Map<number, string> {
   try {
-    const raw = localStorage.getItem(storageKey(sessionCode, partnerSlot));
+    const raw = localStorage.getItem(answersKey(sessionCode, partnerSlot));
     if (!raw) return new Map();
     const obj = JSON.parse(raw) as Record<string, string>;
     return new Map(Object.entries(obj).map(([k, v]) => [parseInt(k, 10), v]));
@@ -26,16 +29,34 @@ function loadFromStorage(sessionCode: string, partnerSlot: string): Map<number, 
   }
 }
 
-function saveToStorage(sessionCode: string, partnerSlot: string, answers: Map<number, string>) {
+function loadPhase(sessionCode: string, partnerSlot: string): number {
+  try {
+    const raw = localStorage.getItem(phaseKey(sessionCode, partnerSlot));
+    return raw ? parseInt(raw, 10) : 0;
+  } catch {
+    return 0;
+  }
+}
+
+function saveAnswers(sessionCode: string, partnerSlot: string, answers: Map<number, string>) {
   try {
     const obj: Record<string, string> = {};
     answers.forEach((v, k) => { obj[String(k)] = v; });
-    localStorage.setItem(storageKey(sessionCode, partnerSlot), JSON.stringify(obj));
+    localStorage.setItem(answersKey(sessionCode, partnerSlot), JSON.stringify(obj));
+  } catch { /* ignore */ }
+}
+
+function savePhase(sessionCode: string, partnerSlot: string, index: number) {
+  try {
+    localStorage.setItem(phaseKey(sessionCode, partnerSlot), String(index));
   } catch { /* ignore */ }
 }
 
 function clearStorage(sessionCode: string, partnerSlot: string) {
-  try { localStorage.removeItem(storageKey(sessionCode, partnerSlot)); } catch { /* ignore */ }
+  try {
+    localStorage.removeItem(answersKey(sessionCode, partnerSlot));
+    localStorage.removeItem(phaseKey(sessionCode, partnerSlot));
+  } catch { /* ignore */ }
 }
 
 export default function QuestionnairePage() {
@@ -52,12 +73,22 @@ export default function QuestionnairePage() {
   const submitResponses = useSubmitResponses();
 
   const partnerName = nameFromUrl || (params.partnerSlot === "partner1" ? "Partner 1" : "Partner 2");
-  const [categoryIndex, setCategoryIndex] = useState(0);
+
+  // Restore both answers AND phase from localStorage on first load
   const [answers, setAnswers] = useState<Map<number, string>>(() =>
-    loadFromStorage(params.sessionCode, params.partnerSlot)
+    loadAnswers(params.sessionCode, params.partnerSlot)
+  );
+  const [categoryIndex, setCategoryIndex] = useState(() =>
+    loadPhase(params.sessionCode, params.partnerSlot)
   );
   const [direction, setDirection] = useState(1);
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
+  const [showRestored, setShowRestored] = useState(() => {
+    // Show restored notice if they had prior progress
+    const savedPhase = loadPhase(params.sessionCode, params.partnerSlot);
+    const savedAnswers = loadAnswers(params.sessionCode, params.partnerSlot);
+    return savedPhase > 0 || savedAnswers.size > 3;
+  });
 
   const categories = allQuestions
     ? [...new Set(allQuestions.map((q) => q.category))]
@@ -66,6 +97,13 @@ export default function QuestionnairePage() {
   const currentCategory = categories[categoryIndex] ?? "";
   const categoryQuestions = allQuestions?.filter((q) => q.category === currentCategory) ?? [];
   const totalCategories = categories.length;
+
+  // Clamp restored categoryIndex once questions load (in case categories changed)
+  useEffect(() => {
+    if (categories.length > 0 && categoryIndex >= categories.length) {
+      setCategoryIndex(categories.length - 1);
+    }
+  }, [categories.length]);
 
   // Auto-register defaults: scale→"3", open→""
   useEffect(() => {
@@ -83,16 +121,28 @@ export default function QuestionnairePage() {
     });
   }, [categoryIndex, allQuestions]);
 
-  // Persist to localStorage
+  // Persist answers to localStorage
   useEffect(() => {
     if (answers.size === 0) return;
-    saveToStorage(params.sessionCode, params.partnerSlot, answers);
+    saveAnswers(params.sessionCode, params.partnerSlot, answers);
     setLastSaved(new Date());
   }, [answers]);
+
+  // Persist phase to localStorage
+  useEffect(() => {
+    savePhase(params.sessionCode, params.partnerSlot, categoryIndex);
+  }, [categoryIndex]);
 
   const setAnswer = useCallback((questionId: number, value: string) => {
     setAnswers((prev) => new Map(prev).set(questionId, value));
   }, []);
+
+  const navigateTo = (index: number, dir: number) => {
+    setDirection(dir);
+    setCategoryIndex(index);
+    setShowRestored(false);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
 
   // Only choice questions block progression
   const allCurrentAnswered = categoryQuestions.every((q) => {
@@ -100,11 +150,19 @@ export default function QuestionnairePage() {
     return answers.has(q.id);
   });
 
+  // Check if a given category index has all its questions answered
+  const isCategoryComplete = useCallback((catIndex: number): boolean => {
+    if (!allQuestions || !categories[catIndex]) return false;
+    const catQuestions = allQuestions.filter((q) => q.category === categories[catIndex]);
+    return catQuestions.every((q) => {
+      if (q.type === "choice") return answers.has(q.id) && answers.get(q.id) !== "";
+      return answers.has(q.id);
+    });
+  }, [allQuestions, categories, answers]);
+
   const handleNext = () => {
     if (categoryIndex < totalCategories - 1) {
-      setDirection(1);
-      setCategoryIndex((i) => i + 1);
-      window.scrollTo({ top: 0, behavior: "smooth" });
+      navigateTo(categoryIndex + 1, 1);
     } else {
       handleSubmit();
     }
@@ -112,9 +170,7 @@ export default function QuestionnairePage() {
 
   const handleBack = () => {
     if (categoryIndex > 0) {
-      setDirection(-1);
-      setCategoryIndex((i) => i - 1);
-      window.scrollTo({ top: 0, behavior: "smooth" });
+      navigateTo(categoryIndex - 1, -1);
     }
   };
 
@@ -157,27 +213,58 @@ export default function QuestionnairePage() {
     );
   }
 
-  const progress = (categoryIndex / Math.max(1, totalCategories)) * 100;
   const categoryLabel = data.ui.categories[currentCategory as keyof typeof data.ui.categories] ?? currentCategory;
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      {/* Progress bar */}
-      <div className="w-full h-1 bg-muted">
-        <motion.div
-          className="h-full bg-primary rounded-full"
-          animate={{ width: `${progress}%` }}
-          transition={{ duration: 0.4 }}
-        />
-      </div>
+      {/* Top sticky header with phase nav */}
+      <div className="sticky top-0 z-20 bg-background/95 backdrop-blur border-b border-border">
+        <div className="max-w-2xl mx-auto w-full px-6 py-3">
+          {/* Phase segments — past ones are clickable */}
+          <div className="flex gap-1.5 mb-2">
+            {categories.map((cat, i) => {
+              const label = data.ui.categories[cat as keyof typeof data.ui.categories] ?? cat;
+              const isPast = i < categoryIndex;
+              const isCurrent = i === categoryIndex;
+              const completed = isCategoryComplete(i);
 
-      <div className="max-w-2xl mx-auto w-full px-6 py-10 flex-1 flex flex-col">
-        {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between mb-1">
-            <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider">
-              {categoryLabel}
-            </span>
+              return (
+                <button
+                  key={i}
+                  onClick={() => isPast && navigateTo(i, -1)}
+                  disabled={!isPast}
+                  title={label}
+                  data-testid={`phase-tab-${i}`}
+                  aria-label={`Go to ${label}`}
+                  className={`group relative h-2 flex-1 rounded-full transition-all duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
+                    isCurrent
+                      ? "bg-primary/60"
+                      : isPast
+                      ? "bg-primary cursor-pointer hover:bg-primary/80 hover:h-3"
+                      : "bg-muted cursor-default"
+                  }`}
+                >
+                  {/* Tooltip on hover for past/current phases */}
+                  {(isPast || isCurrent) && (
+                    <span className="pointer-events-none absolute -top-8 left-1/2 -translate-x-1/2 whitespace-nowrap bg-foreground text-background text-[10px] font-medium px-2 py-1 rounded-md opacity-0 group-hover:opacity-100 transition-opacity duration-150 z-30">
+                      {completed && isPast && "✓ "}{label}
+                    </span>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Current phase label + counter */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-semibold text-primary uppercase tracking-wider">
+                {categoryLabel}
+              </span>
+              {isCategoryComplete(categoryIndex) && categoryIndex < totalCategories - 1 && (
+                <CheckCircle2 size={12} className="text-green-500" />
+              )}
+            </div>
             <div className="flex items-center gap-3">
               {lastSaved && (
                 <span className="flex items-center gap-1 text-xs text-muted-foreground">
@@ -190,29 +277,32 @@ export default function QuestionnairePage() {
               </span>
             </div>
           </div>
-          <div className="flex gap-1.5">
-            {categories.map((_, i) => (
-              <div
-                key={i}
-                className={`h-1 flex-1 rounded-full transition-all duration-300 ${
-                  i < categoryIndex ? "bg-primary" : i === categoryIndex ? "bg-primary/60" : "bg-muted"
-                }`}
-              />
-            ))}
-          </div>
         </div>
+      </div>
 
+      <div className="max-w-2xl mx-auto w-full px-6 py-8 flex-1 flex flex-col">
         {/* Restored notice */}
-        {answers.size > 5 && categoryIndex === 0 && (
-          <motion.div
-            initial={{ opacity: 0, y: -8 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="bg-accent/40 border border-primary/10 rounded-xl px-4 py-3 mb-6 text-sm text-foreground flex items-center gap-2"
-          >
-            <Save size={14} className="text-primary shrink-0" />
-            {t.restored}
-          </motion.div>
-        )}
+        <AnimatePresence>
+          {showRestored && (
+            <motion.div
+              initial={{ opacity: 0, y: -8, height: 0 }}
+              animate={{ opacity: 1, y: 0, height: "auto" }}
+              exit={{ opacity: 0, y: -8, height: 0 }}
+              className="bg-accent/50 border border-primary/15 rounded-xl px-4 py-3 mb-6 text-sm text-foreground flex items-center justify-between gap-2"
+            >
+              <div className="flex items-center gap-2">
+                <Save size={14} className="text-primary shrink-0" />
+                <span>{t.restored}</span>
+              </div>
+              <button
+                onClick={() => setShowRestored(false)}
+                className="text-muted-foreground hover:text-foreground text-xs shrink-0"
+              >
+                ✕
+              </button>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* Questions */}
         <div className="flex-1">
