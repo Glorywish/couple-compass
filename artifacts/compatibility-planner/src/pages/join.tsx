@@ -47,14 +47,17 @@ export default function JoinPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <div
+      className="min-h-screen flex flex-col"
+      style={{ background: "radial-gradient(ellipse 80% 50% at 50% 0%, hsl(353 55% 90% / 0.5) 0%, transparent 65%)" }}
+    >
       <div className="max-w-xl mx-auto w-full px-6 py-12 flex-1 flex flex-col justify-center">
         <button
           onClick={() => setLocation("/")}
-          className="flex items-center gap-2 text-muted-foreground hover:text-foreground text-sm mb-10 transition-colors w-fit"
+          className="flex items-center gap-2 text-muted-foreground hover:text-foreground text-xs uppercase tracking-widest font-sans mb-12 transition-colors w-fit"
           data-testid="button-back-home"
         >
-          <ArrowLeft size={16} />
+          <ArrowLeft size={14} />
           {data.ui.back}
         </button>
 
@@ -63,12 +66,20 @@ export default function JoinPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
         >
-          <h1 className="text-4xl font-serif text-foreground mb-2">{t.title}</h1>
-          <p className="text-muted-foreground mb-10 leading-relaxed">{t.desc}</p>
+          <span
+            className="text-[11px] uppercase tracking-[0.4em] font-sans"
+            style={{ color: "#c9a96e" }}
+          >
+            Partner 2
+          </span>
+          <h1 className="text-4xl font-serif font-light text-foreground mt-2 mb-2">{t.title}</h1>
+          <p className="text-muted-foreground mb-10 leading-relaxed font-sans text-sm">{t.desc}</p>
 
           <form onSubmit={handleJoin} className="space-y-6">
             <div className="space-y-2">
-              <Label htmlFor="code">{t.codeLabel}</Label>
+              <Label htmlFor="code" className="text-xs uppercase tracking-widest text-muted-foreground font-sans">
+                {t.codeLabel}
+              </Label>
               <Input
                 id="code"
                 data-testid="input-session-code"
@@ -81,14 +92,16 @@ export default function JoinPage() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="name">{t.nameLabel}</Label>
+              <Label htmlFor="name" className="text-xs uppercase tracking-widest text-muted-foreground font-sans">
+                {t.nameLabel}
+              </Label>
               <Input
                 id="name"
                 data-testid="input-partner2-name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder={t.namePlaceholder}
-                className="text-lg py-6 h-auto"
+                className="text-lg py-6 h-auto font-serif"
                 autoFocus={!!prefilledCode}
               />
             </div>
@@ -97,10 +110,10 @@ export default function JoinPage() {
               size="lg"
               disabled={!code.trim() || !name.trim() || isLoading}
               data-testid="button-join-session"
-              className="w-full py-6 h-auto text-base gap-2"
+              className="w-full py-6 h-auto text-sm gap-2 tracking-widest uppercase"
             >
               {isLoading ? t.checking : t.btn}
-              {!isLoading && <ArrowRight size={18} />}
+              {!isLoading && <ArrowRight size={14} />}
             </Button>
           </form>
         </motion.div>

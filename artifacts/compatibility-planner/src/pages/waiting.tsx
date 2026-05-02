@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { useParams, useLocation } from "wouter";
 import { motion } from "framer-motion";
-import { Heart, Check } from "lucide-react";
+import { Check } from "lucide-react";
 import { useGetSessionStatus, getGetSessionStatusQueryKey } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useI18n } from "@/lib/i18n";
@@ -34,75 +34,88 @@ export default function WaitingPage() {
   const partnerDone = mySlot === "partner1" ? status?.partner2Completed : status?.partner1Completed;
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-6">
+    <div
+      className="min-h-screen flex items-center justify-center p-6"
+      style={{ background: "radial-gradient(ellipse 80% 60% at 50% 30%, hsl(353 55% 90% / 0.55) 0%, transparent 70%)" }}
+    >
       <div className="max-w-md w-full text-center">
         <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
+          initial={{ opacity: 0, scale: 0.92 }}
           animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+          transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
         >
-          <div className="relative mx-auto w-20 h-20 mb-8">
+          {/* Pulsing heart */}
+          <div className="relative mx-auto w-20 h-20 mb-10">
             <motion.div
-              animate={{ scale: [1, 1.08, 1] }}
-              transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-              className="w-20 h-20 rounded-full bg-accent flex items-center justify-center"
+              animate={{ scale: [1, 1.1, 1] }}
+              transition={{ duration: 2.4, repeat: Infinity, ease: "easeInOut" }}
+              className="w-20 h-20 rounded-full flex items-center justify-center"
+              style={{ background: "hsl(353 55% 92%)" }}
             >
-              <Heart size={32} className="text-primary fill-primary/20" />
+              <span
+                className="text-3xl"
+                style={{ color: "hsl(var(--primary))" }}
+              >
+                ♡
+              </span>
             </motion.div>
           </div>
 
-          <h1 className="text-3xl font-serif text-foreground mb-3">
+          <p
+            className="text-[11px] uppercase tracking-[0.4em] font-sans mb-3"
+            style={{ color: "#c9a96e" }}
+          >
+            {status?.bothCompleted ? "Complete" : "In Progress"}
+          </p>
+
+          <h1 className="text-4xl font-serif font-light text-foreground mb-3">
             {status?.bothCompleted ? t.titleDone : t.title}
           </h1>
-          <p className="text-muted-foreground mb-12 leading-relaxed">
+          <p className="text-muted-foreground mb-12 leading-relaxed font-sans text-sm">
             {status?.bothCompleted ? t.descDone : t.desc}
           </p>
 
+          {/* Status cards */}
           <div className="grid grid-cols-2 gap-4 mb-10">
-            <div
-              className={`rounded-2xl border p-5 transition-all ${
-                myDone ? "border-primary/30 bg-accent/30" : "border-border bg-card"
-              }`}
-              data-testid="status-partner1"
-            >
-              <div className="flex items-center justify-center mb-2">
-                {myDone ? (
-                  <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center">
-                    <Check size={16} className="text-primary-foreground" />
-                  </div>
-                ) : (
-                  <div className="w-8 h-8 rounded-full border-2 border-muted-foreground border-t-primary animate-spin" />
-                )}
+            {[
+              { name: myName ?? "You", done: myDone, testId: "status-partner1" },
+              { name: partnerName ?? "Partner", done: partnerDone, testId: "status-partner2" },
+            ].map(({ name, done, testId }) => (
+              <div
+                key={testId}
+                className="border p-5 transition-all duration-500"
+                style={{
+                  borderRadius: "3px",
+                  borderColor: done ? "hsl(var(--primary)/0.35)" : "hsl(var(--border))",
+                  background: done ? "hsl(353 55% 96%)" : "hsl(var(--card))",
+                  borderLeft: `3px solid ${done ? "#c9a96e" : "hsl(var(--border))"}`,
+                }}
+                data-testid={testId}
+              >
+                <div className="flex items-center justify-center mb-3">
+                  {done ? (
+                    <div
+                      className="w-8 h-8 rounded-full flex items-center justify-center"
+                      style={{ background: "#c9a96e" }}
+                    >
+                      <Check size={14} color="white" />
+                    </div>
+                  ) : (
+                    <div
+                      className="w-8 h-8 rounded-full border-2 border-t-transparent animate-spin"
+                      style={{ borderColor: "hsl(var(--primary))", borderTopColor: "transparent" }}
+                    />
+                  )}
+                </div>
+                <div className="text-sm font-serif text-foreground">{name}</div>
+                <div className="text-xs text-muted-foreground font-sans mt-0.5">
+                  {done ? t.completed : t.inProgress}
+                </div>
               </div>
-              <div className="text-sm font-medium text-foreground">{myName ?? "You"}</div>
-              <div className="text-xs text-muted-foreground mt-0.5">
-                {myDone ? t.completed : t.inProgress}
-              </div>
-            </div>
-
-            <div
-              className={`rounded-2xl border p-5 transition-all ${
-                partnerDone ? "border-primary/30 bg-accent/30" : "border-border bg-card"
-              }`}
-              data-testid="status-partner2"
-            >
-              <div className="flex items-center justify-center mb-2">
-                {partnerDone ? (
-                  <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center">
-                    <Check size={16} className="text-primary-foreground" />
-                  </div>
-                ) : (
-                  <div className="w-8 h-8 rounded-full border-2 border-muted-foreground border-dashed animate-pulse" />
-                )}
-              </div>
-              <div className="text-sm font-medium text-foreground">{partnerName ?? "Partner"}</div>
-              <div className="text-xs text-muted-foreground mt-0.5">
-                {partnerDone ? t.completed : t.waitingStatus}
-              </div>
-            </div>
+            ))}
           </div>
 
-          <p className="text-xs text-muted-foreground">{t.pollNote}</p>
+          <p className="text-xs text-muted-foreground font-sans">{t.pollNote}</p>
         </motion.div>
       </div>
     </div>

@@ -47,14 +47,17 @@ export default function StartPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <div
+      className="min-h-screen flex flex-col"
+      style={{ background: "radial-gradient(ellipse 80% 50% at 50% 0%, hsl(353 55% 90% / 0.5) 0%, transparent 65%)" }}
+    >
       <div className="max-w-xl mx-auto w-full px-6 py-12 flex-1 flex flex-col justify-center">
         <button
           onClick={() => setLocation("/")}
-          className="flex items-center gap-2 text-muted-foreground hover:text-foreground text-sm mb-10 transition-colors w-fit"
+          className="flex items-center gap-2 text-muted-foreground hover:text-foreground text-xs uppercase tracking-widest font-sans mb-12 transition-colors w-fit"
           data-testid="button-back-home"
         >
-          <ArrowLeft size={16} />
+          <ArrowLeft size={14} />
           {data.ui.back}
         </button>
 
@@ -64,18 +67,27 @@ export default function StartPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
           >
-            <h1 className="text-4xl font-serif text-foreground mb-2">{t.title}</h1>
-            <p className="text-muted-foreground mb-10 leading-relaxed">{t.desc}</p>
+            <span
+              className="text-[11px] uppercase tracking-[0.4em] font-sans"
+              style={{ color: "#c9a96e" }}
+            >
+              New Journey
+            </span>
+            <h1 className="text-4xl font-serif font-light text-foreground mt-2 mb-2">{t.title}</h1>
+            <p className="text-muted-foreground mb-10 leading-relaxed font-sans text-sm">{t.desc}</p>
+
             <form onSubmit={handleCreate} className="space-y-6">
               <div className="space-y-2">
-                <Label htmlFor="name">{t.label}</Label>
+                <Label htmlFor="name" className="text-xs uppercase tracking-widest text-muted-foreground font-sans">
+                  {t.label}
+                </Label>
                 <Input
                   id="name"
                   data-testid="input-partner1-name"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder={t.placeholder}
-                  className="text-lg py-6 h-auto"
+                  className="text-lg py-6 h-auto font-serif"
                   autoFocus
                 />
               </div>
@@ -84,10 +96,10 @@ export default function StartPage() {
                 size="lg"
                 disabled={!name.trim() || createSession.isPending}
                 data-testid="button-create-session"
-                className="w-full py-6 h-auto text-base gap-2"
+                className="w-full py-6 h-auto text-sm gap-2 tracking-widest uppercase"
               >
                 {createSession.isPending ? t.creating : t.btn}
-                {!createSession.isPending && <ArrowRight size={18} />}
+                {!createSession.isPending && <ArrowRight size={14} />}
               </Button>
             </form>
           </motion.div>
@@ -97,47 +109,65 @@ export default function StartPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
           >
-            <div className="bg-accent/30 rounded-2xl border border-primary/10 p-6 mb-8 text-center">
-              <p className="text-sm text-muted-foreground mb-2">{t.codeLabel}</p>
-              <div className="text-5xl font-mono font-bold text-primary tracking-widest" data-testid="text-session-code">
+            {/* Session code card */}
+            <div
+              className="bg-card border border-border p-6 mb-8 text-center"
+              style={{ borderRadius: "3px", borderLeft: "3px solid #c9a96e" }}
+            >
+              <p
+                className="text-[10px] uppercase tracking-[0.4em] font-sans mb-2"
+                style={{ color: "#c9a96e" }}
+              >
+                {t.codeLabel}
+              </p>
+              <div
+                className="text-5xl font-mono font-bold tracking-widest"
+                data-testid="text-session-code"
+                style={{ color: "hsl(var(--primary))" }}
+              >
                 {session.sessionCode}
               </div>
             </div>
-            <h1 className="text-3xl font-serif text-foreground mb-3">
-              {t.created}, {session.partner1Name}
-            </h1>
-            <p className="text-muted-foreground mb-8 leading-relaxed">{t.shareDesc}</p>
 
+            <h1 className="text-3xl font-serif font-light text-foreground mb-2">
+              {t.created}, <em className="italic">{session.partner1Name}</em>
+            </h1>
+            <p className="text-muted-foreground mb-8 leading-relaxed font-sans text-sm">{t.shareDesc}</p>
+
+            {/* Share link */}
             <div className="space-y-3 mb-8">
-              <div className="flex gap-2">
-                <Input
-                  readOnly
-                  value={shareUrl}
-                  data-testid="input-share-link"
-                  className="text-sm text-muted-foreground bg-muted"
-                />
+              <div
+                className="border border-border p-3 flex items-center gap-2"
+                style={{ borderRadius: "3px", background: "hsl(var(--muted)/0.4)" }}
+              >
+                <span className="text-xs text-muted-foreground font-sans truncate flex-1">{shareUrl}</span>
                 <Button
+                  size="sm"
                   variant="outline"
                   onClick={handleCopy}
                   data-testid="button-copy-link"
-                  className="shrink-0 gap-2"
+                  className="shrink-0 gap-1.5 text-xs uppercase tracking-wider"
                 >
-                  {copied ? <Check size={16} className="text-green-600" /> : <Copy size={16} />}
+                  {copied ? <Check size={12} className="text-green-600" /> : <Copy size={12} />}
                   {copied ? t.copiedBtn : t.copyBtn}
                 </Button>
               </div>
             </div>
 
             <div className="border-t border-border pt-6">
-              <p className="text-sm text-muted-foreground mb-4">{t.readyText}</p>
+              <p className="text-xs text-muted-foreground font-sans mb-4">{t.readyText}</p>
               <Button
                 size="lg"
-                onClick={() => setLocation(`/questionnaire/${session.sessionCode}/partner1?name=${encodeURIComponent(session.partner1Name)}`)}
+                onClick={() =>
+                  setLocation(
+                    `/questionnaire/${session.sessionCode}/partner1?name=${encodeURIComponent(session.partner1Name)}`
+                  )
+                }
                 data-testid="button-start-questionnaire"
-                className="w-full py-6 h-auto text-base gap-2"
+                className="w-full py-6 h-auto text-sm gap-2 tracking-widest uppercase"
               >
                 {t.startBtn}
-                <ArrowRight size={18} />
+                <ArrowRight size={14} />
               </Button>
             </div>
           </motion.div>
