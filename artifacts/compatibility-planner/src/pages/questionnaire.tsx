@@ -1,64 +1,167 @@
 import { useState, useEffect, useCallback } from "react";
 import { useParams, useLocation, useSearch } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowRight, ArrowLeft, Save, CheckCircle2 } from "lucide-react";
+import { ArrowRight, ArrowLeft, Save, CheckCircle2, Edit3, Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { Textarea } from "@/components/ui/textarea";
 import { useListQuestions, useSubmitResponses } from "@workspace/api-client-react";
 import { useToast } from "@/hooks/use-toast";
 import { useI18n } from "@/lib/i18n";
+import type { LocaleData } from "@/locales/types";
 
 type Answer = { questionId: number; value: string };
 
-function answersKey(sessionCode: string, partnerSlot: string) {
-  return `cp_answers_${sessionCode}_${partnerSlot}`;
-}
-function phaseKey(sessionCode: string, partnerSlot: string) {
-  return `cp_phase_${sessionCode}_${partnerSlot}`;
-}
+function answersKey(s: string, p: string) { return `cp_answers_${s}_${p}`; }
+function phaseKey(s: string, p: string) { return `cp_phase_${s}_${p}`; }
+function visitedKey(s: string, p: string) { return `cp_visited_${s}_${p}`; }
 
-function loadAnswers(sessionCode: string, partnerSlot: string): Map<number, string> {
+function loadAnswers(s: string, p: string): Map<number, string> {
   try {
-    const raw = localStorage.getItem(answersKey(sessionCode, partnerSlot));
+    const raw = localStorage.getItem(answersKey(s, p));
     if (!raw) return new Map();
     const obj = JSON.parse(raw) as Record<string, string>;
     return new Map(Object.entries(obj).map(([k, v]) => [parseInt(k, 10), v]));
-  } catch {
-    return new Map();
-  }
+  } catch { return new Map(); }
 }
-
-function loadPhase(sessionCode: string, partnerSlot: string): number {
+function loadPhase(s: string, p: string): number {
+  try { return parseInt(localStorage.getItem(phaseKey(s, p)) ?? "0", 10); } catch { return 0; }
+}
+function loadVisited(s: string, p: string): Set<number> {
   try {
-    const raw = localStorage.getItem(phaseKey(sessionCode, partnerSlot));
-    return raw ? parseInt(raw, 10) : 0;
-  } catch {
-    return 0;
-  }
+    const raw = localStorage.getItem(visitedKey(s, p));
+    return raw ? new Set(JSON.parse(raw) as number[]) : new Set([0]);
+  } catch { return new Set([0]); }
 }
-
-function saveAnswers(sessionCode: string, partnerSlot: string, answers: Map<number, string>) {
+function saveAnswers(s: string, p: string, answers: Map<number, string>) {
   try {
     const obj: Record<string, string> = {};
     answers.forEach((v, k) => { obj[String(k)] = v; });
-    localStorage.setItem(answersKey(sessionCode, partnerSlot), JSON.stringify(obj));
+    localStorage.setItem(answersKey(s, p), JSON.stringify(obj));
   } catch { /* ignore */ }
 }
-
-function savePhase(sessionCode: string, partnerSlot: string, index: number) {
+function savePhase(s: string, p: string, i: number) {
+  try { localStorage.setItem(phaseKey(s, p), String(i)); } catch { /* ignore */ }
+}
+function saveVisited(s: string, p: string, visited: Set<number>) {
+  try { localStorage.setItem(visitedKey(s, p), JSON.stringify([...visited])); } catch { /* ignore */ }
+}
+function clearStorage(s: string, p: string) {
   try {
-    localStorage.setItem(phaseKey(sessionCode, partnerSlot), String(index));
+    [answersKey, phaseKey, visitedKey].forEach(fn => localStorage.removeItem(fn(s, p)));
   } catch { /* ignore */ }
 }
 
-function clearStorage(sessionCode: string, partnerSlot: string) {
-  try {
-    localStorage.removeItem(answersKey(sessionCode, partnerSlot));
-    localStorage.removeItem(phaseKey(sessionCode, partnerSlot));
-  } catch { /* ignore */ }
+function translateAnswer(questionId: number, value: string, questions: LocaleData["questions"]): string {
+  const q = questions[questionId];
+  if (!q || !q.options) return value || "—";
+  const idx = parseInt(value, 10);
+  if (!isNaN(idx) && idx >= 0 && idx < q.options.length) return q.options[idx];
+  return value || "—";
 }
 
+// ─── Review screen ───────────────────────────────────────────────────────────
+type ReviewProps = {
+  categories: string[];
+  allQuestions: Array<{ id: number; category: string; text: string; type: string; options: string | null; weight: number }>;
+  answers: Map<number, string>;
+  onEdit: (catIndex: number) => void;
+  onSubmit: () => void;
+  isSubmitting: boolean;
+  localeData: LocaleData;
+};
+
+function ReviewScreen({ categories, allQuestions, answers, onEdit, onSubmit, isSubmitting, localeData }: ReviewProps) {
+  const t = localeData.ui;
+  return (
+    <div className="min-h-screen bg-background pb-24">
+      <div className="sticky top-0 z-20 bg-background/95 backdrop-blur border-b border-border">
+        <div className="max-w-2xl mx-auto px-6 py-4">
+          <h1 className="text-lg font-serif text-foreground">Review your answers</h1>
+          <p className="text-xs text-muted-foreground">Check everything before submitting</p>
+        </div>
+      </div>
+
+      <div className="max-w-2xl mx-auto px-6 py-8 space-y-8">
+        {categories.map((cat, catIdx) => {
+          const catLabel = t.categories[cat as keyof typeof t.categories] ?? cat;
+          const catQs = allQuestions.filter(q => q.category === cat);
+          const allAnswered = catQs.every(q =>
+            q.type === "choice" ? answers.has(q.id) && answers.get(q.id) !== "" : answers.has(q.id)
+          );
+
+          return (
+            <motion.div
+              key={cat}
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: catIdx * 0.06 }}
+              className="bg-card border border-border rounded-2xl overflow-hidden"
+            >
+              {/* Category header */}
+              <div className="flex items-center justify-between px-5 py-3 border-b border-border bg-accent/20">
+                <div className="flex items-center gap-2">
+                  {allAnswered
+                    ? <CheckCircle2 size={14} className="text-green-500 shrink-0" />
+                    : <div className="w-3.5 h-3.5 rounded-full border-2 border-amber-400 shrink-0" />
+                  }
+                  <span className="text-sm font-semibold text-foreground">{catLabel}</span>
+                </div>
+                <button
+                  onClick={() => onEdit(catIdx)}
+                  className="flex items-center gap-1.5 text-xs text-primary hover:underline"
+                >
+                  <Edit3 size={11} />
+                  Edit
+                </button>
+              </div>
+
+              {/* Answers */}
+              <div className="divide-y divide-border">
+                {catQs.map(q => {
+                  const qText = localeData.questions[q.id]?.text ?? q.text;
+                  const val = answers.get(q.id);
+                  const displayVal = val !== undefined
+                    ? q.type === "choice"
+                      ? translateAnswer(q.id, val, localeData.questions)
+                      : q.type === "scale"
+                        ? `${val} / 5`
+                        : val || <span className="italic text-muted-foreground">No response</span>
+                    : <span className="italic text-amber-600">Not answered</span>;
+
+                  return (
+                    <div key={q.id} className="px-5 py-3">
+                      <p className="text-xs text-muted-foreground mb-1 leading-relaxed">{qText}</p>
+                      <p className="text-sm font-medium text-foreground">{displayVal}</p>
+                    </div>
+                  );
+                })}
+              </div>
+            </motion.div>
+          );
+        })}
+
+        {/* Submit button */}
+        <div className="fixed bottom-0 left-0 right-0 bg-background/95 backdrop-blur border-t border-border p-4">
+          <div className="max-w-2xl mx-auto">
+            <Button
+              size="lg"
+              onClick={onSubmit}
+              disabled={isSubmitting}
+              data-testid="button-confirm-submit"
+              className="w-full py-6 h-auto text-base gap-2"
+            >
+              {isSubmitting ? "Submitting..." : "Confirm & Submit"}
+              <Send size={16} />
+            </Button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Main questionnaire page ──────────────────────────────────────────────────
 export default function QuestionnairePage() {
   const params = useParams<{ sessionCode: string; partnerSlot: string }>();
   const search = useSearch();
@@ -74,41 +177,40 @@ export default function QuestionnairePage() {
 
   const partnerName = nameFromUrl || (params.partnerSlot === "partner1" ? "Partner 1" : "Partner 2");
 
-  // Restore both answers AND phase from localStorage on first load
   const [answers, setAnswers] = useState<Map<number, string>>(() =>
     loadAnswers(params.sessionCode, params.partnerSlot)
   );
   const [categoryIndex, setCategoryIndex] = useState(() =>
     loadPhase(params.sessionCode, params.partnerSlot)
   );
+  const [visitedPhases, setVisitedPhases] = useState<Set<number>>(() =>
+    loadVisited(params.sessionCode, params.partnerSlot)
+  );
   const [direction, setDirection] = useState(1);
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
+  const [showReview, setShowReview] = useState(false);
   const [showRestored, setShowRestored] = useState(() => {
-    // Show restored notice if they had prior progress
     const savedPhase = loadPhase(params.sessionCode, params.partnerSlot);
     const savedAnswers = loadAnswers(params.sessionCode, params.partnerSlot);
     return savedPhase > 0 || savedAnswers.size > 3;
   });
 
-  const categories = allQuestions
-    ? [...new Set(allQuestions.map((q) => q.category))]
-    : [];
-
+  const categories = allQuestions ? [...new Set(allQuestions.map(q => q.category))] : [];
   const currentCategory = categories[categoryIndex] ?? "";
-  const categoryQuestions = allQuestions?.filter((q) => q.category === currentCategory) ?? [];
+  const categoryQuestions = allQuestions?.filter(q => q.category === currentCategory) ?? [];
   const totalCategories = categories.length;
 
-  // Clamp restored categoryIndex once questions load (in case categories changed)
+  // Clamp restored categoryIndex once questions load
   useEffect(() => {
     if (categories.length > 0 && categoryIndex >= categories.length) {
       setCategoryIndex(categories.length - 1);
     }
   }, [categories.length]);
 
-  // Auto-register defaults: scale→"3", open→""
+  // Auto-register defaults for visited phase
   useEffect(() => {
     if (!allQuestions || categoryQuestions.length === 0) return;
-    setAnswers((prev) => {
+    setAnswers(prev => {
       let changed = false;
       const next = new Map(prev);
       for (const q of categoryQuestions) {
@@ -119,67 +221,78 @@ export default function QuestionnairePage() {
       }
       return changed ? next : prev;
     });
+    // Mark this phase as visited
+    setVisitedPhases(prev => {
+      if (prev.has(categoryIndex)) return prev;
+      const next = new Set(prev);
+      next.add(categoryIndex);
+      return next;
+    });
   }, [categoryIndex, allQuestions]);
 
-  // Persist answers to localStorage
+  // Persist answers
   useEffect(() => {
     if (answers.size === 0) return;
     saveAnswers(params.sessionCode, params.partnerSlot, answers);
     setLastSaved(new Date());
   }, [answers]);
 
-  // Persist phase to localStorage
+  // Persist phase
   useEffect(() => {
     savePhase(params.sessionCode, params.partnerSlot, categoryIndex);
   }, [categoryIndex]);
 
+  // Persist visited set
+  useEffect(() => {
+    saveVisited(params.sessionCode, params.partnerSlot, visitedPhases);
+  }, [visitedPhases]);
+
   const setAnswer = useCallback((questionId: number, value: string) => {
-    setAnswers((prev) => new Map(prev).set(questionId, value));
+    setAnswers(prev => new Map(prev).set(questionId, value));
   }, []);
 
-  const navigateTo = (index: number, dir: number) => {
-    setDirection(dir);
+  const navigateTo = (index: number, dir?: number) => {
+    setDirection(dir ?? (index > categoryIndex ? 1 : -1));
     setCategoryIndex(index);
     setShowRestored(false);
+    setShowReview(false);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  // Only choice questions block progression
-  const allCurrentAnswered = categoryQuestions.every((q) => {
-    if (q.type === "choice") return answers.has(q.id) && answers.get(q.id) !== "";
-    return answers.has(q.id);
-  });
-
-  // Check if a given category index has all its questions answered
   const isCategoryComplete = useCallback((catIndex: number): boolean => {
     if (!allQuestions || !categories[catIndex]) return false;
-    const catQuestions = allQuestions.filter((q) => q.category === categories[catIndex]);
-    return catQuestions.every((q) => {
-      if (q.type === "choice") return answers.has(q.id) && answers.get(q.id) !== "";
-      return answers.has(q.id);
-    });
+    const qs = allQuestions.filter(q => q.category === categories[catIndex]);
+    return qs.every(q =>
+      q.type === "choice" ? answers.has(q.id) && answers.get(q.id) !== "" : answers.has(q.id)
+    );
   }, [allQuestions, categories, answers]);
+
+  const allPhasesComplete = categories.length > 0 &&
+    categories.every((_, i) => isCategoryComplete(i));
+
+  const allCurrentAnswered = categoryQuestions.every(q =>
+    q.type === "choice" ? answers.has(q.id) && answers.get(q.id) !== "" : answers.has(q.id)
+  );
 
   const handleNext = () => {
     if (categoryIndex < totalCategories - 1) {
       navigateTo(categoryIndex + 1, 1);
     } else {
-      handleSubmit();
+      // Last phase — go to review
+      setShowReview(true);
+      window.scrollTo({ top: 0, behavior: "smooth" });
     }
   };
 
   const handleBack = () => {
-    if (categoryIndex > 0) {
-      navigateTo(categoryIndex - 1, -1);
-    }
+    if (showReview) { setShowReview(false); return; }
+    if (categoryIndex > 0) navigateTo(categoryIndex - 1, -1);
   };
 
   const handleSubmit = () => {
     const answerArray: Answer[] = Array.from(answers.entries()).map(([questionId, value]) => ({
-      questionId,
-      value,
+      questionId, value,
     }));
-
     submitResponses.mutate(
       {
         sessionCode: params.sessionCode,
@@ -213,55 +326,69 @@ export default function QuestionnairePage() {
     );
   }
 
+  // ── Review mode ──────────────────────────────────────────────────────────
+  if (showReview && allQuestions) {
+    return (
+      <ReviewScreen
+        categories={categories}
+        allQuestions={allQuestions}
+        answers={answers}
+        onEdit={(catIdx) => navigateTo(catIdx)}
+        onSubmit={handleSubmit}
+        isSubmitting={submitResponses.isPending}
+        localeData={data}
+      />
+    );
+  }
+
   const categoryLabel = data.ui.categories[currentCategory as keyof typeof data.ui.categories] ?? currentCategory;
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      {/* Top sticky header with phase nav */}
+      {/* Sticky header with clickable phase segments */}
       <div className="sticky top-0 z-20 bg-background/95 backdrop-blur border-b border-border">
         <div className="max-w-2xl mx-auto w-full px-6 py-3">
-          {/* Phase segments — past ones are clickable */}
+          {/* Phase bar — ALL phases clickable */}
           <div className="flex gap-1.5 mb-2">
             {categories.map((cat, i) => {
               const label = data.ui.categories[cat as keyof typeof data.ui.categories] ?? cat;
-              const isPast = i < categoryIndex;
               const isCurrent = i === categoryIndex;
-              const completed = isCategoryComplete(i);
+              const isVisited = visitedPhases.has(i);
+              const isComplete = isCategoryComplete(i);
 
               return (
                 <button
                   key={i}
-                  onClick={() => isPast && navigateTo(i, -1)}
-                  disabled={!isPast}
+                  onClick={() => navigateTo(i)}
                   title={label}
                   data-testid={`phase-tab-${i}`}
                   aria-label={`Go to ${label}`}
-                  className={`group relative h-2 flex-1 rounded-full transition-all duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
+                  className={`group relative flex-1 rounded-full transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary cursor-pointer ${
                     isCurrent
-                      ? "bg-primary/60"
-                      : isPast
-                      ? "bg-primary cursor-pointer hover:bg-primary/80 hover:h-3"
-                      : "bg-muted cursor-default"
+                      ? "h-2.5 bg-primary/70"
+                      : isComplete
+                      ? "h-2 bg-primary hover:h-2.5 hover:bg-primary/80"
+                      : isVisited
+                      ? "h-2 bg-primary/40 hover:h-2.5 hover:bg-primary/60"
+                      : "h-2 bg-muted hover:h-2.5 hover:bg-muted-foreground/40"
                   }`}
                 >
-                  {/* Tooltip on hover for past/current phases */}
-                  {(isPast || isCurrent) && (
-                    <span className="pointer-events-none absolute -top-8 left-1/2 -translate-x-1/2 whitespace-nowrap bg-foreground text-background text-[10px] font-medium px-2 py-1 rounded-md opacity-0 group-hover:opacity-100 transition-opacity duration-150 z-30">
-                      {completed && isPast && "✓ "}{label}
-                    </span>
-                  )}
+                  {/* Tooltip */}
+                  <span className="pointer-events-none absolute -top-9 left-1/2 -translate-x-1/2 whitespace-nowrap bg-foreground text-background text-[10px] font-medium px-2 py-1 rounded-md opacity-0 group-hover:opacity-100 transition-opacity duration-150 z-30">
+                    {isComplete ? "✓ " : ""}{label}
+                  </span>
                 </button>
               );
             })}
           </div>
 
-          {/* Current phase label + counter */}
+          {/* Phase label + meta */}
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <span className="text-xs font-semibold text-primary uppercase tracking-wider">
                 {categoryLabel}
               </span>
-              {isCategoryComplete(categoryIndex) && categoryIndex < totalCategories - 1 && (
+              {isCategoryComplete(categoryIndex) && !showReview && (
                 <CheckCircle2 size={12} className="text-green-500" />
               )}
             </div>
@@ -294,12 +421,7 @@ export default function QuestionnairePage() {
                 <Save size={14} className="text-primary shrink-0" />
                 <span>{t.restored}</span>
               </div>
-              <button
-                onClick={() => setShowRestored(false)}
-                className="text-muted-foreground hover:text-foreground text-xs shrink-0"
-              >
-                ✕
-              </button>
+              <button onClick={() => setShowRestored(false)} className="text-muted-foreground hover:text-foreground text-xs shrink-0">✕</button>
             </motion.div>
           )}
         </AnimatePresence>
@@ -348,7 +470,7 @@ export default function QuestionnairePage() {
                           className="mb-3"
                         />
                         <div className="flex justify-between px-0.5">
-                          {[1, 2, 3, 4, 5].map((v) => (
+                          {[1, 2, 3, 4, 5].map(v => (
                             <button
                               key={v}
                               onClick={() => setAnswer(q.id, String(v))}
@@ -388,7 +510,7 @@ export default function QuestionnairePage() {
                     {q.type === "open" && (
                       <Textarea
                         value={answers.get(q.id) ?? ""}
-                        onChange={(e) => setAnswer(q.id, e.target.value)}
+                        onChange={e => setAnswer(q.id, e.target.value)}
                         placeholder={t.placeholder}
                         data-testid={`textarea-${q.id}`}
                         className="min-h-[100px] resize-none"
@@ -419,10 +541,8 @@ export default function QuestionnairePage() {
             data-testid="button-next-category"
             className="flex-1 gap-2"
           >
-            {submitResponses.isPending
-              ? data.ui.submitting
-              : categoryIndex === totalCategories - 1
-              ? data.ui.submit
+            {categoryIndex === totalCategories - 1
+              ? (allPhasesComplete ? "Review & Submit" : data.ui.submit)
               : data.ui.next}
             <ArrowRight size={16} />
           </Button>
