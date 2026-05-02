@@ -3,13 +3,11 @@ import { useParams, useLocation } from "wouter";
 import { motion } from "framer-motion";
 import { Check } from "lucide-react";
 import { useGetSessionStatus, getGetSessionStatusQueryKey } from "@workspace/api-client-react";
-import { useQueryClient } from "@tanstack/react-query";
 import { useI18n } from "@/lib/i18n";
 
 export default function WaitingPage() {
   const params = useParams<{ sessionCode: string; partnerSlot: string }>();
   const [, setLocation] = useLocation();
-  const queryClient = useQueryClient();
   const { data } = useI18n();
   const t = data.ui.waiting;
 
@@ -22,9 +20,7 @@ export default function WaitingPage() {
   });
 
   useEffect(() => {
-    if (status?.bothCompleted) {
-      setLocation(`/report/${params.sessionCode}`);
-    }
+    if (status?.bothCompleted) setLocation(`/report/${params.sessionCode}`);
   }, [status?.bothCompleted]);
 
   const mySlot = params.partnerSlot;
@@ -34,90 +30,65 @@ export default function WaitingPage() {
   const partnerDone = mySlot === "partner1" ? status?.partner2Completed : status?.partner1Completed;
 
   return (
-    <div
-      className="min-h-screen flex items-center justify-center p-6"
-      style={{ background: "radial-gradient(ellipse 80% 60% at 50% 30%, hsl(353 55% 90% / 0.55) 0%, transparent 70%)" }}
-    >
-      <div className="max-w-md w-full text-center">
-        <motion.div
-          initial={{ opacity: 0, scale: 0.92 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
-        >
-          {/* Pulsing heart */}
-          <div className="relative mx-auto w-20 h-20 mb-10">
+    <div style={{ minHeight: "100vh", background: "#0f1729", display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
+      <div style={{ maxWidth: 440, width: "100%", textAlign: "center" }}>
+        <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}>
+
+          {/* Pulsing compass dot */}
+          <div style={{ position: "relative", width: 80, height: 80, margin: "0 auto 36px" }}>
             <motion.div
-              animate={{ scale: [1, 1.1, 1] }}
-              transition={{ duration: 2.4, repeat: Infinity, ease: "easeInOut" }}
-              className="w-20 h-20 rounded-full flex items-center justify-center"
-              style={{ background: "hsl(353 55% 92%)" }}
-            >
-              <span
-                className="text-3xl"
-                style={{ color: "hsl(var(--primary))" }}
-              >
-                ♡
-              </span>
-            </motion.div>
+              animate={{ scale: [1, 1.15, 1], opacity: [0.4, 0.15, 0.4] }}
+              transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
+              style={{ position: "absolute", inset: -12, borderRadius: "50%", background: "rgba(126,170,146,0.15)" }}
+            />
+            <div style={{ width: 80, height: 80, borderRadius: "50%", background: "#1a2540", border: "1px solid rgba(126,170,146,0.25)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <span style={{ fontSize: "2rem" }}>⊕</span>
+            </div>
           </div>
 
-          <p
-            className="text-[11px] uppercase tracking-[0.4em] font-sans mb-3"
-            style={{ color: "#c9a96e" }}
-          >
-            {status?.bothCompleted ? "Complete" : "In Progress"}
+          <p style={{ fontSize: "0.68rem", letterSpacing: "0.22em", textTransform: "uppercase", color: "#7eaa92", fontWeight: 600, marginBottom: 10 }}>
+            {status?.bothCompleted ? "Both Complete" : "Waiting"}
           </p>
-
-          <h1 className="text-4xl font-serif font-light text-foreground mb-3">
+          <h1 style={{ fontFamily: "'DM Serif Display', serif", fontSize: "clamp(28px,5vw,38px)", color: "#f5f0e8", lineHeight: 1.15, marginBottom: 10 }}>
             {status?.bothCompleted ? t.titleDone : t.title}
           </h1>
-          <p className="text-muted-foreground mb-12 leading-relaxed font-sans text-sm">
+          <p style={{ color: "rgba(245,240,232,0.5)", marginBottom: 44, lineHeight: 1.75, fontSize: "0.9rem" }}>
             {status?.bothCompleted ? t.descDone : t.desc}
           </p>
 
           {/* Status cards */}
-          <div className="grid grid-cols-2 gap-4 mb-10">
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginBottom: 36 }}>
             {[
               { name: myName ?? "You", done: myDone, testId: "status-partner1" },
               { name: partnerName ?? "Partner", done: partnerDone, testId: "status-partner2" },
             ].map(({ name, done, testId }) => (
-              <div
-                key={testId}
-                className="border p-5 transition-all duration-500"
-                style={{
-                  borderRadius: "3px",
-                  borderColor: done ? "hsl(var(--primary)/0.35)" : "hsl(var(--border))",
-                  background: done ? "hsl(353 55% 96%)" : "hsl(var(--card))",
-                  borderLeft: `3px solid ${done ? "#c9a96e" : "hsl(var(--border))"}`,
-                }}
-                data-testid={testId}
-              >
-                <div className="flex items-center justify-center mb-3">
+              <div key={testId} data-testid={testId} style={{
+                background: done ? "rgba(126,170,146,0.1)" : "#1a2540",
+                border: `1px solid ${done ? "rgba(126,170,146,0.3)" : "rgba(245,240,232,0.08)"}`,
+                borderRadius: 14, padding: "20px 16px", transition: "all 0.5s",
+              }}>
+                <div style={{ display: "flex", justifyContent: "center", marginBottom: 12 }}>
                   {done ? (
-                    <div
-                      className="w-8 h-8 rounded-full flex items-center justify-center"
-                      style={{ background: "#c9a96e" }}
-                    >
-                      <Check size={14} color="white" />
+                    <div style={{ width: 32, height: 32, borderRadius: "50%", background: "#7eaa92", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                      <Check size={15} color="#0f1729" />
                     </div>
                   ) : (
-                    <div
-                      className="w-8 h-8 rounded-full border-2 border-t-transparent animate-spin"
-                      style={{ borderColor: "hsl(var(--primary))", borderTopColor: "transparent" }}
-                    />
+                    <div style={{ width: 32, height: 32, borderRadius: "50%", border: "2px solid rgba(126,170,146,0.4)", borderTopColor: "#7eaa92", animation: "spin 1s linear infinite" }} />
                   )}
                 </div>
-                <div className="text-sm font-serif text-foreground">{name}</div>
-                <div className="text-xs text-muted-foreground font-sans mt-0.5">
+                <div style={{ fontSize: "0.9rem", color: "#f5f0e8", fontWeight: 500, marginBottom: 3 }}>{name}</div>
+                <div style={{ fontSize: "0.75rem", color: "rgba(245,240,232,0.4)", letterSpacing: "0.05em" }}>
                   {done ? t.completed : t.inProgress}
                 </div>
               </div>
             ))}
           </div>
 
-          <p className="text-xs text-muted-foreground font-sans">{t.pollNote}</p>
+          <p style={{ fontSize: "0.75rem", color: "rgba(245,240,232,0.3)" }}>{t.pollNote}</p>
         </motion.div>
       </div>
+
+      <style>{`@keyframes spin { from { transform:rotate(0deg) } to { transform:rotate(360deg) } }`}</style>
     </div>
   );
 }

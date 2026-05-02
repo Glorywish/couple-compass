@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@300;400;500;600&display=swap');
 @import "tailwindcss";
 @import "tw-animate-css";
 @plugin "@tailwindcss/typography";
@@ -50,127 +51,110 @@
 }
 
 :root {
-  /* Rose, cream & gold — romantic elegance */
-  --background: 30 60% 97%;        /* #fdf6f0 cream */
-  --foreground: 327 12% 20%;       /* #3d2b35 deep plum */
+  /* ── Midnight Navy + Sage + Warm Ivory ── */
+  --navy:        #0f1729;
+  --navy-mid:    #1a2540;
+  --navy-light:  #232f4a;
+  --sage:        #7eaa92;
+  --sage-light:  #a8c5b3;
+  --sage-pale:   #e8f2ed;
+  --ivory:       #f5f0e8;
+  --ivory-warm:  #ede7da;
+  --gold:        #d4a853;
+  --gold-light:  #f0cd8a;
+  --text-dark:   #1a2540;
+  --text-body:   #3d4e6b;
+  --text-muted:  #7a8ba8;
+
+  --background: 220 15% 97%;       /* near-white ivory */
+  --foreground: 222 40% 18%;       /* navy-dark */
 
   --card: 0 0% 100%;
-  --card-foreground: 327 12% 20%;
-  --card-border: 351 10% 89%;
+  --card-foreground: 222 40% 18%;
+  --card-border: 220 20% 90%;
 
   --popover: 0 0% 100%;
-  --popover-foreground: 327 12% 20%;
-  --popover-border: 351 10% 89%;
+  --popover-foreground: 222 40% 18%;
+  --popover-border: 220 20% 90%;
 
-  --primary: 353 42% 64%;          /* #c97b84 rose */
-  --primary-foreground: 0 0% 100%;
+  --primary: 152 22% 58%;          /* sage */
+  --primary-foreground: 222 40% 10%;
 
-  --secondary: 351 10% 87%;        /* #e8d5d8 mist */
-  --secondary-foreground: 327 12% 20%;
+  --secondary: 220 20% 92%;
+  --secondary-foreground: 222 40% 18%;
 
-  --muted: 351 10% 92%;
-  --muted-foreground: 327 8% 50%;
+  --muted: 220 15% 93%;
+  --muted-foreground: 220 15% 52%;
 
-  --accent: 353 55% 92%;           /* #f5dde0 light blush */
-  --accent-foreground: 353 42% 55%;
+  --accent: 152 22% 94%;           /* pale sage */
+  --accent-foreground: 152 22% 35%;
 
   --destructive: 0 60% 50%;
   --destructive-foreground: 0 0% 100%;
 
-  --border: 351 10% 87%;
-  --input: 351 10% 87%;
-  --ring: 353 42% 64%;
+  --border: 220 20% 88%;
+  --input: 220 20% 88%;
+  --ring: 152 22% 58%;
 
-  --app-font-sans: 'Josefin Sans', sans-serif;
-  --app-font-serif: 'Cormorant Garamond', serif;
+  --app-font-sans: 'Inter', sans-serif;
+  --app-font-serif: 'DM Serif Display', serif;
   --app-font-mono: Menlo, monospace;
 
-  --radius: 0.5rem;
-
-  --gold: #c9a96e;
-
-  --button-outline: rgba(0,0,0, .10);
-  --badge-outline: rgba(0,0,0, .05);
+  --radius: 0.75rem;
+  --button-outline: rgba(0,0,0,.10);
+  --badge-outline: rgba(0,0,0,.05);
   --opaque-button-border-intensity: -8;
-  --elevate-1: rgba(0,0,0, .03);
-  --elevate-2: rgba(0,0,0, .08);
-}
-
-.dark {
-  --background: 327 12% 10%;
-  --foreground: 30 30% 90%;
-
-  --card: 327 10% 14%;
-  --card-foreground: 30 30% 90%;
-  --card-border: 327 10% 22%;
-
-  --popover: 327 10% 14%;
-  --popover-foreground: 30 30% 90%;
-  --popover-border: 327 10% 22%;
-
-  --primary: 353 40% 70%;
-  --primary-foreground: 327 12% 10%;
-
-  --secondary: 327 10% 20%;
-  --secondary-foreground: 30 30% 90%;
-
-  --muted: 327 10% 17%;
-  --muted-foreground: 30 15% 65%;
-
-  --accent: 353 25% 22%;
-  --accent-foreground: 353 40% 70%;
-
-  --destructive: 0 50% 45%;
-  --destructive-foreground: 30 30% 90%;
-
-  --border: 327 10% 22%;
-  --input: 327 10% 22%;
-  --ring: 353 40% 70%;
-
-  --button-outline: rgba(255,255,255, .10);
-  --badge-outline: rgba(255,255,255, .05);
-  --opaque-button-border-intensity: 9;
-  --elevate-1: rgba(255,255,255, .04);
-  --elevate-2: rgba(255,255,255, .09);
+  --elevate-1: rgba(0,0,0,.03);
+  --elevate-2: rgba(0,0,0,.08);
 }
 
 @layer base {
-  * {
-    @apply border-border;
-  }
+  * { @apply border-border; }
   body {
     @apply font-sans antialiased bg-background text-foreground;
-    font-weight: 300;
-    letter-spacing: 0.01em;
+    font-weight: 400;
   }
-  h1, h2, h3, h4, h5, h6 {
-    @apply font-serif font-light tracking-tight;
-  }
+  h1, h2, h3 { @apply font-serif; }
+}
+
+/* ── Shared helpers ─────────────────────────────────────── */
+.navy-card {
+  background: var(--navy-mid);
+  border: 1px solid rgba(126,170,146,0.18);
+  border-radius: 16px;
+  color: var(--ivory);
+}
+.sage-pill {
+  background: rgba(126,170,146,0.15);
+  border: 1px solid rgba(126,170,146,0.30);
+  color: var(--sage-light);
+  border-radius: 999px;
+  font-size: 0.7rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 3px 12px;
+  font-family: 'Inter', sans-serif;
+  font-weight: 500;
 }
 
 /* ── Animations ─────────────────────────────────────────── */
-@layer utilities {
-  .fade-in-up {
-    animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-  }
-
-  @keyframes fadeInUp {
-    from { opacity: 0; transform: translateY(20px); }
-    to   { opacity: 1; transform: translateY(0); }
-  }
-
-  @keyframes twinkle {
-    0%, 100% { opacity: 0; }
-    50%       { opacity: 0.55; }
-  }
-
-  @keyframes float {
-    0%, 100% { transform: translateY(0); }
-    50%       { transform: translateY(-10px); }
-  }
-
-  @keyframes slowpulse {
-    0%, 100% { opacity: 1; }
-    50%       { opacity: 0.35; }
-  }
+@keyframes fadeUp {
+  from { opacity:0; transform:translateY(18px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+@keyframes pulse-soft {
+  0%,100% { opacity:1; }
+  50%      { opacity:0.45; }
+}
+@keyframes spin-slow {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+@keyframes twinkle {
+  0%,100% { opacity:0; transform:scale(0.8); }
+  50%      { opacity:1; transform:scale(1); }
+}
+@keyframes float {
+  0%,100% { transform:translateY(0); }
+  50%      { transform:translateY(-8px); }
 }

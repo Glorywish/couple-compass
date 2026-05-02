@@ -1,8 +1,7 @@
 import { useState } from "react";
 import { useParams, useLocation } from "wouter";
 import { motion } from "framer-motion";
-import { ArrowLeft, TrendingUp, TrendingDown, MessageCircle, Copy, Check, Share2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { ArrowLeft, Copy, Check, Share2, TrendingUp, TrendingDown, MessageCircle } from "lucide-react";
 import { useGetReport, getGetReportQueryKey } from "@workspace/api-client-react";
 import { useToast } from "@/hooks/use-toast";
 import { useI18n } from "@/lib/i18n";
@@ -17,35 +16,31 @@ function translateAnswer(questionId: number, value: string, questions: LocaleDat
 }
 
 function ScoreRing({ score }: { score: number }) {
-  const radius = 54;
-  const circumference = 2 * Math.PI * radius;
-  const offset = circumference - (score / 100) * circumference;
-  const ringColor =
-    score >= 75 ? "#c9a96e" : score >= 50 ? "hsl(353 42% 64%)" : "#d44d62";
-
+  const radius = 56;
+  const circ = 2 * Math.PI * radius;
+  const offset = circ - (score / 100) * circ;
+  const color = score >= 75 ? "#7eaa92" : score >= 50 ? "#d4a853" : "#c05f6e";
   return (
-    <div className="relative inline-flex items-center justify-center">
-      <svg width="140" height="140" className="-rotate-90">
-        <circle cx="70" cy="70" r={radius} fill="none" stroke="hsl(var(--muted))" strokeWidth="6" />
-        <motion.circle
-          cx="70" cy="70" r={radius} fill="none" stroke={ringColor} strokeWidth="6" strokeLinecap="round"
-          strokeDasharray={circumference}
-          initial={{ strokeDashoffset: circumference }}
+    <div style={{ position: "relative", display: "inline-flex", alignItems: "center", justifyContent: "center" }}>
+      <svg width={148} height={148} style={{ transform: "rotate(-90deg)" }}>
+        <circle cx={74} cy={74} r={radius} fill="none" stroke="rgba(245,240,232,0.08)" strokeWidth={6} />
+        <motion.circle cx={74} cy={74} r={radius} fill="none" stroke={color} strokeWidth={6} strokeLinecap="round"
+          strokeDasharray={circ}
+          initial={{ strokeDashoffset: circ }}
           animate={{ strokeDashoffset: offset }}
           transition={{ duration: 1.8, ease: "easeOut", delay: 0.4 }}
         />
       </svg>
-      <div className="absolute text-center">
+      <div style={{ position: "absolute", textAlign: "center" }}>
         <motion.div
-          initial={{ opacity: 0, scale: 0.5 }}
-          animate={{ opacity: 1, scale: 1 }}
+          initial={{ opacity: 0, scale: 0.5 }} animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.6, duration: 0.5 }}
-          className="text-4xl font-serif font-light text-foreground"
           data-testid="text-overall-score"
+          style={{ fontFamily: "'DM Serif Display', serif", fontSize: "2.6rem", color: "#f5f0e8", lineHeight: 1 }}
         >
           {score}
         </motion.div>
-        <div className="text-xs text-muted-foreground font-sans">/ 100</div>
+        <div style={{ fontSize: "0.72rem", color: "rgba(245,240,232,0.4)", letterSpacing: "0.1em" }}>/ 100</div>
       </div>
     </div>
   );
@@ -60,10 +55,7 @@ export default function ReportPage() {
   const [copied, setCopied] = useState(false);
 
   const { data: report, isLoading, isError } = useGetReport(params.sessionCode, {
-    query: {
-      enabled: !!params.sessionCode,
-      queryKey: getGetReportQueryKey(params.sessionCode),
-    },
+    query: { enabled: !!params.sessionCode, queryKey: getGetReportQueryKey(params.sessionCode) },
   });
 
   const reportUrl = `${window.location.origin}${import.meta.env.BASE_URL}report/${params.sessionCode}`;
@@ -72,241 +64,159 @@ export default function ReportPage() {
     navigator.clipboard.writeText(reportUrl);
     setCopied(true);
     setTimeout(() => setCopied(false), 2500);
-    toast({ title: "Report link copied", description: "Anyone with this link can view your report" });
+    toast({ title: "Report link copied!", description: "Anyone with this link can view your report" });
   };
 
   const handleShare = async () => {
-    if (typeof navigator !== "undefined" && navigator.share) {
-      try {
-        await navigator.share({ title: "Our Compatibility Report — Couple Compass", url: reportUrl });
-      } catch { /* dismissed */ }
-    } else {
-      handleCopy();
-    }
+    if (navigator.share) {
+      try { await navigator.share({ title: "Our Compatibility Report — Couple Compass", url: reportUrl }); }
+      catch { /* dismissed */ }
+    } else { handleCopy(); }
   };
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-center">
-          <div
-            className="w-8 h-8 rounded-full border-2 border-t-transparent animate-spin mx-auto mb-4"
-            style={{ borderColor: "hsl(var(--primary))", borderTopColor: "transparent" }}
-          />
-          <p className="text-muted-foreground font-sans text-sm">{t.loading}</p>
-        </div>
+  if (isLoading) return (
+    <div style={{ minHeight: "100vh", background: "#0f1729", display: "flex", alignItems: "center", justifyContent: "center" }}>
+      <div style={{ textAlign: "center" }}>
+        <div style={{ width: 32, height: 32, borderRadius: "50%", border: "2px solid rgba(126,170,146,0.4)", borderTopColor: "#7eaa92", animation: "spin 1s linear infinite", margin: "0 auto 16px" }} />
+        <p style={{ color: "rgba(245,240,232,0.5)", fontSize: "0.9rem" }}>{t.loading}</p>
       </div>
-    );
-  }
+      <style>{`@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}`}</style>
+    </div>
+  );
 
-  if (isError || !report) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center p-6">
-        <div className="text-center max-w-sm">
-          <div className="text-4xl mb-6 select-none" style={{ color: "#c9a96e" }}>✦</div>
-          <h2 className="text-3xl font-serif font-light text-foreground mb-3">{t.notReady}</h2>
-          <p className="text-muted-foreground font-sans text-sm mb-6">{t.notReadyDesc}</p>
-          <Button onClick={() => setLocation("/")} variant="outline" className="text-xs uppercase tracking-widest">
-            {t.backHome}
-          </Button>
-        </div>
+  if (isError || !report) return (
+    <div style={{ minHeight: "100vh", background: "#0f1729", display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
+      <div style={{ textAlign: "center", maxWidth: 380 }}>
+        <div style={{ fontSize: "3rem", marginBottom: 20, opacity: 0.4 }}>⊕</div>
+        <h2 style={{ fontFamily: "'DM Serif Display', serif", fontSize: "2rem", color: "#f5f0e8", marginBottom: 10 }}>{t.notReady}</h2>
+        <p style={{ color: "rgba(245,240,232,0.45)", marginBottom: 28, fontSize: "0.9rem", lineHeight: 1.75 }}>{t.notReadyDesc}</p>
+        <button onClick={() => setLocation("/")}
+          style={{ background: "rgba(126,170,146,0.15)", border: "1px solid rgba(126,170,146,0.3)", borderRadius: 10, padding: "10px 24px", color: "#a8c5b3", fontSize: "0.82rem", fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", cursor: "pointer", fontFamily: "Inter,sans-serif" }}>
+          {t.backHome}
+        </button>
       </div>
-    );
-  }
+    </div>
+  );
 
-  const scoreLabel =
-    report.overallScore >= 80 ? t.scoreLabels.high :
-    report.overallScore >= 60 ? t.scoreLabels.good :
-    report.overallScore >= 40 ? t.scoreLabels.some : t.scoreLabels.discuss;
+  const scoreLabel = report.overallScore >= 80 ? t.scoreLabels.high : report.overallScore >= 60 ? t.scoreLabels.good : report.overallScore >= 40 ? t.scoreLabels.some : t.scoreLabels.discuss;
+  const scoreColor = report.overallScore >= 75 ? "#7eaa92" : report.overallScore >= 50 ? "#d4a853" : "#c05f6e";
 
-  const alignmentColor: Record<string, { bar: string; badge: string }> = {
-    high:   { bar: "#c9a96e",           badge: "bg-amber-50 text-amber-800 border-amber-200" },
-    medium: { bar: "hsl(353 42% 64%)", badge: "bg-rose-50 text-rose-800 border-rose-200" },
-    low:    { bar: "#d44d62",           badge: "bg-red-50 text-red-800 border-red-200" },
+  const alignColors: Record<string, { bar: string; bg: string; border: string; text: string }> = {
+    high:   { bar: "#7eaa92", bg: "rgba(126,170,146,0.08)", border: "rgba(126,170,146,0.25)", text: "#a8c5b3" },
+    medium: { bar: "#d4a853", bg: "rgba(212,168,83,0.08)",  border: "rgba(212,168,83,0.25)",  text: "#e8c97a" },
+    low:    { bar: "#c05f6e", bg: "rgba(192,95,110,0.08)",  border: "rgba(192,95,110,0.25)",  text: "#e08a96" },
   };
 
   return (
-    <div className="min-h-screen bg-background pb-16">
-      {/* ── Hero header ───────────────────────────────────── */}
-      <div
-        style={{
-          background:
-            "radial-gradient(ellipse 80% 60% at 50% 0%, hsl(353 55% 90% / 0.6) 0%, transparent 72%)",
-          borderBottom: "1px solid hsl(var(--border))",
-        }}
-      >
-        <div className="max-w-3xl mx-auto px-6 py-10">
-          <button
-            onClick={() => setLocation("/")}
-            className="flex items-center gap-2 text-muted-foreground hover:text-foreground text-xs uppercase tracking-widest font-sans mb-10 transition-colors"
-            data-testid="button-back-home"
-          >
-            <ArrowLeft size={14} />
-            {t.backHome}
+    <div style={{ minHeight: "100vh", background: "#0f1729", color: "#f5f0e8", paddingBottom: 80 }}>
+      <style>{`@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}`}</style>
+
+      {/* ── Hero ── */}
+      <div style={{ background: "radial-gradient(ellipse 80% 60% at 50% 0%, rgba(26,37,64,0.9) 0%, transparent 70%)", borderBottom: "1px solid rgba(245,240,232,0.07)", paddingBottom: 48 }}>
+        <div style={{ maxWidth: 720, margin: "0 auto", padding: "44px 24px 0" }}>
+          <button onClick={() => setLocation("/")} data-testid="button-back-home"
+            style={{ background: "transparent", color: "rgba(245,240,232,0.45)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: 8, fontSize: "0.78rem", letterSpacing: "0.08em", textTransform: "uppercase", fontFamily: "Inter,sans-serif", fontWeight: 500, padding: 0, marginBottom: 44 }}>
+            <ArrowLeft size={13} /> {t.backHome}
           </button>
 
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7 }}
-            className="text-center"
-          >
-            <p
-              className="text-[11px] uppercase tracking-[0.45em] font-sans mb-4"
-              style={{ color: "#c9a96e" }}
-            >
-              {report.partner1Name} ✦ {report.partner2Name}
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7 }} style={{ textAlign: "center" }}>
+            <p style={{ fontSize: "0.68rem", letterSpacing: "0.25em", textTransform: "uppercase", color: "#7eaa92", fontWeight: 600, marginBottom: 10 }}>
+              {report.partner1Name} · {report.partner2Name}
             </p>
-            <h1 className="text-5xl font-serif font-light text-foreground mb-2">{t.title}</h1>
-            <p className="text-muted-foreground font-sans text-sm mb-12">{t.basedOn}</p>
+            <h1 style={{ fontFamily: "'DM Serif Display', serif", fontSize: "clamp(36px,6vw,56px)", color: "#f5f0e8", lineHeight: 1.05, marginBottom: 8 }}>
+              {t.title}
+            </h1>
+            <p style={{ color: "rgba(245,240,232,0.4)", fontSize: "0.88rem", marginBottom: 44 }}>{t.basedOn}</p>
 
-            <div className="flex flex-col items-center">
-              <ScoreRing score={report.overallScore} />
-              <div className="mt-5">
-                <div className="text-xl font-serif text-foreground italic">{scoreLabel}</div>
-                <div className="text-xs text-muted-foreground font-sans mt-1">{t.scoreLabel}</div>
-              </div>
+            <ScoreRing score={report.overallScore} />
+            <div style={{ marginTop: 20 }}>
+              <div style={{ fontFamily: "'DM Serif Display', serif", fontSize: "1.35rem", color: scoreColor, fontStyle: "italic" }}>{scoreLabel}</div>
+              <div style={{ fontSize: "0.75rem", color: "rgba(245,240,232,0.35)", letterSpacing: "0.08em", marginTop: 4 }}>{t.scoreLabel}</div>
             </div>
 
             {/* Summary */}
-            <div
-              className="mt-10 bg-card border border-border p-6 text-left max-w-xl mx-auto"
-              style={{ borderRadius: "3px", borderLeft: "3px solid #c9a96e" }}
-            >
-              <p className="text-foreground leading-loose font-sans text-sm" data-testid="text-summary">
-                {report.summary}
-              </p>
+            <div style={{ marginTop: 36, background: "#1a2540", border: "1px solid rgba(126,170,146,0.18)", borderRadius: 16, padding: "24px 28px", textAlign: "left", maxWidth: 560, marginLeft: "auto", marginRight: "auto" }}>
+              <p data-testid="text-summary" style={{ color: "rgba(245,240,232,0.75)", lineHeight: 1.85, fontSize: "0.95rem" }}>{report.summary}</p>
             </div>
 
-            {/* Share link card */}
-            <div
-              className="mt-8 max-w-xl mx-auto border border-border p-4 flex flex-col sm:flex-row items-start sm:items-center gap-3"
-              style={{ borderRadius: "3px", background: "hsl(var(--muted)/0.4)" }}
-            >
-              <div className="flex-1 min-w-0">
-                <p
-                  className="text-[10px] uppercase tracking-[0.3em] font-sans mb-1"
-                  style={{ color: "#c9a96e" }}
-                >
-                  Shareable Report Link
-                </p>
-                <p className="text-xs text-muted-foreground font-sans truncate">{reportUrl}</p>
+            {/* Share card */}
+            <div style={{ marginTop: 20, background: "rgba(245,240,232,0.03)", border: "1px solid rgba(245,240,232,0.08)", borderRadius: 12, padding: "14px 18px", display: "flex", flexWrap: "wrap", gap: 12, alignItems: "center", maxWidth: 560, marginLeft: "auto", marginRight: "auto" }}>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <p style={{ fontSize: "0.6rem", letterSpacing: "0.2em", textTransform: "uppercase", color: "#7eaa92", fontWeight: 600, marginBottom: 4 }}>Shareable Link</p>
+                <p style={{ fontSize: "0.72rem", color: "rgba(245,240,232,0.35)", fontFamily: "monospace", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{reportUrl}</p>
               </div>
-              <div className="flex gap-2 shrink-0">
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={handleCopy}
-                  data-testid="button-copy-report-link"
-                  className="gap-1.5 text-xs uppercase tracking-wider"
-                >
-                  {copied ? <Check size={12} className="text-green-600" /> : <Copy size={12} />}
-                  {copied ? "Copied" : "Copy"}
-                </Button>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={handleShare}
-                  data-testid="button-share-report"
-                  className="gap-1.5 text-xs uppercase tracking-wider"
-                >
-                  <Share2 size={12} />
-                  {t.shareBtn}
-                </Button>
+              <div style={{ display: "flex", gap: 8, flexShrink: 0 }}>
+                <button onClick={handleCopy} data-testid="button-copy-report-link"
+                  style={{ background: "rgba(126,170,146,0.12)", border: "1px solid rgba(126,170,146,0.25)", borderRadius: 8, padding: "7px 14px", color: "#a8c5b3", fontSize: "0.72rem", fontWeight: 600, letterSpacing: "0.06em", textTransform: "uppercase", cursor: "pointer", fontFamily: "Inter,sans-serif", display: "flex", alignItems: "center", gap: 5 }}>
+                  {copied ? <Check size={11} /> : <Copy size={11} />} {copied ? "Copied" : "Copy"}
+                </button>
+                <button onClick={handleShare} data-testid="button-share-report"
+                  style={{ background: "rgba(126,170,146,0.12)", border: "1px solid rgba(126,170,146,0.25)", borderRadius: 8, padding: "7px 14px", color: "#a8c5b3", fontSize: "0.72rem", fontWeight: 600, letterSpacing: "0.06em", textTransform: "uppercase", cursor: "pointer", fontFamily: "Inter,sans-serif", display: "flex", alignItems: "center", gap: 5 }}>
+                  <Share2 size={11} /> {t.shareBtn}
+                </button>
               </div>
             </div>
           </motion.div>
         </div>
       </div>
 
-      <div className="max-w-3xl mx-auto px-6 py-10 space-y-12">
-        {/* ── Category scores ───────────────────────────────── */}
-        <motion.section
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2, duration: 0.5 }}
-        >
-          <p className="text-[11px] uppercase tracking-[0.4em] font-sans mb-2" style={{ color: "#c9a96e" }}>
-            By Category
-          </p>
-          <h2 className="text-3xl font-serif font-light text-foreground mb-8">{t.scoresTitle}</h2>
-          <div className="grid sm:grid-cols-2 gap-3">
+      {/* ── Body sections ── */}
+      <div style={{ maxWidth: 720, margin: "0 auto", padding: "52px 24px", display: "flex", flexDirection: "column", gap: 52 }}>
+
+        {/* Category scores */}
+        <motion.section initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2, duration: 0.5 }}>
+          <p style={{ fontSize: "0.62rem", letterSpacing: "0.22em", textTransform: "uppercase", color: "#7eaa92", fontWeight: 600, marginBottom: 6 }}>By Category</p>
+          <h2 style={{ fontFamily: "'DM Serif Display', serif", fontSize: "clamp(22px,4vw,30px)", color: "#f5f0e8", marginBottom: 24 }}>{t.scoresTitle}</h2>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(280px,1fr))", gap: 12 }}>
             {report.categoryScores.map((cat, i) => {
-              const catLabel = data.ui.categories[cat.category as keyof typeof data.ui.categories] ?? cat.label;
-              const colors = alignmentColor[cat.alignment] ?? alignmentColor.medium;
+              const label = data.ui.categories[cat.category as keyof typeof data.ui.categories] ?? cat.label;
+              const c = alignColors[cat.alignment] ?? alignColors.medium;
               return (
-                <motion.div
-                  key={cat.category}
-                  initial={{ opacity: 0, x: -16 }}
-                  animate={{ opacity: 1, x: 0 }}
+                <motion.div key={cat.category}
+                  initial={{ opacity: 0, x: -14 }} animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.3 + i * 0.05 }}
-                  className="bg-card border border-border p-4 transition-all hover:shadow-sm"
-                  style={{ borderRadius: "3px" }}
                   data-testid={`category-score-${cat.category}`}
-                >
-                  <div className="flex items-center justify-between mb-3">
-                    <span className="text-sm font-serif text-foreground">{catLabel}</span>
-                    <span className={`text-[10px] px-2 py-0.5 rounded-full border font-sans uppercase tracking-wider ${colors.badge}`}>
+                  style={{ background: "#1a2540", border: "1px solid rgba(245,240,232,0.07)", borderRadius: 12, padding: "16px 18px" }}>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+                    <span style={{ fontSize: "0.88rem", color: "#f5f0e8", fontWeight: 500 }}>{label}</span>
+                    <span style={{ fontSize: "0.65rem", padding: "3px 10px", borderRadius: 999, background: c.bg, border: `1px solid ${c.border}`, color: c.text, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase" }}>
                       {t.alignmentLabels[cat.alignment as keyof typeof t.alignmentLabels]}
                     </span>
                   </div>
-                  <div className="w-full bg-muted rounded-full h-1.5">
-                    <motion.div
-                      className="h-1.5 rounded-full"
-                      style={{ background: colors.bar }}
-                      initial={{ width: 0 }}
-                      animate={{ width: `${cat.score}%` }}
+                  <div style={{ height: 4, borderRadius: 999, background: "rgba(245,240,232,0.06)", overflow: "hidden" }}>
+                    <motion.div style={{ height: "100%", borderRadius: 999, background: c.bar }}
+                      initial={{ width: 0 }} animate={{ width: `${cat.score}%` }}
                       transition={{ delay: 0.4 + i * 0.05, duration: 0.9, ease: "easeOut" }}
                     />
                   </div>
-                  <div className="text-right text-xs text-muted-foreground font-sans mt-1.5">{cat.score}%</div>
+                  <div style={{ textAlign: "right", fontSize: "0.72rem", color: "rgba(245,240,232,0.35)", marginTop: 6 }}>{cat.score}%</div>
                 </motion.div>
               );
             })}
           </div>
         </motion.section>
 
-        {/* ── Aligned areas ─────────────────────────────────── */}
+        {/* Aligned */}
         {report.alignedAreas.length > 0 && (
-          <motion.section
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4, duration: 0.5 }}
-          >
-            <div className="flex items-center gap-3 mb-2">
-              <TrendingUp size={18} style={{ color: "#c9a96e" }} />
-              <p className="text-[11px] uppercase tracking-[0.4em] font-sans" style={{ color: "#c9a96e" }}>
-                Your Strengths
-              </p>
+          <motion.section initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4, duration: 0.5 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 6 }}>
+              <TrendingUp size={16} color="#7eaa92" />
+              <p style={{ fontSize: "0.62rem", letterSpacing: "0.22em", textTransform: "uppercase", color: "#7eaa92", fontWeight: 600 }}>Strengths</p>
             </div>
-            <h2 className="text-3xl font-serif font-light text-foreground mb-6">{t.alignedTitle}</h2>
-            <div className="space-y-3">
+            <h2 style={{ fontFamily: "'DM Serif Display', serif", fontSize: "clamp(22px,4vw,30px)", color: "#f5f0e8", marginBottom: 20 }}>{t.alignedTitle}</h2>
+            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
               {report.alignedAreas.map((item, i) => (
-                <motion.div
-                  key={item.questionId}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
+                <motion.div key={item.questionId}
+                  initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.5 + i * 0.06 }}
-                  className="border border-border p-4"
-                  style={{
-                    borderRadius: "3px",
-                    background: "hsl(38 50% 61% / 0.06)",
-                    borderLeft: "3px solid #c9a96e",
-                  }}
                   data-testid={`aligned-item-${item.questionId}`}
-                >
-                  <p className="text-sm font-serif text-foreground mb-3">
+                  style={{ background: "rgba(126,170,146,0.06)", border: "1px solid rgba(126,170,146,0.18)", borderRadius: 12, padding: "16px 18px" }}>
+                  <p style={{ fontSize: "0.9rem", color: "#f5f0e8", marginBottom: 10, lineHeight: 1.65, fontWeight: 500 }}>
                     {data.questions[item.questionId]?.text ?? item.questionText}
                   </p>
-                  <div className="flex flex-wrap gap-4 text-xs text-muted-foreground font-sans">
-                    <span>
-                      <span className="font-medium text-foreground">{report.partner1Name}:</span>{" "}
-                      {translateAnswer(item.questionId, item.partner1Answer, data.questions)}
-                    </span>
-                    <span>
-                      <span className="font-medium text-foreground">{report.partner2Name}:</span>{" "}
-                      {translateAnswer(item.questionId, item.partner2Answer, data.questions)}
-                    </span>
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: 16, fontSize: "0.8rem", color: "rgba(245,240,232,0.5)" }}>
+                    <span><span style={{ color: "#f5f0e8", fontWeight: 500 }}>{report.partner1Name}:</span> {translateAnswer(item.questionId, item.partner1Answer, data.questions)}</span>
+                    <span><span style={{ color: "#f5f0e8", fontWeight: 500 }}>{report.partner2Name}:</span> {translateAnswer(item.questionId, item.partner2Answer, data.questions)}</span>
                   </div>
                 </motion.div>
               ))}
@@ -314,47 +224,27 @@ export default function ReportPage() {
           </motion.section>
         )}
 
-        {/* ── Differing areas ───────────────────────────────── */}
+        {/* Differing */}
         {report.differingAreas.length > 0 && (
-          <motion.section
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.5, duration: 0.5 }}
-          >
-            <div className="flex items-center gap-3 mb-2">
-              <TrendingDown size={18} style={{ color: "hsl(var(--primary))" }} />
-              <p className="text-[11px] uppercase tracking-[0.4em] font-sans" style={{ color: "hsl(var(--primary))" }}>
-                Growth Areas
-              </p>
+          <motion.section initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5, duration: 0.5 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 6 }}>
+              <TrendingDown size={16} color="#d4a853" />
+              <p style={{ fontSize: "0.62rem", letterSpacing: "0.22em", textTransform: "uppercase", color: "#d4a853", fontWeight: 600 }}>Growth Areas</p>
             </div>
-            <h2 className="text-3xl font-serif font-light text-foreground mb-6">{t.differingTitle}</h2>
-            <div className="space-y-3">
+            <h2 style={{ fontFamily: "'DM Serif Display', serif", fontSize: "clamp(22px,4vw,30px)", color: "#f5f0e8", marginBottom: 20 }}>{t.differingTitle}</h2>
+            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
               {report.differingAreas.map((item, i) => (
-                <motion.div
-                  key={item.questionId}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
+                <motion.div key={item.questionId}
+                  initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.6 + i * 0.06 }}
-                  className="border border-border p-4"
-                  style={{
-                    borderRadius: "3px",
-                    background: "hsl(353 42% 64% / 0.05)",
-                    borderLeft: "3px solid hsl(var(--primary))",
-                  }}
                   data-testid={`differing-item-${item.questionId}`}
-                >
-                  <p className="text-sm font-serif text-foreground mb-3">
+                  style={{ background: "rgba(212,168,83,0.05)", border: "1px solid rgba(212,168,83,0.18)", borderRadius: 12, padding: "16px 18px" }}>
+                  <p style={{ fontSize: "0.9rem", color: "#f5f0e8", marginBottom: 10, lineHeight: 1.65, fontWeight: 500 }}>
                     {data.questions[item.questionId]?.text ?? item.questionText}
                   </p>
-                  <div className="flex flex-wrap gap-4 text-xs text-muted-foreground font-sans">
-                    <span>
-                      <span className="font-medium text-foreground">{report.partner1Name}:</span>{" "}
-                      {translateAnswer(item.questionId, item.partner1Answer, data.questions)}
-                    </span>
-                    <span>
-                      <span className="font-medium text-foreground">{report.partner2Name}:</span>{" "}
-                      {translateAnswer(item.questionId, item.partner2Answer, data.questions)}
-                    </span>
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: 16, fontSize: "0.8rem", color: "rgba(245,240,232,0.5)" }}>
+                    <span><span style={{ color: "#f5f0e8", fontWeight: 500 }}>{report.partner1Name}:</span> {translateAnswer(item.questionId, item.partner1Answer, data.questions)}</span>
+                    <span><span style={{ color: "#f5f0e8", fontWeight: 500 }}>{report.partner2Name}:</span> {translateAnswer(item.questionId, item.partner2Answer, data.questions)}</span>
                   </div>
                 </motion.div>
               ))}
@@ -362,66 +252,33 @@ export default function ReportPage() {
           </motion.section>
         )}
 
-        {/* ── Discussion prompts ────────────────────────────── */}
-        <motion.section
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.6, duration: 0.5 }}
-        >
-          <div className="flex items-center gap-3 mb-2">
-            <MessageCircle size={18} style={{ color: "hsl(var(--primary))" }} />
-            <p className="text-[11px] uppercase tracking-[0.4em] font-sans" style={{ color: "hsl(var(--primary))" }}>
-              Conversation Starters
-            </p>
+        {/* Discussion prompts */}
+        <motion.section initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6, duration: 0.5 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 6 }}>
+            <MessageCircle size={16} color="rgba(245,240,232,0.5)" />
+            <p style={{ fontSize: "0.62rem", letterSpacing: "0.22em", textTransform: "uppercase", color: "rgba(245,240,232,0.5)", fontWeight: 600 }}>Conversation Starters</p>
           </div>
-          <h2 className="text-3xl font-serif font-light text-foreground mb-6">{t.promptsTitle}</h2>
-          <div className="space-y-3">
+          <h2 style={{ fontFamily: "'DM Serif Display', serif", fontSize: "clamp(22px,4vw,30px)", color: "#f5f0e8", marginBottom: 20 }}>{t.promptsTitle}</h2>
+          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
             {report.discussionPrompts.map((prompt, i) => (
-              <motion.div
-                key={i}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
+              <motion.div key={i}
+                initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.7 + i * 0.07 }}
-                className="border border-border p-4 flex gap-4 items-start"
-                style={{ borderRadius: "3px", background: "hsl(var(--card))" }}
                 data-testid={`discussion-prompt-${i}`}
-              >
-                <span className="text-xs mt-0.5 shrink-0" style={{ color: "#c9a96e" }}>✦</span>
-                <p className="text-sm text-foreground leading-loose font-sans">{prompt}</p>
+                style={{ background: "#1a2540", border: "1px solid rgba(245,240,232,0.07)", borderRadius: 12, padding: "16px 18px", display: "flex", gap: 14 }}>
+                <span style={{ color: "#7eaa92", fontSize: "0.85rem", flexShrink: 0, marginTop: 2 }}>→</span>
+                <p style={{ fontSize: "0.9rem", color: "rgba(245,240,232,0.7)", lineHeight: 1.75 }}>{prompt}</p>
               </motion.div>
             ))}
           </div>
         </motion.section>
 
-        {/* ── Footer affirmation ────────────────────────────── */}
-        <div
-          className="text-center py-10 relative overflow-hidden"
-          style={{
-            background: "linear-gradient(135deg, hsl(327 12% 20%), hsl(327 15% 28%))",
-            borderRadius: "3px",
-          }}
-        >
-          <span
-            className="absolute text-white/5 pointer-events-none select-none"
-            style={{ fontSize: "160px", top: "-20px", right: "-10px", lineHeight: 1 }}
-          >
-            ✦
-          </span>
-          <div className="relative z-10">
-            <div className="text-2xl mb-4 text-white/40 select-none">✦</div>
-            <p
-              className="font-serif italic text-xl font-light leading-relaxed mb-4 max-w-sm mx-auto px-6"
-              style={{ color: "rgba(255,255,255,0.85)" }}
-            >
-              "Understanding each other is the foundation of a lasting love."
-            </p>
-            <p
-              className="text-[10px] uppercase tracking-[0.3em] font-sans"
-              style={{ color: "rgba(255,255,255,0.35)" }}
-            >
-              — Couple Compass
-            </p>
-          </div>
+        {/* Closing */}
+        <div style={{ background: "#1a2540", border: "1px solid rgba(126,170,146,0.15)", borderRadius: 20, padding: "40px 32px", textAlign: "center" }}>
+          <p style={{ fontSize: "0.62rem", letterSpacing: "0.22em", textTransform: "uppercase", color: "#7eaa92", fontWeight: 600, marginBottom: 16 }}>Couple Compass</p>
+          <p style={{ fontFamily: "'DM Serif Display', serif", fontSize: "1.3rem", color: "rgba(245,240,232,0.75)", fontStyle: "italic", lineHeight: 1.75, maxWidth: 400, margin: "0 auto" }}>
+            "Understanding each other is the beginning of every great love story."
+          </p>
         </div>
       </div>
     </div>

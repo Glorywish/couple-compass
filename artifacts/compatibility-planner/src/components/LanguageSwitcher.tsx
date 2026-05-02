@@ -17,41 +17,50 @@ export function LanguageSwitcher() {
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    function handleClickOutside(e: MouseEvent) {
-      if (ref.current && !ref.current.contains(e.target as Node)) {
-        setOpen(false);
-      }
-    }
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    const handle = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener("mousedown", handle);
+    return () => document.removeEventListener("mousedown", handle);
   }, []);
 
-  const current = LANGUAGES.find((l) => l.code === locale) ?? LANGUAGES[0];
+  const current = LANGUAGES.find(l => l.code === locale) ?? LANGUAGES[0];
 
   return (
-    <div ref={ref} className="fixed top-4 right-4 z-50" data-testid="language-switcher">
-      <button
-        onClick={() => setOpen((o) => !o)}
-        aria-label="Switch language"
-        className="flex items-center gap-1.5 bg-background/90 backdrop-blur border border-border rounded-full px-3 py-1.5 text-sm text-foreground shadow-sm hover:bg-accent transition-colors"
-      >
-        <Globe size={13} className="text-muted-foreground" />
+    <div ref={ref} style={{ position: "fixed", top: 16, right: 16, zIndex: 50 }} data-testid="language-switcher">
+      <button onClick={() => setOpen(o => !o)} aria-label="Switch language"
+        style={{
+          display: "flex", alignItems: "center", gap: 6,
+          background: "rgba(26,37,64,0.85)", backdropFilter: "blur(8px)",
+          border: "1px solid rgba(126,170,146,0.22)", borderRadius: 999,
+          padding: "6px 14px", color: "#f5f0e8", fontSize: "0.78rem", fontWeight: 500,
+          cursor: "pointer", fontFamily: "Inter,sans-serif", letterSpacing: "0.05em",
+        }}>
+        <Globe size={12} color="#7eaa92" />
         <span>{current.flag}</span>
-        <span className="font-medium">{current.code.toUpperCase()}</span>
+        <span>{current.code.toUpperCase()}</span>
       </button>
 
       {open && (
-        <div className="absolute top-full right-0 mt-2 bg-background border border-border rounded-2xl shadow-xl overflow-hidden min-w-[160px]">
-          {LANGUAGES.map((lang) => (
-            <button
-              key={lang.code}
+        <div style={{
+          position: "absolute", top: "calc(100% + 8px)", right: 0,
+          background: "#1a2540", border: "1px solid rgba(126,170,146,0.2)",
+          borderRadius: 14, overflow: "hidden", minWidth: 170,
+          boxShadow: "0 16px 48px rgba(0,0,0,0.4)",
+        }}>
+          {LANGUAGES.map(lang => (
+            <button key={lang.code}
               onClick={() => { setLocale(lang.code); setOpen(false); }}
               data-testid={`lang-option-${lang.code}`}
-              className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm text-left hover:bg-accent transition-colors ${
-                locale === lang.code ? "bg-accent/60 font-medium text-primary" : "text-foreground"
-              }`}
-            >
-              <span className="text-base">{lang.flag}</span>
+              style={{
+                width: "100%", display: "flex", alignItems: "center", gap: 12,
+                padding: "10px 16px", fontSize: "0.85rem", textAlign: "left",
+                background: locale === lang.code ? "rgba(126,170,146,0.12)" : "transparent",
+                color: locale === lang.code ? "#a8c5b3" : "rgba(245,240,232,0.75)",
+                border: "none", cursor: "pointer", fontFamily: "Inter,sans-serif", fontWeight: 500,
+                borderBottom: "1px solid rgba(245,240,232,0.05)",
+              }}>
+              <span style={{ fontSize: "1rem" }}>{lang.flag}</span>
               <span>{lang.name}</span>
             </button>
           ))}

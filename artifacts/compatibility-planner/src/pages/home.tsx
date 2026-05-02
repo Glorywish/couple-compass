@@ -1,333 +1,291 @@
-import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { motion } from "framer-motion";
-import { ArrowRight } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { ArrowRight, Compass } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 
-const STARS = Array.from({ length: 22 }, (_, i) => ({
+/* ── tiny star field ── */
+const STARS = Array.from({ length: 38 }, (_, i) => ({
   id: i,
-  char: ["✦", "✧", "⋆"][i % 3],
-  left: `${(i * 13 + 7) % 100}%`,
-  top: `${(i * 17 + 11) % 100}%`,
-  size: `${0.4 + (i % 3) * 0.22}rem`,
-  dur: `${3 + (i % 5)}s`,
-  delay: `-${(i * 0.7) % 6}s`,
+  x: (i * 37 + 11) % 100,
+  y: (i * 53 + 7) % 100,
+  r: 0.8 + (i % 3) * 0.6,
+  dur: 2.5 + (i % 5) * 0.7,
+  delay: -(i * 0.4) % 5,
 }));
+
+/* ── compass SVG ── */
+function CompassRose({ size = 220 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 220 220" fill="none">
+      {/* outer ring */}
+      <circle cx="110" cy="110" r="105" stroke="rgba(126,170,146,0.18)" strokeWidth="1" />
+      <circle cx="110" cy="110" r="85"  stroke="rgba(126,170,146,0.10)" strokeWidth="0.5" strokeDasharray="4 6" />
+      <circle cx="110" cy="110" r="60"  stroke="rgba(126,170,146,0.12)" strokeWidth="0.5" />
+      {/* tick marks */}
+      {Array.from({ length: 36 }, (_, i) => {
+        const a = (i * 10 * Math.PI) / 180;
+        const big = i % 9 === 0;
+        const r1 = big ? 95 : 100, r2 = 105;
+        return (
+          <line key={i}
+            x1={110 + r1 * Math.sin(a)} y1={110 - r1 * Math.cos(a)}
+            x2={110 + r2 * Math.sin(a)} y2={110 - r2 * Math.cos(a)}
+            stroke={big ? "rgba(126,170,146,0.55)" : "rgba(126,170,146,0.2)"}
+            strokeWidth={big ? 1.2 : 0.6}
+          />
+        );
+      })}
+      {/* N/S arrow – ivory */}
+      <polygon points="110,18 118,110 110,100 102,110" fill="#f5f0e8" opacity="0.9" />
+      <polygon points="110,202 118,110 110,120 102,110" fill="rgba(245,240,232,0.3)" />
+      {/* E/W arrow – sage */}
+      <polygon points="202,110 110,118 120,110 110,102" fill="rgba(126,170,146,0.5)" />
+      <polygon points="18,110  110,118 100,110 110,102" fill="rgba(126,170,146,0.25)" />
+      {/* center dot */}
+      <circle cx="110" cy="110" r="5" fill="#7eaa92" />
+      <circle cx="110" cy="110" r="2.5" fill="#f5f0e8" />
+      {/* cardinal letters */}
+      {[
+        { label: "N", x: 110, y: 11 },
+        { label: "S", x: 110, y: 215 },
+        { label: "E", x: 214, y: 114 },
+        { label: "W", x: 6,   y: 114 },
+      ].map(({ label, x, y }) => (
+        <text key={label} x={x} y={y} textAnchor="middle" dominantBaseline="middle"
+          fontSize="10" fontFamily="Inter,sans-serif" fontWeight="600" letterSpacing="0.1em"
+          fill={label === "N" ? "#f5f0e8" : "rgba(126,170,146,0.6)"}>
+          {label}
+        </text>
+      ))}
+    </svg>
+  );
+}
+
+const STEP_ICONS = ["01", "02", "03"];
 
 export default function Home() {
   const [, setLocation] = useLocation();
   const { data } = useI18n();
   const t = data.ui;
-  const [progress, setProgress] = useState(0);
-
-  useEffect(() => {
-    const onScroll = () => {
-      const scrolled = window.scrollY;
-      const total = document.documentElement.scrollHeight - window.innerHeight;
-      setProgress(total > 0 ? Math.min(100, (scrolled / total) * 100) : 0);
-    };
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
 
   return (
-    <div className="min-h-screen bg-background overflow-x-hidden">
-      {/* Scroll progress bar */}
-      <div
-        className="fixed top-0 left-0 z-50 h-[3px] pointer-events-none"
-        style={{
-          width: `${progress}%`,
-          background: "linear-gradient(to right, hsl(var(--primary)/0.5), hsl(var(--primary)), #c9a96e)",
-          transition: "width 0.1s linear",
-        }}
-      />
+    <div style={{ background: "#0f1729", minHeight: "100vh", color: "#f5f0e8", overflowX: "hidden" }}>
 
-      {/* Floating background stars */}
-      <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden" aria-hidden>
-        {STARS.map((s) => (
-          <span
-            key={s.id}
-            className="absolute text-primary/25 select-none"
+      {/* ── star field ── */}
+      <div className="fixed inset-0 pointer-events-none" aria-hidden>
+        {STARS.map(s => (
+          <div key={s.id} className="absolute rounded-full"
             style={{
-              left: s.left,
-              top: s.top,
-              fontSize: s.size,
-              animation: `twinkle ${s.dur} ease-in-out ${s.delay} infinite`,
+              left: `${s.x}%`, top: `${s.y}%`,
+              width: s.r * 2, height: s.r * 2,
+              background: "white",
+              animation: `twinkle ${s.dur}s ease-in-out ${s.delay}s infinite`,
             }}
-          >
-            {s.char}
-          </span>
+          />
         ))}
       </div>
 
-      {/* ── Hero ───────────────────────────────────────────── */}
-      <div
-        className="relative min-h-screen flex flex-col items-center justify-center text-center px-6 py-20"
-        style={{
-          background:
-            "radial-gradient(ellipse 80% 55% at 50% 0%, hsl(353 55% 90% / 0.75) 0%, transparent 72%)",
-        }}
-      >
+      {/* ── HERO ── */}
+      <div className="relative min-h-screen flex flex-col items-center justify-center text-center px-6 pt-16 pb-24"
+        style={{ background: "radial-gradient(ellipse 70% 65% at 50% -5%, rgba(26,37,64,0.95) 0%, transparent 75%)" }}>
+
+        {/* Compass rose */}
         <motion.div
-          initial={{ opacity: 0, y: 28 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
-          className="relative z-10 max-w-2xl mx-auto"
+          initial={{ opacity: 0, scale: 0.85, rotate: -15 }}
+          animate={{ opacity: 1, scale: 1, rotate: 0 }}
+          transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
+          className="relative mb-10"
+          style={{ animation: "spin-slow 60s linear infinite" }}
         >
-          {/* Floating heart */}
-          <div
-            className="text-5xl mb-8 inline-block select-none"
-            style={{ animation: "float 3s ease-in-out infinite", color: "hsl(var(--primary))" }}
-          >
-            ♡
+          <CompassRose size={200} />
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 24 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
+          className="max-w-2xl mx-auto"
+        >
+          {/* eyebrow */}
+          <div className="flex items-center justify-center gap-2 mb-5">
+            <div style={{ width: 28, height: 1, background: "rgba(126,170,146,0.6)" }} />
+            <span style={{ fontSize: "0.68rem", letterSpacing: "0.22em", textTransform: "uppercase", color: "#7eaa92", fontWeight: 500 }}>
+              {t.home.badge}
+            </span>
+            <div style={{ width: 28, height: 1, background: "rgba(126,170,146,0.6)" }} />
           </div>
 
-          {/* Eyebrow label */}
-          <p
-            className="text-[11px] uppercase tracking-[0.45em] font-sans mb-5"
-            style={{ color: "hsl(var(--primary))" }}
-          >
-            {t.home.badge}
-          </p>
-
-          {/* Main title */}
-          <h1
-            className="font-serif font-light text-foreground leading-[1.08] mb-8"
-            style={{ fontSize: "clamp(44px, 7.5vw, 68px)" }}
-          >
+          {/* headline */}
+          <h1 style={{ fontSize: "clamp(42px, 7vw, 72px)", fontFamily: "'DM Serif Display', serif", fontWeight: 400, lineHeight: 1.05, color: "#f5f0e8", marginBottom: "1.25rem" }}>
             {t.home.title1}
             <br />
-            <em style={{ fontStyle: "italic", color: "hsl(var(--primary))" }}>
-              {t.home.title2}
-            </em>
+            <em style={{ fontStyle: "italic", color: "#7eaa92" }}>{t.home.title2}</em>
           </h1>
 
-          {/* Quote block */}
-          <blockquote
-            className="max-w-md mx-auto mb-12 text-left font-serif italic leading-loose"
-            style={{
-              fontSize: "1.1rem",
-              color: "hsl(var(--muted-foreground))",
-              borderLeft: "2px solid #c9a96e",
-              paddingLeft: "1.25rem",
-            }}
-          >
+          <p style={{ fontSize: "1.05rem", color: "rgba(245,240,232,0.6)", maxWidth: 460, margin: "0 auto 2.5rem", lineHeight: 1.75, fontWeight: 300 }}>
             {t.home.desc}
-          </blockquote>
+          </p>
 
           {/* CTAs */}
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
-            <Button
-              size="lg"
+            <motion.button
+              whileHover={{ scale: 1.03 }}
+              whileTap={{ scale: 0.97 }}
               onClick={() => setLocation("/start")}
               data-testid="button-start-session"
-              className="gap-2 text-sm px-10 py-6 h-auto tracking-widest uppercase"
+              style={{
+                display: "flex", alignItems: "center", gap: 10, justifyContent: "center",
+                background: "#7eaa92", color: "#0f1729",
+                border: "none", borderRadius: 12, padding: "14px 32px",
+                fontSize: "0.85rem", fontWeight: 600, letterSpacing: "0.06em",
+                textTransform: "uppercase", cursor: "pointer", fontFamily: "Inter,sans-serif",
+              }}
             >
-              {t.home.cta1}
-              <ArrowRight size={14} />
-            </Button>
-            <Button
-              size="lg"
-              variant="outline"
+              {t.home.cta1} <ArrowRight size={15} />
+            </motion.button>
+            <motion.button
+              whileHover={{ scale: 1.03 }}
+              whileTap={{ scale: 0.97 }}
               onClick={() => setLocation("/join")}
               data-testid="button-join-session"
-              className="gap-2 text-sm px-10 py-6 h-auto tracking-widest uppercase"
+              style={{
+                display: "flex", alignItems: "center", gap: 10, justifyContent: "center",
+                background: "transparent", color: "#f5f0e8",
+                border: "1px solid rgba(245,240,232,0.2)", borderRadius: 12, padding: "14px 32px",
+                fontSize: "0.85rem", fontWeight: 500, letterSpacing: "0.06em",
+                textTransform: "uppercase", cursor: "pointer", fontFamily: "Inter,sans-serif",
+              }}
             >
               {t.home.cta2}
-            </Button>
-          </div>
-
-          {/* Scroll hint */}
-          <div
-            className="mt-20 flex flex-col items-center gap-2"
-            style={{
-              animation: "slowpulse 2.2s ease-in-out infinite",
-              color: "hsl(var(--primary))",
-            }}
-          >
-            <span className="text-[10px] uppercase tracking-[0.3em] font-sans">
-              Discover more
-            </span>
-            <div
-              className="w-px h-12"
-              style={{
-                background: "linear-gradient(to bottom, hsl(var(--primary)), transparent)",
-              }}
-            />
+            </motion.button>
           </div>
         </motion.div>
-      </div>
 
-      {/* ── How it works — timeline ───────────────────────── */}
-      <div className="relative z-10 max-w-3xl mx-auto px-6 py-24">
+        {/* scroll indicator */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
+          initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.4 }}
+          className="absolute bottom-10 flex flex-col items-center gap-2"
+          style={{ animation: "pulse-soft 2.5s ease-in-out infinite", color: "rgba(126,170,146,0.6)" }}
         >
-          <p
-            className="text-[11px] uppercase tracking-[0.4em] text-center font-sans mb-3"
-            style={{ color: "#c9a96e" }}
-          >
-            Step by Step
-          </p>
-          <h2
-            className="font-serif font-light text-center text-foreground mb-3"
-            style={{ fontSize: "clamp(30px, 5vw, 42px)" }}
-          >
-            {t.home.howTitle}
-          </h2>
-          <p className="text-muted-foreground text-center text-sm mb-16 font-sans leading-relaxed">
-            {t.home.howDesc}
-          </p>
-
-          <div className="relative pl-12">
-            {/* Vertical line */}
-            <div
-              className="absolute left-5 top-2 bottom-2 w-px"
-              style={{
-                background:
-                  "linear-gradient(to bottom, hsl(var(--primary)/0.3), #c9a96e60, transparent)",
-              }}
-            />
-
-            {t.home.steps.map((step, i) => (
-              <motion.div
-                key={i}
-                initial={{ opacity: 0, x: -16 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.14, duration: 0.5 }}
-                className="relative mb-6 last:mb-0"
-              >
-                {/* Dot */}
-                <div
-                  className="absolute -left-12 top-6 w-3 h-3 rounded-full border-2 border-background"
-                  style={{ background: i === 1 ? "#c9a96e" : "hsl(var(--primary))" }}
-                />
-
-                <div
-                  className="bg-card border border-border p-5 transition-all duration-300 hover:shadow-md hover:translate-x-1"
-                  style={{ borderRadius: "3px", borderLeft: `3px solid ${i === 1 ? "#c9a96e" : "hsl(var(--primary))"}` }}
-                >
-                  <p
-                    className="text-[10px] uppercase tracking-[0.3em] mb-2 font-sans"
-                    style={{ color: "#c9a96e" }}
-                  >
-                    Step {i + 1}
-                  </p>
-                  <h3 className="text-xl font-serif text-foreground mb-1">{step.title}</h3>
-                  <p className="text-sm text-muted-foreground leading-loose font-sans">
-                    {step.desc}
-                  </p>
-                </div>
-              </motion.div>
-            ))}
-          </div>
+          <span style={{ fontSize: "0.62rem", letterSpacing: "0.25em", textTransform: "uppercase" }}>Scroll</span>
+          <div style={{ width: 1, height: 36, background: "linear-gradient(to bottom, rgba(126,170,146,0.7), transparent)" }} />
         </motion.div>
       </div>
 
-      {/* ── 8 Dimensions (dark panel) ─────────────────────── */}
-      <div
-        className="relative z-10 py-20 overflow-hidden"
-        style={{ background: "linear-gradient(135deg, hsl(327 12% 20%), hsl(327 15% 28%))" }}
-      >
-        {/* Decorative ✦ */}
-        <span
-          className="absolute text-white/5 pointer-events-none select-none"
-          style={{ fontSize: "260px", top: "-40px", right: "-20px", lineHeight: 1 }}
-        >
-          ✦
-        </span>
+      {/* ── HOW IT WORKS ── */}
+      <div style={{ background: "#f5f0e8", color: "#1a2540", padding: "96px 24px" }}>
+        <div style={{ maxWidth: 760, margin: "0 auto" }}>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }} transition={{ duration: 0.6 }}
+            className="text-center mb-16"
+          >
+            <p style={{ fontSize: "0.68rem", letterSpacing: "0.22em", textTransform: "uppercase", color: "#7eaa92", fontWeight: 600, marginBottom: 12 }}>
+              How it works
+            </p>
+            <h2 style={{ fontFamily: "'DM Serif Display', serif", fontSize: "clamp(28px,5vw,42px)", color: "#1a2540", lineHeight: 1.15, marginBottom: 12 }}>
+              {t.home.howTitle}
+            </h2>
+            <p style={{ fontSize: "0.95rem", color: "#7a8ba8", maxWidth: 420, margin: "0 auto", lineHeight: 1.75 }}>
+              {t.home.howDesc}
+            </p>
+          </motion.div>
 
-        <div className="relative z-10 max-w-3xl mx-auto px-6 text-center">
-          <p
-            className="text-[11px] uppercase tracking-[0.4em] font-sans mb-3"
-            style={{ color: "#c9a96e" }}
-          >
-            {t.home.dimensionsTitle}
-          </p>
-          <h2
-            className="font-serif font-light mb-4 leading-tight"
-            style={{ fontSize: "clamp(28px, 5vw, 38px)", color: "white" }}
-          >
-            8 areas that reveal your harmony
-          </h2>
-          <p
-            className="text-sm mb-12 font-sans leading-relaxed"
-            style={{ color: "rgba(255,255,255,0.45)" }}
-          >
-            {t.home.dimensionsDesc}
-          </p>
-
-          <div className="flex flex-wrap justify-center gap-2">
-            {Object.values(t.categories).map((cat) => (
-              <span
-                key={cat}
-                className="text-sm font-sans px-5 py-2"
+          <div className="grid md:grid-cols-3 gap-6">
+            {t.home.steps.map((step, i) => (
+              <motion.div key={i}
+                initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }} transition={{ delay: i * 0.12, duration: 0.5 }}
                 style={{
-                  border: "1px solid rgba(255,255,255,0.18)",
-                  borderRadius: "20px",
-                  color: "rgba(255,255,255,0.75)",
-                  letterSpacing: "0.06em",
+                  background: "white", border: "1px solid rgba(26,37,64,0.08)",
+                  borderRadius: 16, padding: "28px 24px",
+                  boxShadow: "0 2px 24px rgba(15,23,41,0.06)",
                 }}
               >
-                {cat}
-              </span>
+                <div style={{
+                  width: 44, height: 44, borderRadius: 12,
+                  background: "#0f1729", color: "#7eaa92",
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  fontSize: "0.78rem", fontWeight: 700, letterSpacing: "0.05em",
+                  marginBottom: 18,
+                }}>
+                  {STEP_ICONS[i]}
+                </div>
+                <h3 style={{ fontFamily: "'DM Serif Display', serif", fontSize: "1.25rem", color: "#1a2540", marginBottom: 8 }}>
+                  {step.title}
+                </h3>
+                <p style={{ fontSize: "0.88rem", color: "#7a8ba8", lineHeight: 1.75 }}>{step.desc}</p>
+              </motion.div>
             ))}
           </div>
         </div>
       </div>
 
-      {/* ── Footer CTA ────────────────────────────────────── */}
-      <div className="relative z-10 max-w-3xl mx-auto px-6 py-24 text-center">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
-        >
-          <div
-            className="text-3xl mb-6 inline-block select-none"
-            style={{ animation: "float 2.5s ease-in-out infinite", color: "#c9a96e" }}
+      {/* ── 8 DIMENSIONS ── */}
+      <div style={{ background: "#1a2540", padding: "80px 24px" }}>
+        <div style={{ maxWidth: 760, margin: "0 auto", textAlign: "center" }}>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }} transition={{ duration: 0.6 }}
           >
-            ✦
-          </div>
-          <h2
-            className="font-serif font-light text-foreground mb-4 italic"
-            style={{ fontSize: "clamp(28px, 5vw, 40px)" }}
-          >
-            {t.home.footerCta1}
-          </h2>
-          <p className="text-muted-foreground mb-10 font-sans leading-relaxed">
-            {t.home.footerCta2}
-          </p>
-          <Button
-            size="lg"
-            onClick={() => setLocation("/start")}
-            data-testid="button-footer-cta"
-            className="gap-2 text-sm px-10 py-6 h-auto tracking-widest uppercase"
-          >
-            {t.home.footerBtn}
-            <ArrowRight size={14} />
-          </Button>
-        </motion.div>
+            <p style={{ fontSize: "0.68rem", letterSpacing: "0.22em", textTransform: "uppercase", color: "#7eaa92", fontWeight: 600, marginBottom: 12 }}>
+              {t.home.dimensionsTitle}
+            </p>
+            <h2 style={{ fontFamily: "'DM Serif Display', serif", fontSize: "clamp(26px,4.5vw,38px)", color: "#f5f0e8", marginBottom: 10, lineHeight: 1.2 }}>
+              8 dimensions of alignment
+            </h2>
+            <p style={{ fontSize: "0.9rem", color: "rgba(245,240,232,0.45)", marginBottom: 36, lineHeight: 1.75 }}>
+              {t.home.dimensionsDesc}
+            </p>
+            <div className="flex flex-wrap justify-center gap-2">
+              {Object.values(t.categories).map((cat) => (
+                <span key={cat} style={{
+                  background: "rgba(126,170,146,0.1)", border: "1px solid rgba(126,170,146,0.25)",
+                  color: "#a8c5b3", borderRadius: 999, padding: "6px 16px",
+                  fontSize: "0.82rem", fontWeight: 500,
+                }}>
+                  {cat}
+                </span>
+              ))}
+            </div>
+          </motion.div>
+        </div>
       </div>
 
-      {/* Footer bar */}
-      <div
-        className="border-t border-border py-10 text-center"
-        style={{ borderColor: "hsl(var(--border))" }}
-      >
-        <p className="font-serif italic text-foreground/70 text-xl">Couple Compass</p>
-        <p
-          className="text-[10px] uppercase tracking-[0.25em] mt-2 font-sans"
-          style={{ color: "#c9a96e" }}
+      {/* ── FOOTER CTA ── */}
+      <div style={{ background: "#0f1729", padding: "96px 24px", textAlign: "center" }}>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }} transition={{ duration: 0.6 }}
         >
-          Discover your harmony together ✦
-        </p>
+          <Compass size={32} color="#7eaa92" style={{ margin: "0 auto 20px" }} />
+          <h2 style={{ fontFamily: "'DM Serif Display', serif", fontSize: "clamp(28px,5vw,42px)", color: "#f5f0e8", marginBottom: 12, lineHeight: 1.15 }}>
+            <em style={{ fontStyle: "italic" }}>{t.home.footerCta1}</em>
+          </h2>
+          <p style={{ fontSize: "0.95rem", color: "rgba(245,240,232,0.5)", marginBottom: 36, maxWidth: 380, margin: "0 auto 36px", lineHeight: 1.75 }}>
+            {t.home.footerCta2}
+          </p>
+          <motion.button
+            whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}
+            onClick={() => setLocation("/start")}
+            data-testid="button-footer-cta"
+            style={{
+              display: "inline-flex", alignItems: "center", gap: 10,
+              background: "#7eaa92", color: "#0f1729",
+              border: "none", borderRadius: 12, padding: "14px 36px",
+              fontSize: "0.85rem", fontWeight: 600, letterSpacing: "0.06em",
+              textTransform: "uppercase", cursor: "pointer", fontFamily: "Inter,sans-serif",
+            }}
+          >
+            {t.home.footerBtn} <ArrowRight size={15} />
+          </motion.button>
+        </motion.div>
+
+        <div style={{ marginTop: 72, borderTop: "1px solid rgba(245,240,232,0.07)", paddingTop: 32 }}>
+          <p style={{ fontFamily: "'DM Serif Display', serif", fontSize: "1.1rem", color: "rgba(245,240,232,0.35)", fontStyle: "italic" }}>
+            Couple Compass
+          </p>
+        </div>
       </div>
     </div>
   );
