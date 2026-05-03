@@ -138,6 +138,13 @@ const ar: LocaleData = {
       ratingNote: "اتركا ملاحظة (اختياري)...",
       ratingSubmit: "إرسال التقييم",
       ratingSubmitting: "جارٍ الحفظ...",
+      shareCardTitle: "شاركا نتيجتكما",
+      shareCardBtn: "تحميل بطاقة المشاركة",
+      shareCardDesc: "احفظا وشاركا مع الأصدقاء أو على وسائل التواصل",
+      cihTitle: "بنك CIH (المغرب)",
+      cihRib: "230 640 5881663211034200 41",
+      cihCopy: "نسخ RIB",
+      cihCopied: "تم النسخ!",
     },
     errors: {
       sessionNotFound: "الجلسة غير موجودة. يرجى التحقق من الرمز والمحاولة مجدداً.",

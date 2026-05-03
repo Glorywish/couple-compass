@@ -138,6 +138,13 @@ const zh: LocaleData = {
       ratingNote: "留下备注（可选）...",
       ratingSubmit: "提交评分",
       ratingSubmitting: "保存中...",
+      shareCardTitle: "分享你们的结果",
+      shareCardBtn: "下载分享卡片",
+      shareCardDesc: "保存并分享给朋友或发布到社交媒体",
+      cihTitle: "CIH 银行（摩洛哥）",
+      cihRib: "230 640 5881663211034200 41",
+      cihCopy: "复制 RIB",
+      cihCopied: "已复制！",
     },
     errors: {
       sessionNotFound: "找不到该会话，请检查代码后重试。",

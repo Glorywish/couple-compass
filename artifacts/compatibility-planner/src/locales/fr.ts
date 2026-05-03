@@ -138,6 +138,13 @@ const fr: LocaleData = {
       ratingNote: "Laissez une note (optionnel)...",
       ratingSubmit: "Envoyer l'avis",
       ratingSubmitting: "Enregistrement...",
+      shareCardTitle: "Partagez votre résultat",
+      shareCardBtn: "Télécharger la carte",
+      shareCardDesc: "Enregistrez et partagez avec des amis ou sur les réseaux",
+      cihTitle: "CIH Bank (Maroc)",
+      cihRib: "230 640 5881663211034200 41",
+      cihCopy: "Copier le RIB",
+      cihCopied: "Copié !",
     },
     errors: {
       sessionNotFound: "Session introuvable. Veuillez vérifier votre code et réessayer.",

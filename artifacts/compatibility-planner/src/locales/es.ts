@@ -138,6 +138,13 @@ const es: LocaleData = {
       ratingNote: "Deja una nota (opcional)...",
       ratingSubmit: "Enviar valoración",
       ratingSubmitting: "Guardando...",
+      shareCardTitle: "Comparte tu resultado",
+      shareCardBtn: "Descargar tarjeta",
+      shareCardDesc: "Guarda y comparte con amigos o en redes sociales",
+      cihTitle: "CIH Bank (Marruecos)",
+      cihRib: "230 640 5881663211034200 41",
+      cihCopy: "Copiar RIB",
+      cihCopied: "¡Copiado!",
     },
     errors: {
       sessionNotFound: "Sesión no encontrada. Por favor verifica tu código e intenta de nuevo.",

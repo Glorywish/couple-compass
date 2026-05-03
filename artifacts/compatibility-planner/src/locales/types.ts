@@ -139,6 +139,13 @@ export interface LocaleData {
       ratingNote: string;
       ratingSubmit: string;
       ratingSubmitting: string;
+      shareCardTitle: string;
+      shareCardBtn: string;
+      shareCardDesc: string;
+      cihTitle: string;
+      cihRib: string;
+      cihCopy: string;
+      cihCopied: string;
     };
     errors: {
       sessionNotFound: string;
