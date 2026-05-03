@@ -157,6 +157,7 @@ const zh: LocaleData = {
       cihCopy: "复制 RIB",
       cihCopied: "已复制！",
       whatsappShare: "通过 WhatsApp 分享",
+      bookmarkHint: "将此页面加入书签，随时返回查看您的报告。",
     },
     errors: {
       sessionNotFound: "找不到该会话，请检查代码后重试。",

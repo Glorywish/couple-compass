@@ -157,6 +157,7 @@ const ar: LocaleData = {
       cihCopy: "نسخ RIB",
       cihCopied: "تم النسخ!",
       whatsappShare: "مشاركة عبر واتساب",
+      bookmarkHint: "احفظ هذه الصفحة في المفضلة للعودة إلى تقريرك في أي وقت.",
     },
     errors: {
       sessionNotFound: "الجلسة غير موجودة. يرجى التحقق من الرمز والمحاولة مجدداً.",

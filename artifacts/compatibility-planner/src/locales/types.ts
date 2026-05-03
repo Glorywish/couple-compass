@@ -158,6 +158,7 @@ export interface LocaleData {
       cihCopy: string;
       cihCopied: string;
       whatsappShare: string;
+      bookmarkHint: string;
     };
     errors: {
       sessionNotFound: string;

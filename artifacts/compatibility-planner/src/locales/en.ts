@@ -157,6 +157,7 @@ const en: LocaleData = {
       cihCopy: "Copy RIB",
       cihCopied: "Copied!",
       whatsappShare: "Share via WhatsApp",
+      bookmarkHint: "Bookmark this page to return to your report anytime.",
     },
     errors: {
       sessionNotFound: "Session not found. Please check your code and try again.",

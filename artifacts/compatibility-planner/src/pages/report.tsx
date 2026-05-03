@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useParams, useLocation } from "wouter";
 import { motion } from "framer-motion";
 import { ArrowLeft, Copy, Check, Share2, TrendingUp, TrendingDown, MessageCircle, Heart, FileDown, Mail, Send, X } from "lucide-react";
@@ -378,6 +378,18 @@ export default function ReportPage() {
   const [showEmailPanel, setShowEmailPanel] = useState(false);
   const [email1, setEmail1] = useState("");
   const [email2, setEmail2] = useState("");
+  const [bookmarkDismissed, setBookmarkDismissed] = useState(() =>
+    typeof localStorage !== "undefined"
+      ? localStorage.getItem(`cp_bookmark_hint_${params.sessionCode}`) === "1"
+      : true
+  );
+
+  const dismissBookmark = () => {
+    setBookmarkDismissed(true);
+    localStorage.setItem(`cp_bookmark_hint_${params.sessionCode}`, "1");
+  };
+
+  useEffect(() => { return; }, []);
 
   const couplePhoto = typeof localStorage !== "undefined"
     ? localStorage.getItem(`cp_couple_photo_${params.sessionCode}`)
@@ -534,6 +546,23 @@ export default function ReportPage() {
           .share-btn { font-size:0.65rem !important; padding:6px 10px !important; }
         }
       `}</style>
+
+      {/* Bookmark reminder banner — shown once, dismissed to localStorage */}
+      {!bookmarkDismissed && (
+        <motion.div className="no-print"
+          initial={{ opacity: 0, y: -12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -12 }}
+          transition={{ delay: 1.2, duration: 0.4 }}
+          style={{ background: "rgba(26,53,96,0.96)", color: "white", padding: "10px 20px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, fontSize: "0.78rem", fontFamily: "Inter,sans-serif", lineHeight: 1.5 }}>
+          <span style={{ flex: 1 }}>
+            <span style={{ color: "#e8607a", fontWeight: 700, marginRight: 6 }}>&#9679;</span>
+            {t.bookmarkHint ?? "Bookmark this page to return to your report anytime."}
+          </span>
+          <button onClick={dismissBookmark}
+            style={{ background: "none", border: "none", color: "rgba(255,255,255,0.55)", cursor: "pointer", padding: 4, display: "flex", alignItems: "center", flexShrink: 0 }}>
+            <X size={14} />
+          </button>
+        </motion.div>
+      )}
 
       {/* Hero */}
       <div style={{ background: "linear-gradient(160deg,#eaf3ff 0%,#fce8ec 100%)", borderBottom: "1px solid rgba(184,212,240,0.4)", paddingBottom: 52 }}>

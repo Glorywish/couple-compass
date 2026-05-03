@@ -110,11 +110,11 @@ export default function StartPage() {
         ) : (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} style={{ marginTop: 48 }}>
             {/* Code card */}
-            <div style={{ background: "white", border: "1px solid rgba(232,96,122,0.2)", borderRadius: 18, padding: "28px 24px", textAlign: "center", marginBottom: 28, boxShadow: "0 4px 24px rgba(232,96,122,0.1)" }}>
-              <p style={{ fontSize: "0.65rem", letterSpacing: "0.22em", textTransform: "uppercase", color: "#e8607a", fontWeight: 600, marginBottom: 10 }}>
+            <div style={{ background: "white", border: "1px solid rgba(232,96,122,0.2)", borderRadius: 18, padding: "28px 20px", textAlign: "center", marginBottom: 28, boxShadow: "0 4px 24px rgba(232,96,122,0.1)", overflow: "hidden" }}>
+              <p style={{ fontSize: "0.65rem", letterSpacing: "0.22em", textTransform: "uppercase", color: "#e8607a", fontWeight: 600, marginBottom: 12 }}>
                 {t.codeLabel}
               </p>
-              <div data-testid="text-session-code" style={{ fontSize: "3rem", fontFamily: "monospace", fontWeight: 700, letterSpacing: "0.3em", color: "#1a3560" }}>
+              <div data-testid="text-session-code" style={{ fontSize: "clamp(1.5rem, 9vw, 3rem)", fontFamily: "monospace", fontWeight: 700, letterSpacing: "clamp(0.08em, 2vw, 0.22em)", color: "#1a3560", wordBreak: "break-all", lineHeight: 1.2, maxWidth: "100%" }}>
                 {session.sessionCode}
               </div>
             </div>
