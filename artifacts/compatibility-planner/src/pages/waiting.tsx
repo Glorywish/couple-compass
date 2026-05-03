@@ -20,8 +20,12 @@ export default function WaitingPage() {
   });
 
   useEffect(() => {
-    if (status?.bothCompleted) setLocation(`/report/${params.sessionCode}`);
-  }, [status?.bothCompleted]);
+    if (!status?.bothCompleted) return;
+    const timer = setTimeout(() => {
+      setLocation(`/report/${params.sessionCode}`);
+    }, 1400);
+    return () => clearTimeout(timer);
+  }, [status?.bothCompleted, params.sessionCode]);
 
   const mySlot = params.partnerSlot;
   const myName = mySlot === "partner1" ? status?.partner1Name : status?.partner2Name;

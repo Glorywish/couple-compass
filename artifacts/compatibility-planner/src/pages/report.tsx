@@ -540,8 +540,11 @@ export default function ReportPage() {
         }
         .share-row { display:flex; flex-wrap:wrap; gap:12px; align-items:center; }
         .share-btns { display:flex; gap:8px; flex-wrap:wrap; }
+        .share-url-box { flex:1; min-width:0; overflow:hidden; }
+        .share-url-text { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:100%; display:block; }
         @media(max-width:540px){
           .share-row { flex-direction:column; align-items:stretch; }
+          .share-url-box { width:100%; max-width:100%; }
           .share-btns { justify-content:flex-start; }
           .share-btn { font-size:0.65rem !important; padding:6px 10px !important; }
         }
@@ -609,9 +612,9 @@ export default function ReportPage() {
             <div style={{ marginTop: 20, maxWidth: 560, marginLeft: "auto", marginRight: "auto", overflow: "hidden" }} className="no-print">
               {/* Action row */}
               <div className="share-row" style={{ background: "rgba(255,255,255,0.7)", border: "1px solid rgba(184,212,240,0.5)", borderRadius: showEmailPanel ? "12px 12px 0 0" : 12, padding: "14px 18px" }}>
-                <div style={{ flex: 1, minWidth: 0 }}>
+                <div className="share-url-box">
                   <p style={{ fontSize: "0.58rem", letterSpacing: "0.2em", textTransform: "uppercase", color: "#e8607a", fontWeight: 600, marginBottom: 4 }}>{t.shareableLink}</p>
-                  <p style={{ fontSize: "0.72rem", color: "rgba(26,53,96,0.35)", fontFamily: "monospace", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", minWidth: 0 }}>{reportUrl}</p>
+                  <p className="share-url-text" style={{ fontSize: "0.72rem", color: "rgba(26,53,96,0.35)", fontFamily: "monospace" }}>{reportUrl}</p>
                 </div>
                 <div className="share-btns">
                   <button onClick={handleCopy} data-testid="button-copy-report-link" className="share-btn"
