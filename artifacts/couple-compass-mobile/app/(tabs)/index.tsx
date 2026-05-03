@@ -19,6 +19,7 @@ import Animated, {
 } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import { HeartCompass } from "@/components/HeartCompass";
 import { useColors } from "@/hooks/useColors";
 
 export default function HomeScreen() {
@@ -30,8 +31,8 @@ export default function HomeScreen() {
   useEffect(() => {
     scale.value = withRepeat(
       withSequence(
-        withTiming(1.1, { duration: 1400 }),
-        withTiming(1, { duration: 1400 })
+        withTiming(1.07, { duration: 1800 }),
+        withTiming(1, { duration: 1800 })
       ),
       -1,
       true
@@ -62,13 +63,11 @@ export default function HomeScreen() {
       end={{ x: 1, y: 1 }}
       style={[
         styles.container,
-        { paddingTop: topPad + 32, paddingBottom: bottomPad + 24 },
+        { paddingTop: topPad + 24, paddingBottom: bottomPad + 24 },
       ]}
     >
       <Animated.View style={[styles.iconWrap, animStyle]}>
-        <LinearGradient colors={["#e8607a", "#b84060"]} style={styles.iconBg}>
-          <Ionicons name="heart" size={44} color="#fff" />
-        </LinearGradient>
+        <HeartCompass size={140} />
       </Animated.View>
 
       <Text style={[styles.title, { color: colors.foreground }]}>
@@ -80,25 +79,17 @@ export default function HomeScreen() {
 
       <View style={styles.cards}>
         <TouchableOpacity
-          style={[
-            styles.card,
-            {
-              backgroundColor: colors.primary,
-              shadowColor: colors.primary,
-            },
-          ]}
+          style={[styles.card, { backgroundColor: colors.primary, shadowColor: colors.primary }]}
           onPress={handleStart}
           activeOpacity={0.88}
           testID="btn-start"
         >
           <View style={styles.cardIconRow}>
             <View style={styles.cardIconBg}>
-              <Ionicons name="compass" size={22} color={colors.primary} />
+              <Ionicons name="compass" size={20} color={colors.primary} />
             </View>
           </View>
-          <Text style={[styles.cardTitle, { color: "#fff" }]}>
-            Start Journey
-          </Text>
+          <Text style={[styles.cardTitle, { color: "#fff" }]}>Start Journey</Text>
           <Text style={[styles.cardDesc, { color: "rgba(255,255,255,0.8)" }]}>
             Create a session and invite your partner
           </Text>
@@ -111,22 +102,17 @@ export default function HomeScreen() {
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={[
-            styles.card,
-            { backgroundColor: "#fff", shadowColor: "#1a3560" },
-          ]}
+          style={[styles.card, { backgroundColor: "#fff", shadowColor: "#1a3560" }]}
           onPress={handleJoin}
           activeOpacity={0.88}
           testID="btn-join"
         >
           <View style={styles.cardIconRow}>
             <View style={[styles.cardIconBg, { backgroundColor: "#eaf3ff" }]}>
-              <Ionicons name="people" size={22} color={colors.primary} />
+              <Ionicons name="people" size={20} color={colors.primary} />
             </View>
           </View>
-          <Text style={[styles.cardTitle, { color: colors.foreground }]}>
-            Join Partner
-          </Text>
+          <Text style={[styles.cardTitle, { color: colors.foreground }]}>Join Partner</Text>
           <Text style={[styles.cardDesc, { color: colors.mutedForeground }]}>
             Enter the session code your partner shared
           </Text>
@@ -148,18 +134,13 @@ export default function HomeScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, alignItems: "center", paddingHorizontal: 24 },
-  iconWrap: { marginBottom: 24 },
-  iconBg: {
-    width: 90,
-    height: 90,
-    borderRadius: 45,
-    alignItems: "center",
-    justifyContent: "center",
+  iconWrap: {
+    marginBottom: 20,
     shadowColor: "#e8607a",
     shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.35,
-    shadowRadius: 20,
-    elevation: 12,
+    shadowOpacity: 0.2,
+    shadowRadius: 24,
+    elevation: 0,
   },
   title: {
     fontSize: 32,
@@ -172,7 +153,7 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontFamily: "Inter_400Regular",
     textAlign: "center",
-    marginBottom: 48,
+    marginBottom: 40,
     lineHeight: 22,
   },
   cards: { width: "100%", gap: 14 },
@@ -186,27 +167,19 @@ const styles = StyleSheet.create({
   },
   cardIconRow: { marginBottom: 12 },
   cardIconBg: {
-    width: 40,
-    height: 40,
-    borderRadius: 12,
+    width: 38,
+    height: 38,
+    borderRadius: 11,
     backgroundColor: "rgba(255,255,255,0.25)",
     alignItems: "center",
     justifyContent: "center",
   },
-  cardTitle: {
-    fontSize: 18,
-    fontFamily: "Inter_600SemiBold",
-    marginBottom: 4,
-  },
-  cardDesc: {
-    fontSize: 13,
-    fontFamily: "Inter_400Regular",
-    lineHeight: 18,
-  },
+  cardTitle: { fontSize: 18, fontFamily: "Inter_600SemiBold", marginBottom: 4 },
+  cardDesc: { fontSize: 13, fontFamily: "Inter_400Regular", lineHeight: 18 },
   cardArrow: { position: "absolute", bottom: 22, right: 22 },
   footer: {
     marginTop: "auto",
-    paddingTop: 32,
+    paddingTop: 28,
     fontSize: 11,
     fontFamily: "Inter_400Regular",
     letterSpacing: 0.3,

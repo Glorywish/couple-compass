@@ -218,6 +218,15 @@ export default function Home() {
               {t.home.cta2}
             </motion.button>
           </div>
+
+          <motion.div initial={{ opacity:0, y:10 }} animate={{ opacity:1, y:0 }} transition={{ delay:1.1 }}
+            style={{ marginTop:20, display:"flex", alignItems:"center", justifyContent:"center" }}>
+            <a href="/mobile/" target="_blank" rel="noreferrer"
+              style={{ display:"inline-flex", alignItems:"center", gap:8, background:"rgba(255,255,255,0.65)", border:"1px solid rgba(26,53,96,0.1)", borderRadius:24, padding:"7px 18px 7px 14px", fontSize:"0.72rem", fontWeight:500, color:"rgba(26,53,96,0.5)", textDecoration:"none", backdropFilter:"blur(8px)", transition:"all 0.2s" }}>
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="5" y="2" width="14" height="20" rx="2"/><circle cx="12" cy="17" r="1"/></svg>
+              Also available as a mobile app
+            </a>
+          </motion.div>
         </motion.div>
 
         <motion.div initial={{ opacity:0 }} animate={{ opacity:1 }} transition={{ delay:1.4 }}
