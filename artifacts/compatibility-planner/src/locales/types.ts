@@ -133,6 +133,12 @@ export interface LocaleData {
       donateTitle: string;
       donateDesc: string;
       donateBtn: string;
+      ratingTitle: string;
+      ratingSub: string;
+      ratingThanks: string;
+      ratingNote: string;
+      ratingSubmit: string;
+      ratingSubmitting: string;
     };
     errors: {
       sessionNotFound: string;

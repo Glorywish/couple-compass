@@ -6,6 +6,7 @@ import responsesRouter from "./responses";
 import reportsRouter from "./reports";
 import emailReportRouter from "./email-report";
 import adminRouter from "./admin";
+import ratingsRouter from "./ratings";
 
 const router: IRouter = Router();
 
@@ -16,5 +17,6 @@ router.use(responsesRouter);
 router.use(reportsRouter);
 router.use(emailReportRouter);
 router.use(adminRouter);
+router.use(ratingsRouter);
 
 export default router;

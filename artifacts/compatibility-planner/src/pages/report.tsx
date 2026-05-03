@@ -7,6 +7,72 @@ import { useToast } from "@/hooks/use-toast";
 import { useI18n } from "@/lib/i18n";
 import type { LocaleData } from "@/locales/types";
 
+type ReportT = LocaleData["ui"]["report"];
+
+function StarRatingCard({ sessionCode, t }: { sessionCode: string; t: ReportT }) {
+  const [stars, setStars] = useState(0);
+  const [hovered, setHovered] = useState(0);
+  const [note, setNote] = useState("");
+  const [submitted, setSubmitted] = useState(false);
+  const [saving, setSaving] = useState(false);
+
+  const handleSubmit = async () => {
+    if (stars === 0) return;
+    setSaving(true);
+    try {
+      await fetch(`${import.meta.env.BASE_URL}api/sessions/${sessionCode}/rating`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ stars, note: note.trim() || null }),
+      });
+      setSubmitted(true);
+    } catch { /* ignore */ } finally { setSaving(false); }
+  };
+
+  return (
+    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.85, duration: 0.5 }}
+      className="no-print"
+      style={{ background: "white", border: "1px solid rgba(184,212,240,0.4)", borderRadius: 20, padding: "28px", display: "flex", flexDirection: "column", alignItems: "center", gap: 14, textAlign: "center", boxShadow: "0 2px 16px rgba(26,53,96,0.05)" }}>
+      {submitted ? (
+        <motion.div initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
+          <div style={{ fontSize: "2rem" }}>🌟</div>
+          <p style={{ margin: 0, fontFamily: "'DM Serif Display', serif", fontSize: "1.1rem", color: "#1a3560" }}>{t.ratingThanks}</p>
+        </motion.div>
+      ) : (
+        <>
+          <div>
+            <p style={{ margin: "0 0 4px", fontFamily: "'DM Serif Display', serif", fontSize: "1.1rem", color: "#1a3560" }}>{t.ratingTitle}</p>
+            <p style={{ margin: 0, fontSize: "0.78rem", color: "rgba(26,53,96,0.45)" }}>{t.ratingSub}</p>
+          </div>
+          <div style={{ display: "flex", gap: 8 }}>
+            {[1,2,3,4,5].map(n => (
+              <button key={n} onClick={() => setStars(n)}
+                onMouseEnter={() => setHovered(n)} onMouseLeave={() => setHovered(0)}
+                style={{ background: "none", border: "none", cursor: "pointer", padding: 4, fontSize: "1.8rem", lineHeight: 1,
+                  animation: n <= stars ? "starPop 0.25s ease" : "none",
+                  filter: n <= (hovered || stars) ? "none" : "grayscale(1) opacity(0.4)",
+                  transform: n <= (hovered || stars) ? "scale(1.1)" : "scale(1)",
+                  transition: "transform 0.15s, filter 0.15s" }}>
+                ⭐
+              </button>
+            ))}
+          </div>
+          {stars > 0 && (
+            <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} style={{ width: "100%", maxWidth: 360, overflow: "hidden" }}>
+              <textarea value={note} onChange={e => setNote(e.target.value)} placeholder={t.ratingNote} rows={2}
+                style={{ width: "100%", boxSizing: "border-box", background: "#f5f8ff", border: "1px solid rgba(184,212,240,0.5)", borderRadius: 10, padding: "10px 14px", fontSize: "0.82rem", color: "#1a3560", fontFamily: "Inter,sans-serif", resize: "vertical", outline: "none", marginBottom: 10 }} />
+              <button onClick={handleSubmit} disabled={saving}
+                style={{ background: "#e8607a", border: "none", borderRadius: 10, padding: "10px 28px", color: "white", fontSize: "0.78rem", fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", cursor: saving ? "wait" : "pointer", fontFamily: "Inter,sans-serif", opacity: saving ? 0.7 : 1, boxShadow: "0 3px 12px rgba(232,96,122,0.28)" }}>
+                {saving ? t.ratingSubmitting : t.ratingSubmit}
+              </button>
+            </motion.div>
+          )}
+        </>
+      )}
+    </motion.div>
+  );
+}
+
 function translateAnswer(questionId: number, value: string, questions: LocaleData["questions"]): string {
   const q = questions[questionId];
   if (!q || !q.options) return value;
@@ -145,11 +211,19 @@ export default function ReportPage() {
       <style>{`
         @keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
         @keyframes heartbeat{0%,100%{transform:scale(1)}14%{transform:scale(1.08)}28%{transform:scale(1)}42%{transform:scale(1.05)}70%{transform:scale(1)}}
+        @keyframes starPop{0%{transform:scale(1)}40%{transform:scale(1.35)}100%{transform:scale(1)}}
         @media print {
           body { background: white !important; }
           .no-print { display: none !important; }
           .print-page { page-break-inside: avoid; }
           * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        }
+        .share-row { display:flex; flex-wrap:wrap; gap:12px; align-items:center; }
+        .share-btns { display:flex; gap:8px; flex-wrap:wrap; }
+        @media(max-width:540px){
+          .share-row { flex-direction:column; align-items:stretch; }
+          .share-btns { justify-content:flex-start; }
+          .share-btn { font-size:0.65rem !important; padding:6px 10px !important; }
         }
       `}</style>
 
@@ -195,28 +269,28 @@ export default function ReportPage() {
             </div>
 
             {/* Share card */}
-            <div style={{ marginTop: 20, maxWidth: 560, marginLeft: "auto", marginRight: "auto" }} className="no-print">
+            <div style={{ marginTop: 20, maxWidth: 560, marginLeft: "auto", marginRight: "auto", overflow: "hidden" }} className="no-print">
               {/* Action row */}
-              <div style={{ background: "rgba(255,255,255,0.7)", border: "1px solid rgba(184,212,240,0.5)", borderRadius: showEmailPanel ? "12px 12px 0 0" : 12, padding: "14px 18px", display: "flex", flexWrap: "wrap", gap: 12, alignItems: "center" }}>
+              <div className="share-row" style={{ background: "rgba(255,255,255,0.7)", border: "1px solid rgba(184,212,240,0.5)", borderRadius: showEmailPanel ? "12px 12px 0 0" : 12, padding: "14px 18px" }}>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <p style={{ fontSize: "0.58rem", letterSpacing: "0.2em", textTransform: "uppercase", color: "#e8607a", fontWeight: 600, marginBottom: 4 }}>{t.shareableLink}</p>
-                  <p style={{ fontSize: "0.72rem", color: "rgba(26,53,96,0.35)", fontFamily: "monospace", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{reportUrl}</p>
+                  <p style={{ fontSize: "0.72rem", color: "rgba(26,53,96,0.35)", fontFamily: "monospace", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", minWidth: 0 }}>{reportUrl}</p>
                 </div>
-                <div style={{ display: "flex", gap: 8, flexShrink: 0, flexWrap: "wrap" }}>
-                  <button onClick={handleCopy} data-testid="button-copy-report-link"
+                <div className="share-btns">
+                  <button onClick={handleCopy} data-testid="button-copy-report-link" className="share-btn"
                     style={{ background: "rgba(232,96,122,0.1)", border: "1px solid rgba(232,96,122,0.22)", borderRadius: 8, padding: "7px 14px", color: "#e8607a", fontSize: "0.72rem", fontWeight: 600, letterSpacing: "0.06em", textTransform: "uppercase", cursor: "pointer", fontFamily: "Inter,sans-serif", display: "flex", alignItems: "center", gap: 5 }}>
                     {copied ? <Check size={11} /> : <Copy size={11} />} {copied ? t.copiedBtn : t.copyBtn}
                   </button>
-                  <button onClick={handleShare} data-testid="button-share-report"
+                  <button onClick={handleShare} data-testid="button-share-report" className="share-btn"
                     style={{ background: "rgba(232,96,122,0.1)", border: "1px solid rgba(232,96,122,0.22)", borderRadius: 8, padding: "7px 14px", color: "#e8607a", fontSize: "0.72rem", fontWeight: 600, letterSpacing: "0.06em", textTransform: "uppercase", cursor: "pointer", fontFamily: "Inter,sans-serif", display: "flex", alignItems: "center", gap: 5 }}>
                     <Share2 size={11} /> {t.shareBtn}
                   </button>
-                  <button onClick={handleDownloadPdf} data-testid="button-download-pdf"
+                  <button onClick={handleDownloadPdf} data-testid="button-download-pdf" className="share-btn"
                     style={{ background: "rgba(232,96,122,0.1)", border: "1px solid rgba(232,96,122,0.22)", borderRadius: 8, padding: "7px 14px", color: "#e8607a", fontSize: "0.72rem", fontWeight: 600, letterSpacing: "0.06em", textTransform: "uppercase", cursor: "pointer", fontFamily: "Inter,sans-serif", display: "flex", alignItems: "center", gap: 5 }}>
                     <FileDown size={11} /> {t.downloadPdf}
                   </button>
-                  <button onClick={() => setShowEmailPanel(p => !p)} data-testid="button-email-report"
-                    style={{ background: showEmailPanel ? "#e8607a" : "#e8607a", border: "none", borderRadius: 8, padding: "7px 14px", color: "white", fontSize: "0.72rem", fontWeight: 600, letterSpacing: "0.06em", textTransform: "uppercase", cursor: "pointer", fontFamily: "Inter,sans-serif", display: "flex", alignItems: "center", gap: 5, boxShadow: "0 2px 10px rgba(232,96,122,0.28)" }}>
+                  <button onClick={() => setShowEmailPanel(p => !p)} data-testid="button-email-report" className="share-btn"
+                    style={{ background: "#e8607a", border: "none", borderRadius: 8, padding: "7px 14px", color: "white", fontSize: "0.72rem", fontWeight: 600, letterSpacing: "0.06em", textTransform: "uppercase", cursor: "pointer", fontFamily: "Inter,sans-serif", display: "flex", alignItems: "center", gap: 5, boxShadow: "0 2px 10px rgba(232,96,122,0.28)" }}>
                     {showEmailPanel ? <X size={11} /> : <Mail size={11} />} {t.emailReport}
                   </button>
                 </div>
@@ -378,6 +452,9 @@ export default function ReportPage() {
           </p>
         </div>
 
+        {/* Star rating card */}
+        <StarRatingCard sessionCode={params.sessionCode} t={t} />
+
         {/* Donation card */}
         <motion.div
           initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.9, duration: 0.5 }}
@@ -389,14 +466,14 @@ export default function ReportPage() {
             <p style={{ margin: 0, fontSize: "0.82rem", color: "rgba(26,53,96,0.5)", lineHeight: 1.7, maxWidth: 400 }}>{t.donateDesc}</p>
           </div>
           <a
-            href="https://paypal.me/YOURNAME"
+            href="https://paypal.me/morganamona"
             target="_blank"
             rel="noreferrer"
             style={{ background: "#003087", borderRadius: 12, padding: "11px 28px", color: "white", fontSize: "0.78rem", fontWeight: 700, textDecoration: "none", letterSpacing: "0.08em", textTransform: "uppercase", boxShadow: "0 3px 14px rgba(0,48,135,0.22)", display: "inline-flex", alignItems: "center", gap: 8 }}>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="white"><path d="M7.076 21.337H2.47a.641.641 0 0 1-.633-.74L4.944.901C5.026.382 5.474 0 5.998 0h7.46c2.57 0 4.578.543 5.69 1.81 1.01 1.15 1.304 2.42 1.012 4.287-.023.143-.047.288-.077.437-.983 5.05-4.349 6.797-8.647 6.797h-2.19c-.524 0-.968.382-1.05.9l-1.12 7.106zm14.146-14.42a3.35 3.35 0 0 0-.607-.541c-.013.076-.026.175-.041.254-.93 4.778-4.005 7.201-9.138 7.201h-2.19a.563.563 0 0 0-.556.479l-1.187 7.527h-.506l-.24 1.516a.56.56 0 0 0 .554.647h3.882c.46 0 .85-.334.922-.788.06-.26.76-4.852.816-5.09a.932.932 0 0 1 .92-.788h.58c3.76 0 6.705-1.528 7.565-5.946.36-1.847.174-3.388-.774-4.471z"/></svg>
             {t.donateBtn}
           </a>
-          <p style={{ margin: 0, fontSize: "0.7rem", color: "rgba(26,53,96,0.28)" }}>paypal.me/YOURNAME</p>
+          <p style={{ margin: 0, fontSize: "0.7rem", color: "rgba(26,53,96,0.28)" }}>paypal.me/morganamona</p>
         </motion.div>
       </div>
     </div>

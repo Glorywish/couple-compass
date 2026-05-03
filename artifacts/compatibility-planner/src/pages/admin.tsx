@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import { useLocation } from "wouter";
 import { Users, CheckCircle, Clock, Mail, AlertCircle, ChevronDown, ChevronUp, ArrowLeft } from "lucide-react";
 
-const PAYPAL_URL = "https://paypal.me/YOURNAME";
+const PAYPAL_URL = "https://paypal.me/morganamona";
 
 interface SessionData {
   id: number;
@@ -15,6 +15,7 @@ interface SessionData {
   partner2CompletedAt: string | null;
   status: "complete" | "partial" | "pending";
   reminders: { email: string; reminderDueAt: string; sentAt: string | null }[];
+  rating: { stars: number; note: string | null } | null;
 }
 
 interface StatsData {
@@ -25,6 +26,8 @@ interface StatsData {
     noneCompleted: number;
     remindersSent: number;
     remindersPending: number;
+    totalRatings: number;
+    avgRating: number | null;
   };
   sessions: SessionData[];
 }
@@ -100,6 +103,17 @@ function SessionRow({ s }: { s: SessionData }) {
               style={{ fontSize: "0.72rem", color: "#e8607a", textDecoration: "none", fontWeight: 600, letterSpacing: "0.06em", textTransform: "uppercase" }}>
               View Report →
             </a>
+          )}
+
+          {s.rating && (
+            <div style={{ background: "rgba(232,96,122,0.05)", borderRadius: 8, padding: "10px 14px" }}>
+              <p style={{ fontSize: "0.6rem", textTransform: "uppercase", letterSpacing: "0.1em", color: "rgba(26,53,96,0.4)", margin: "0 0 4px" }}>Rating</p>
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <span style={{ fontSize: "1rem" }}>{"⭐".repeat(s.rating.stars)}</span>
+                <span style={{ fontSize: "0.72rem", color: "rgba(26,53,96,0.5)", fontWeight: 600 }}>{s.rating.stars}/5</span>
+              </div>
+              {s.rating.note && <p style={{ margin: "6px 0 0", fontSize: "0.78rem", color: "rgba(26,53,96,0.6)", fontStyle: "italic", lineHeight: 1.5 }}>"{s.rating.note}"</p>}
+            </div>
           )}
 
           {s.reminders.length > 0 && (
