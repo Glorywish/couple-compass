@@ -130,6 +130,9 @@ export interface LocaleData {
       sendEmail: string;
       emailFailed: string;
       emailNotConfigured: string;
+      donateTitle: string;
+      donateDesc: string;
+      donateBtn: string;
     };
     errors: {
       sessionNotFound: string;

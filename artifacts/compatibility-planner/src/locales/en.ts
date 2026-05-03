@@ -129,6 +129,9 @@ const en: LocaleData = {
       sendEmail: "Send",
       emailFailed: "Failed to send email",
       emailNotConfigured: "Email delivery is not set up yet",
+      donateTitle: "Did this help you?",
+      donateDesc: "Couple Compass is free and made with love. If it sparked meaningful conversations, consider buying us a coffee.",
+      donateBtn: "Support this project",
     },
     errors: {
       sessionNotFound: "Session not found. Please check your code and try again.",

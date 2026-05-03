@@ -12,6 +12,7 @@ import JoinPage from "@/pages/join";
 import QuestionnairePage from "@/pages/questionnaire";
 import WaitingPage from "@/pages/waiting";
 import ReportPage from "@/pages/report";
+import AdminPage from "@/pages/admin";
 
 const queryClient = new QueryClient();
 
@@ -36,6 +37,7 @@ function AnimatedRoutes() {
           <Route path="/questionnaire/:sessionCode/:partnerSlot" component={QuestionnairePage} />
           <Route path="/waiting/:sessionCode/:partnerSlot" component={WaitingPage} />
           <Route path="/report/:sessionCode" component={ReportPage} />
+          <Route path="/admin" component={AdminPage} />
           <Route component={NotFound} />
         </Switch>
       </motion.div>

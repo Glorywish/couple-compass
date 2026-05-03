@@ -129,6 +129,9 @@ const fr: LocaleData = {
       sendEmail: "Envoyer",
       emailFailed: "Échec de l'envoi",
       emailNotConfigured: "L'envoi d'e-mail n'est pas encore configuré",
+      donateTitle: "Cela vous a-t-il aidé ?",
+      donateDesc: "Couple Compass est gratuit et fait avec amour. S'il a ouvert des conversations importantes, pensez à nous soutenir.",
+      donateBtn: "Soutenir ce projet",
     },
     errors: {
       sessionNotFound: "Session introuvable. Veuillez vérifier votre code et réessayer.",

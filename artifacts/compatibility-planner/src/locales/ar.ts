@@ -129,6 +129,9 @@ const ar: LocaleData = {
       sendEmail: "إرسال",
       emailFailed: "فشل إرسال البريد",
       emailNotConfigured: "خدمة البريد الإلكتروني غير مفعّلة بعد",
+      donateTitle: "هل أفادكما هذا؟",
+      donateDesc: "Couple Compass مجاني وصُنع بمحبة. إن أشعل حوارات حقيقية بينكما، فكّرا في دعمنا.",
+      donateBtn: "دعم هذا المشروع",
     },
     errors: {
       sessionNotFound: "الجلسة غير موجودة. يرجى التحقق من الرمز والمحاولة مجدداً.",

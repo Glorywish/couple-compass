@@ -129,6 +129,9 @@ const zh: LocaleData = {
       sendEmail: "发送",
       emailFailed: "发送失败",
       emailNotConfigured: "邮件功能尚未配置",
+      donateTitle: "这对你们有帮助吗？",
+      donateDesc: "Couple Compass 是免费的，用心打造。如果它引发了有意义的对话，欢迎支持我们继续创作。",
+      donateBtn: "支持这个项目",
     },
     errors: {
       sessionNotFound: "找不到该会话，请检查代码后重试。",
