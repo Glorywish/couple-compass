@@ -1,5 +1,6 @@
-import { Switch, Route, Router as WouterRouter } from "wouter";
+import { Switch, Route, Router as WouterRouter, useLocation } from "wouter";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { AnimatePresence, motion } from "framer-motion";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { I18nProvider } from "@/lib/i18n";
@@ -14,17 +15,31 @@ import ReportPage from "@/pages/report";
 
 const queryClient = new QueryClient();
 
-function Router() {
+/* ── Per-route page transitions ── */
+function AnimatedRoutes() {
+  const [location] = useLocation();
+
   return (
-    <Switch>
-      <Route path="/" component={Home} />
-      <Route path="/start" component={StartPage} />
-      <Route path="/join" component={JoinPage} />
-      <Route path="/questionnaire/:sessionCode/:partnerSlot" component={QuestionnairePage} />
-      <Route path="/waiting/:sessionCode/:partnerSlot" component={WaitingPage} />
-      <Route path="/report/:sessionCode" component={ReportPage} />
-      <Route component={NotFound} />
-    </Switch>
+    <AnimatePresence mode="wait" initial={false}>
+      <motion.div
+        key={location}
+        initial={{ opacity: 0, y: 10, scale: 0.985 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        exit={{ opacity: 0, y: -6, scale: 0.99 }}
+        transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+        style={{ position: "relative", width: "100%", minHeight: "100vh" }}
+      >
+        <Switch>
+          <Route path="/" component={Home} />
+          <Route path="/start" component={StartPage} />
+          <Route path="/join" component={JoinPage} />
+          <Route path="/questionnaire/:sessionCode/:partnerSlot" component={QuestionnairePage} />
+          <Route path="/waiting/:sessionCode/:partnerSlot" component={WaitingPage} />
+          <Route path="/report/:sessionCode" component={ReportPage} />
+          <Route component={NotFound} />
+        </Switch>
+      </motion.div>
+    </AnimatePresence>
   );
 }
 
@@ -34,9 +49,9 @@ function App() {
       <QueryClientProvider client={queryClient}>
         <TooltipProvider>
           <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
-            <Router />
+            <AnimatedRoutes />
+            <LanguageSwitcher />
           </WouterRouter>
-          <LanguageSwitcher />
           <Toaster />
         </TooltipProvider>
       </QueryClientProvider>
