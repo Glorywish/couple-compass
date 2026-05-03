@@ -469,10 +469,62 @@ export default function ReportPage() {
         @keyframes heartbeat{0%,100%{transform:scale(1)}14%{transform:scale(1.08)}28%{transform:scale(1)}42%{transform:scale(1.05)}70%{transform:scale(1)}}
         @keyframes starPop{0%{transform:scale(1)}40%{transform:scale(1.35)}100%{transform:scale(1)}}
         @media print {
-          body { background: white !important; }
+          @page { size: A4; margin: 18mm 16mm 20mm; }
+          body { background: white !important; font-size: 11pt; }
+          * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
           .no-print { display: none !important; }
           .print-page { page-break-inside: avoid; }
-          * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+
+          /* Remove screen-only decorations */
+          [style*="box-shadow"] { box-shadow: none !important; }
+          [style*="animation"] { animation: none !important; }
+
+          /* Full-width layout for A4 */
+          div[style*="max-width: 720px"],
+          div[style*="max-width:720px"] { max-width: 100% !important; padding: 0 !important; }
+
+          /* Hero section: white background, compact padding */
+          div[style*="linear-gradient(160deg"] {
+            background: white !important;
+            border-bottom: 1.5pt solid #e8607a !important;
+            padding-bottom: 24pt !important;
+          }
+
+          /* Print branding header */
+          div[style*="linear-gradient(160deg"]::before {
+            content: "Couple Compass";
+            display: block;
+            font-family: 'DM Serif Display', serif;
+            font-size: 13pt;
+            color: #e8607a;
+            letter-spacing: 0.12em;
+            text-align: center;
+            margin-bottom: 18pt;
+          }
+
+          /* Body section */
+          div[style*="padding: 52px 24px"] { padding: 20pt 0 0 !important; gap: 28pt !important; }
+
+          /* Category score cards: 2 columns */
+          div[style*="gridTemplateColumns"] {
+            grid-template-columns: repeat(2, 1fr) !important;
+            gap: 8pt !important;
+          }
+
+          /* Avoid breaking cards/sections across pages */
+          section, .print-page,
+          div[style*="border-radius: 14px"],
+          div[style*="border-radius: 18px"] { page-break-inside: avoid; }
+          h1, h2, h3 { page-break-after: avoid; }
+          section { page-break-before: auto; }
+
+          /* Progress bars need colour */
+          div[style*="background: rgb(184, 212, 240)"],
+          div[style*="background: rgb(232, 96, 122)"],
+          div[style*="background: rgb(212, 168, 83)"] { -webkit-print-color-adjust: exact !important; }
+
+          /* Footer page numbers */
+          @page { @bottom-center { content: "Couple Compass  ·  Page " counter(page); font-size: 8pt; color: #aaa; } }
         }
         .share-row { display:flex; flex-wrap:wrap; gap:12px; align-items:center; }
         .share-btns { display:flex; gap:8px; flex-wrap:wrap; }
