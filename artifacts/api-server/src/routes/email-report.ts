@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { db, sessionsTable, partnerResponsesTable, answersTable, questionsTable } from "@workspace/db";
+import { db, sessionsTable, partnerResponsesTable, answersTable, questionsTable, remindersTable } from "@workspace/db";
 import { eq } from "drizzle-orm";
 
 const emailReportRouter = Router();
@@ -279,6 +279,18 @@ emailReportRouter.post("/sessions/:sessionCode/email-report", async (req, res) =
       res.status(500).json({ error: "Failed to send email" });
       return;
     }
+
+    const reminderDueAt = new Date();
+    reminderDueAt.setDate(reminderDueAt.getDate() + 30);
+
+    await db.insert(remindersTable).values(
+      (emails as string[]).map(email => ({
+        sessionId: session.id,
+        sessionCode,
+        email,
+        reminderDueAt,
+      }))
+    );
 
     res.json({ sent: true });
   } catch (err) {
