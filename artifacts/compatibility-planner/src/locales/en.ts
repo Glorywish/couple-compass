@@ -42,6 +42,8 @@ const en: LocaleData = {
       supportIbanCopied: "Copied!",
       linkedinLabel: "Have a question or idea?",
       linkedinBtn: "Reach out on LinkedIn",
+      quranVerseTranslation: "And of His signs is that He created for you from yourselves mates that you may find tranquility in them; and He placed between you affection and mercy.",
+      quranVerseRef: "Surah Ar-Rum, 30:21",
     },
     start: {
       title: "Start your session",
@@ -154,6 +156,7 @@ const en: LocaleData = {
       cihRib: "230 640 5881663211034200 41",
       cihCopy: "Copy RIB",
       cihCopied: "Copied!",
+      whatsappShare: "Share via WhatsApp",
     },
     errors: {
       sessionNotFound: "Session not found. Please check your code and try again.",

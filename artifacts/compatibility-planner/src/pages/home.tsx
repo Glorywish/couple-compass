@@ -360,6 +360,24 @@ export default function Home() {
         </div>
       </div>
 
+      {/* ── QURAN VERSE ── */}
+      <div style={{ background: "linear-gradient(135deg,#1a3560 0%,#0d2040 100%)", padding: "72px 24px", textAlign: "center" }}>
+        <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.8 }}
+          style={{ maxWidth: 720, margin: "0 auto" }}>
+          <div style={{ width: 36, height: 2, background: "rgba(232,96,122,0.6)", margin: "0 auto 32px" }} />
+          <p style={{ fontFamily: "'Amiri', serif", fontSize: "clamp(20px,3.5vw,30px)", color: "rgba(255,255,255,0.92)", lineHeight: 1.9, direction: "rtl", marginBottom: 24, letterSpacing: "0.02em" }}>
+            وَمِنْ آيَاتِهِ أَنْ خَلَقَ لَكُم مِّنْ أَنفُسِكُمْ أَزْوَاجًا لِّتَسْكُنُوا إِلَيْهَا وَجَعَلَ بَيْنَكُم مَّوَدَّةً وَرَحْمَةً
+          </p>
+          <p style={{ fontFamily: serifFont, fontSize: "clamp(0.9rem,2vw,1.1rem)", color: "rgba(232,96,122,0.85)", fontStyle: "italic", lineHeight: 1.8, maxWidth: 560, margin: "0 auto 20px" }}>
+            "{t.home.quranVerseTranslation}"
+          </p>
+          <p style={{ fontSize: "0.62rem", letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(255,255,255,0.28)", fontWeight: 600 }}>
+            {t.home.quranVerseRef}
+          </p>
+          <div style={{ width: 36, height: 2, background: "rgba(232,96,122,0.6)", margin: "32px auto 0" }} />
+        </motion.div>
+      </div>
+
       {/* ── SUPPORT + LINKEDIN ── */}
       <HomeSupportSection t={t.home} />
 

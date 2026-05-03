@@ -42,6 +42,8 @@ const zh: LocaleData = {
       supportIbanCopied: "已复制！",
       linkedinLabel: "有问题或想法？",
       linkedinBtn: "在 LinkedIn 上联系",
+      quranVerseTranslation: "他从你们自身中为你们创造配偶，以便你们依恋她们，并在你们之间造就了仁爱与慈悲。",
+      quranVerseRef: "古兰经·罗马章，30:21",
     },
     start: {
       title: "创建你的会话",
@@ -154,6 +156,7 @@ const zh: LocaleData = {
       cihRib: "230 640 5881663211034200 41",
       cihCopy: "复制 RIB",
       cihCopied: "已复制！",
+      whatsappShare: "通过 WhatsApp 分享",
     },
     errors: {
       sessionNotFound: "找不到该会话，请检查代码后重试。",

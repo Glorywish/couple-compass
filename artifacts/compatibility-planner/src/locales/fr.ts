@@ -42,6 +42,8 @@ const fr: LocaleData = {
       supportIbanCopied: "Copié !",
       linkedinLabel: "Une question ou une idée ?",
       linkedinBtn: "Contactez sur LinkedIn",
+      quranVerseTranslation: "Parmi Ses signes, Il a créé pour vous, de vous-mêmes, des épouses pour que vous trouviez auprès d'elles la quiétude ; et Il a mis entre vous affection et bonté.",
+      quranVerseRef: "Sourate Ar-Rum, 30:21",
     },
     start: {
       title: "Créez votre session",
@@ -154,6 +156,7 @@ const fr: LocaleData = {
       cihRib: "230 640 5881663211034200 41",
       cihCopy: "Copier le RIB",
       cihCopied: "Copié !",
+      whatsappShare: "Partager sur WhatsApp",
     },
     errors: {
       sessionNotFound: "Session introuvable. Veuillez vérifier votre code et réessayer.",

@@ -42,6 +42,8 @@ const es: LocaleData = {
       supportIbanCopied: "Copiado!",
       linkedinLabel: "Tienes una pregunta o idea?",
       linkedinBtn: "Contactar en LinkedIn",
+      quranVerseTranslation: "Entre Sus signos está que creó para vosotros, de vuestra propia especie, compañeras para que halléis en ellas paz, e hizo surgir entre vosotros amor y ternura.",
+      quranVerseRef: "Sura Ar-Rum, 30:21",
     },
     start: {
       title: "Inicia tu sesión",
@@ -154,6 +156,7 @@ const es: LocaleData = {
       cihRib: "230 640 5881663211034200 41",
       cihCopy: "Copiar RIB",
       cihCopied: "¡Copiado!",
+      whatsappShare: "Compartir por WhatsApp",
     },
     errors: {
       sessionNotFound: "Sesión no encontrada. Por favor verifica tu código e intenta de nuevo.",

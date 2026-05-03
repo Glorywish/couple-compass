@@ -158,7 +158,13 @@ function ShareResultCard({ partner1Name, partner2Name, score, topStrengths, repo
           }
         </button>
       </div>
-      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+        <a href={`https://wa.me/?text=${encodeURIComponent(`${partner1Name} & ${partner2Name} scored ${score}/100 on our compatibility report 💛\n${reportUrl}`)}`}
+          target="_blank" rel="noreferrer"
+          style={{ background: "#25d366", borderRadius: 10, padding: "8px 16px", color: "white", fontSize: "0.72rem", fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 7, boxShadow: "0 3px 12px rgba(37,211,102,0.28)", whiteSpace: "nowrap" }}>
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M11.999 2.003C6.477 2.003 2 6.479 2 11.999c0 1.758.46 3.408 1.258 4.851L2 22l5.29-1.24A9.958 9.958 0 0 0 12 22c5.523 0 10-4.477 10-10S17.522 2.003 12 2.003z"/></svg>
+          {t.whatsappShare}
+        </a>
         <input ref={fileRef} type="file" accept="image/*" style={{ display: "none" }} onChange={handlePhotoSelect} />
         <button onClick={() => fileRef.current?.click()}
           style={{ background: photoUrl ? "rgba(232,96,122,0.1)" : "rgba(255,255,255,0.7)", border: `1.5px ${photoUrl ? "solid #e8607a" : "dashed rgba(26,53,96,0.2)"}`, borderRadius: 10, padding: "8px 16px", color: photoUrl ? "#e8607a" : "rgba(26,53,96,0.45)", fontSize: "0.72rem", fontWeight: 600, letterSpacing: "0.06em", textTransform: "uppercase", cursor: "pointer", fontFamily: "Inter,sans-serif", display: "inline-flex", alignItems: "center", gap: 7 }}>

@@ -42,6 +42,8 @@ const ar: LocaleData = {
       supportIbanCopied: "تم النسخ!",
       linkedinLabel: "لديك سؤال أو فكرة؟",
       linkedinBtn: "تواصل عبر LinkedIn",
+      quranVerseTranslation: "وَجَعَلَ بَيْنَكُم مَّوَدَّةً وَرَحْمَةً",
+      quranVerseRef: "سورة الروم، الآية ٢١",
     },
     start: {
       title: "ابدأ جلستك",
@@ -154,6 +156,7 @@ const ar: LocaleData = {
       cihRib: "230 640 5881663211034200 41",
       cihCopy: "نسخ RIB",
       cihCopied: "تم النسخ!",
+      whatsappShare: "مشاركة عبر واتساب",
     },
     errors: {
       sessionNotFound: "الجلسة غير موجودة. يرجى التحقق من الرمز والمحاولة مجدداً.",

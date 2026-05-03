@@ -43,6 +43,8 @@ export interface LocaleData {
       supportIbanCopied: string;
       linkedinLabel: string;
       linkedinBtn: string;
+      quranVerseTranslation: string;
+      quranVerseRef: string;
     };
     start: {
       title: string;
@@ -155,6 +157,7 @@ export interface LocaleData {
       cihRib: string;
       cihCopy: string;
       cihCopied: string;
+      whatsappShare: string;
     };
     errors: {
       sessionNotFound: string;
