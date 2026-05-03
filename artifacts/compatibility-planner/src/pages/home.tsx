@@ -5,8 +5,9 @@ import { AnimatePresence } from "framer-motion";
 import { ArrowRight, Heart } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 
-const CIH_RIB  = "230 640 5881663211034200 41";
-const CIH_IBAN = "MA64 2306 4058 8166 3211 0342 0041";
+const CIH_RIB   = "230 640 5881663211034200 41";
+const CIH_IBAN  = "MA64 2306 4058 8166 3211 0342 0041";
+const CIH_SWIFT = "CIHMMAMC";
 
 const BASE = import.meta.env.BASE_URL;
 
@@ -55,8 +56,18 @@ function useHeartBloom() {
 type HomeT = ReturnType<typeof useI18n>["data"]["ui"]["home"];
 
 function HomeSupportSection({ t }: { t: HomeT }) {
+  const { data: locData } = useI18n();
+  const serifFont = locData.meta.dir === "rtl" ? "'Amiri', serif" : "'DM Serif Display', serif";
   const [ribCopied, setRibCopied] = useState(false);
   const [ibanCopied, setIbanCopied] = useState(false);
+  const [swiftCopied, setSwiftCopied] = useState(false);
+
+  const copySwift = () => {
+    navigator.clipboard.writeText(CIH_SWIFT).then(() => {
+      setSwiftCopied(true);
+      setTimeout(() => setSwiftCopied(false), 2500);
+    });
+  };
 
   const copy = (text: string, which: "rib" | "iban") => {
     navigator.clipboard.writeText(text).then(() => {
@@ -73,7 +84,7 @@ function HomeSupportSection({ t }: { t: HomeT }) {
         <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6 }}
           style={{ background: "linear-gradient(135deg,#fce8ec 0%,#eaf3ff 100%)", border: "1px solid rgba(232,96,122,0.18)", borderRadius: 24, padding: "40px 36px", textAlign: "center" }}>
           <div style={{ fontSize: "2rem", marginBottom: 16 }}>💛</div>
-          <h2 style={{ fontFamily: "'DM Serif Display',serif", fontSize: "clamp(22px,4vw,30px)", color: "#1a3560", marginBottom: 10 }}>{t.supportTitle}</h2>
+          <h2 style={{ fontFamily: serifFont, fontSize: "clamp(22px,4vw,30px)", color: "#1a3560", marginBottom: 10 }}>{t.supportTitle}</h2>
           <p style={{ fontSize: "0.88rem", color: "rgba(26,53,96,0.5)", lineHeight: 1.8, maxWidth: 480, margin: "0 auto 28px" }}>{t.supportDesc}</p>
 
           {/* Buttons row */}
@@ -105,6 +116,17 @@ function HomeSupportSection({ t }: { t: HomeT }) {
               <p style={{ margin: "0 0 2px", fontSize: "0.6rem", textTransform: "uppercase", letterSpacing: "0.14em", color: "rgba(26,53,96,0.35)", fontWeight: 600 }}>IBAN</p>
               <p style={{ margin: 0, fontFamily: "monospace", fontSize: "0.85rem", color: "#1a3560", letterSpacing: "0.04em" }}>{CIH_IBAN}</p>
             </div>
+            <div style={{ background: "rgba(255,255,255,0.7)", border: "1px solid rgba(26,53,96,0.08)", borderRadius: 10, padding: "10px 16px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
+              <div>
+                <p style={{ margin: "0 0 2px", fontSize: "0.6rem", textTransform: "uppercase", letterSpacing: "0.14em", color: "rgba(26,53,96,0.35)", fontWeight: 600 }}>BIC / SWIFT</p>
+                <p style={{ margin: 0, fontFamily: "monospace", fontSize: "0.85rem", color: "#1a3560", letterSpacing: "0.1em" }}>{CIH_SWIFT}</p>
+              </div>
+              <button onClick={copySwift}
+                style={{ background: "transparent", border: "1px solid rgba(26,53,96,0.15)", borderRadius: 8, padding: "5px 10px", color: swiftCopied ? "#27ae60" : "rgba(26,53,96,0.45)", fontSize: "0.62rem", fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", cursor: "pointer", fontFamily: "Inter,sans-serif", display: "inline-flex", alignItems: "center", gap: 6, whiteSpace: "nowrap", transition: "color 0.2s,border-color 0.2s" }}>
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                {swiftCopied ? "Copied!" : "Copy"}
+              </button>
+            </div>
           </div>
         </motion.div>
 
@@ -112,7 +134,7 @@ function HomeSupportSection({ t }: { t: HomeT }) {
         <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6, delay: 0.1 }}
           style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 16, background: "#f5f8ff", border: "1px solid rgba(184,212,240,0.5)", borderRadius: 18, padding: "24px 28px" }}>
           <div>
-            <p style={{ margin: "0 0 4px", fontFamily: "'DM Serif Display',serif", fontSize: "1.05rem", color: "#1a3560" }}>{t.linkedinLabel}</p>
+            <p style={{ margin: "0 0 4px", fontFamily: serifFont, fontSize: "1.05rem", color: "#1a3560" }}>{t.linkedinLabel}</p>
             <p style={{ margin: 0, fontSize: "0.78rem", color: "rgba(26,53,96,0.4)" }}>linkedin.com/in/majdaki</p>
           </div>
           <a href="https://www.linkedin.com/in/majdaki" target="_blank" rel="noreferrer"
@@ -131,6 +153,7 @@ export default function Home() {
   const [, setLocation] = useLocation();
   const { data } = useI18n();
   const t = data.ui;
+  const serifFont = data.meta.dir === "rtl" ? "'Amiri', serif" : "'DM Serif Display', serif";
   const { bloom, trigger } = useHeartBloom();
 
   return (
@@ -174,7 +197,7 @@ export default function Home() {
             <span style={{ fontSize:"0.66rem", letterSpacing:"0.22em", textTransform:"uppercase", color:"#e8607a", fontWeight:600 }}>{t.home.badge}</span>
             <div style={{ width:24, height:1, background:"rgba(232,96,122,0.4)" }} />
           </div>
-          <h1 style={{ fontSize:"clamp(38px,7vw,70px)", fontFamily:"'DM Serif Display',serif", fontWeight:400, lineHeight:1.06, color:"#1a3560", marginBottom:"1.2rem" }}>
+          <h1 style={{ fontSize:"clamp(38px,7vw,70px)", fontFamily:serifFont, fontWeight:400, lineHeight:1.06, color:"#1a3560", marginBottom:"1.2rem" }}>
             {t.home.title1}<br />
             <em style={{ fontStyle:"italic", color:"#e8607a" }}>{t.home.title2}</em>
           </h1>
@@ -216,20 +239,20 @@ export default function Home() {
               <p style={{ fontSize:"0.62rem", letterSpacing:"0.22em", textTransform:"uppercase", color:"#e8607a", fontWeight:600, marginBottom:14 }}>
                 {t.home.coupleSection}
               </p>
-              <h2 style={{ fontFamily:"'DM Serif Display',serif", fontSize:"clamp(32px,4.5vw,50px)", color:"#1a3560", lineHeight:1.1, marginBottom:28 }}>
+              <h2 style={{ fontFamily:serifFont, fontSize:"clamp(32px,4.5vw,50px)", color:"#1a3560", lineHeight:1.1, marginBottom:28 }}>
                 <em style={{ fontStyle:"italic", color:"#e8607a" }}>{t.home.coupleSectionHeading}</em>
               </h2>
 
               <div style={{ display:"flex", flexDirection:"column", gap:16, marginBottom:32 }}>
                 <div style={{ display:"flex", gap:14, alignItems:"flex-start" }}>
                   <Heart size={14} color="#e8607a" fill="rgba(232,96,122,0.3)" style={{ marginTop:4, flexShrink:0 }} />
-                  <p style={{ fontFamily:"'DM Serif Display',serif", fontSize:"1.1rem", color:"rgba(26,53,96,0.7)", fontStyle:"italic", lineHeight:1.7 }}>
+                  <p style={{ fontFamily:serifFont, fontSize:"1.1rem", color:"rgba(26,53,96,0.7)", fontStyle:"italic", lineHeight:1.7 }}>
                     {t.home.coupleQuote1}
                   </p>
                 </div>
                 <div style={{ display:"flex", gap:14, alignItems:"flex-start" }}>
                   <Heart size={14} color="#b8d4f0" fill="rgba(184,212,240,0.3)" style={{ marginTop:4, flexShrink:0 }} />
-                  <p style={{ fontFamily:"'DM Serif Display',serif", fontSize:"1.1rem", color:"rgba(26,53,96,0.7)", fontStyle:"italic", lineHeight:1.7 }}>
+                  <p style={{ fontFamily:serifFont, fontSize:"1.1rem", color:"rgba(26,53,96,0.7)", fontStyle:"italic", lineHeight:1.7 }}>
                     {t.home.coupleQuote2}
                   </p>
                 </div>
@@ -254,7 +277,7 @@ export default function Home() {
                 initial={{ opacity:0, y:12 }} whileInView={{ opacity:1, y:0 }} viewport={{ once:true }} transition={{ delay:0.4, duration:0.6 }}
                 style={{ position:"absolute", bottom:-16, left:-16, background:"white", border:"1px solid rgba(232,96,122,0.2)", borderRadius:16, padding:"12px 18px", boxShadow:"0 8px 32px rgba(232,96,122,0.14)", display:"flex", alignItems:"center", gap:10 }}>
                 <Heart size={16} color="#e8607a" fill="rgba(232,96,122,0.2)" />
-                <p style={{ fontFamily:"'DM Serif Display',serif", fontSize:"0.88rem", color:"#1a3560", fontStyle:"italic", whiteSpace:"nowrap" }}>
+                <p style={{ fontFamily:serifFont, fontSize:"0.88rem", color:"#1a3560", fontStyle:"italic", whiteSpace:"nowrap" }}>
                   {t.home.badge}
                 </p>
               </motion.div>
@@ -268,7 +291,7 @@ export default function Home() {
         <div style={{ maxWidth:760, margin:"0 auto" }}>
           <motion.div initial={{ opacity:0, y:20 }} whileInView={{ opacity:1, y:0 }} viewport={{ once:true }} transition={{ duration:0.6 }} className="text-center mb-14">
             <p style={{ fontSize:"0.65rem", letterSpacing:"0.22em", textTransform:"uppercase", color:"#e8607a", fontWeight:600, marginBottom:12 }}>{t.home.howTitle}</p>
-            <h2 style={{ fontFamily:"'DM Serif Display',serif", fontSize:"clamp(28px,5vw,40px)", color:"#1a3560", lineHeight:1.15, marginBottom:12 }}>
+            <h2 style={{ fontFamily:serifFont, fontSize:"clamp(28px,5vw,40px)", color:"#1a3560", lineHeight:1.15, marginBottom:12 }}>
               {t.home.howTitle}
             </h2>
             <p style={{ fontSize:"0.92rem", color:"rgba(26,53,96,0.5)", maxWidth:420, margin:"0 auto", lineHeight:1.8 }}>{t.home.howDesc}</p>
@@ -280,7 +303,7 @@ export default function Home() {
                 <div style={{ width:44, height:44, borderRadius:12, background:"#e8607a", color:"white", display:"flex", alignItems:"center", justifyContent:"center", fontSize:"0.78rem", fontWeight:700, letterSpacing:"0.04em", marginBottom:16, boxShadow:"0 4px 12px rgba(232,96,122,0.25)" }}>
                   {STEP_ICONS[i]}
                 </div>
-                <h3 style={{ fontFamily:"'DM Serif Display',serif", fontSize:"1.2rem", color:"#1a3560", marginBottom:8 }}>{step.title}</h3>
+                <h3 style={{ fontFamily:serifFont, fontSize:"1.2rem", color:"#1a3560", marginBottom:8 }}>{step.title}</h3>
                 <p style={{ fontSize:"0.87rem", color:"rgba(26,53,96,0.55)", lineHeight:1.8 }}>{step.desc}</p>
               </motion.div>
             ))}
@@ -305,7 +328,7 @@ export default function Home() {
                 initial={{ opacity:0, y:-12 }} whileInView={{ opacity:1, y:0 }} viewport={{ once:true }} transition={{ delay:0.4, duration:0.6 }}
                 style={{ position:"absolute", top:-16, right:-16, background:"#e8607a", borderRadius:16, padding:"10px 16px", boxShadow:"0 8px 24px rgba(232,96,122,0.3)", display:"flex", alignItems:"center", gap:8 }}>
                 <Heart size={14} color="white" fill="white" />
-                <p style={{ fontFamily:"'DM Serif Display',serif", fontSize:"0.85rem", color:"white", fontWeight:400, fontStyle:"italic", whiteSpace:"nowrap" }}>
+                <p style={{ fontFamily:serifFont, fontSize:"0.85rem", color:"white", fontWeight:400, fontStyle:"italic", whiteSpace:"nowrap" }}>
                   Couple Compass
                 </p>
               </motion.div>
@@ -315,7 +338,7 @@ export default function Home() {
             <motion.div initial={{ opacity:0, x:32 }} whileInView={{ opacity:1, x:0 }} viewport={{ once:true }} transition={{ duration:0.8, ease:[0.16,1,0.3,1] }}
               style={{ flex:1 }}>
               <Heart size={22} color="#e8607a" fill="rgba(232,96,122,0.2)" style={{ marginBottom:20 }} />
-              <p style={{ fontFamily:"'DM Serif Display',serif", fontSize:"clamp(1.2rem,2.5vw,1.7rem)", color:"#1a3560", fontStyle:"italic", lineHeight:1.7, marginBottom:28 }}>
+              <p style={{ fontFamily:serifFont, fontSize:"clamp(1.2rem,2.5vw,1.7rem)", color:"#1a3560", fontStyle:"italic", lineHeight:1.7, marginBottom:28 }}>
                 {t.home.coupleQuote3}
               </p>
               <div style={{ width:40, height:2, background:"rgba(232,96,122,0.4)", marginBottom:24 }} />
@@ -344,7 +367,7 @@ export default function Home() {
       <div style={{ background:"white", padding:"88px 24px", textAlign:"center", borderTop:"1px solid rgba(184,212,240,0.4)" }}>
         <motion.div initial={{ opacity:0, y:20 }} whileInView={{ opacity:1, y:0 }} viewport={{ once:true }} transition={{ duration:0.6 }}>
           <Heart size={28} color="#e8607a" fill="#e8607a" style={{ margin:"0 auto 18px", opacity:0.85 }} />
-          <h2 style={{ fontFamily:"'DM Serif Display',serif", fontSize:"clamp(28px,5vw,42px)", color:"#1a3560", marginBottom:12, lineHeight:1.15 }}>
+          <h2 style={{ fontFamily:serifFont, fontSize:"clamp(28px,5vw,42px)", color:"#1a3560", marginBottom:12, lineHeight:1.15 }}>
             <em style={{ fontStyle:"italic" }}>{t.home.footerCta1}</em>
           </h2>
           <p style={{ fontSize:"0.92rem", color:"rgba(26,53,96,0.5)", maxWidth:380, margin:"0 auto 36px", lineHeight:1.8 }}>{t.home.footerCta2}</p>
@@ -356,7 +379,7 @@ export default function Home() {
           </motion.button>
         </motion.div>
         <div style={{ marginTop:64, borderTop:"1px solid rgba(26,53,96,0.07)", paddingTop:28 }}>
-          <p style={{ fontFamily:"'DM Serif Display',serif", fontSize:"1.1rem", color:"rgba(26,53,96,0.28)", fontStyle:"italic" }}>Couple Compass</p>
+          <p style={{ fontFamily:serifFont, fontSize:"1.1rem", color:"rgba(26,53,96,0.28)", fontStyle:"italic" }}>Couple Compass</p>
         </div>
       </div>
     </div>

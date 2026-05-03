@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useParams, useLocation } from "wouter";
 import { motion } from "framer-motion";
 import { ArrowLeft, Copy, Check, Share2, TrendingUp, TrendingDown, MessageCircle, Heart, FileDown, Mail, Send, X } from "lucide-react";
@@ -7,8 +7,9 @@ import { useToast } from "@/hooks/use-toast";
 import { useI18n } from "@/lib/i18n";
 import type { LocaleData } from "@/locales/types";
 
-const CIH_RIB  = "230 640 5881663211034200 41";
-const CIH_IBAN = "MA64 2306 4058 8166 3211 0342 0041";
+const CIH_RIB   = "230 640 5881663211034200 41";
+const CIH_IBAN  = "MA64 2306 4058 8166 3211 0342 0041";
+const CIH_SWIFT = "CIHMMAMC";
 
 type ReportT = LocaleData["ui"]["report"];
 
@@ -21,6 +22,16 @@ function ShareResultCard({ partner1Name, partner2Name, score, topStrengths, repo
   t: ReportT;
 }) {
   const [downloading, setDownloading] = useState(false);
+  const [photoUrl, setPhotoUrl] = useState<string | null>(null);
+  const fileRef = useRef<HTMLInputElement>(null);
+
+  const handlePhotoSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => setPhotoUrl(reader.result as string);
+    reader.readAsDataURL(file);
+  };
 
   const handleDownload = async () => {
     setDownloading(true);
@@ -40,6 +51,34 @@ function ShareResultCard({ partner1Name, partner2Name, score, topStrengths, repo
       ctx.fillStyle = "rgba(232,96,122,0.07)";
       ctx.beginPath(); ctx.arc(W * 0.85, H * 0.15, 220, 0, Math.PI * 2); ctx.fill();
       ctx.beginPath(); ctx.arc(W * 0.12, H * 0.82, 160, 0, Math.PI * 2); ctx.fill();
+
+      if (photoUrl) {
+        await new Promise<void>((resolve) => {
+          const img = new Image();
+          img.onload = () => {
+            const pr = 82;
+            const px = W / 2, py = H - 180;
+            ctx.save();
+            ctx.beginPath();
+            ctx.arc(px, py, pr, 0, Math.PI * 2);
+            ctx.clip();
+            ctx.drawImage(img, px - pr, py - pr, pr * 2, pr * 2);
+            ctx.restore();
+            ctx.strokeStyle = "white";
+            ctx.lineWidth = 6;
+            ctx.beginPath();
+            ctx.arc(px, py, pr, 0, Math.PI * 2);
+            ctx.stroke();
+            ctx.strokeStyle = "rgba(232,96,122,0.3)";
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.arc(px, py, pr + 5, 0, Math.PI * 2);
+            ctx.stroke();
+            resolve();
+          };
+          img.src = photoUrl;
+        });
+      }
 
       const scoreColor = score >= 75 ? "#e8607a" : score >= 50 ? "#d4a853" : "#b8d4f0";
       const cx = W / 2, cy = 390, r = 160;
@@ -105,18 +144,34 @@ function ShareResultCard({ partner1Name, partner2Name, score, topStrengths, repo
   return (
     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.82, duration: 0.5 }}
       className="no-print"
-      style={{ background: "linear-gradient(135deg,#eaf3ff 0%,#fce8ec 100%)", border: "1px solid rgba(184,212,240,0.5)", borderRadius: 20, padding: "24px 28px", display: "flex", alignItems: "center", gap: 20, flexWrap: "wrap", boxShadow: "0 2px 16px rgba(26,53,96,0.05)" }}>
-      <div style={{ flex: 1, minWidth: 180 }}>
-        <p style={{ margin: "0 0 4px", fontFamily: "'DM Serif Display', serif", fontSize: "1.1rem", color: "#1a3560" }}>{t.shareCardTitle}</p>
-        <p style={{ margin: 0, fontSize: "0.78rem", color: "rgba(26,53,96,0.45)", lineHeight: 1.6 }}>{t.shareCardDesc}</p>
+      style={{ background: "linear-gradient(135deg,#eaf3ff 0%,#fce8ec 100%)", border: "1px solid rgba(184,212,240,0.5)", borderRadius: 20, padding: "24px 28px", display: "flex", flexDirection: "column", gap: 16, boxShadow: "0 2px 16px rgba(26,53,96,0.05)" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 20, flexWrap: "wrap" }}>
+        <div style={{ flex: 1, minWidth: 180 }}>
+          <p style={{ margin: "0 0 4px", fontFamily: "'DM Serif Display', serif", fontSize: "1.1rem", color: "#1a3560" }}>{t.shareCardTitle}</p>
+          <p style={{ margin: 0, fontSize: "0.78rem", color: "rgba(26,53,96,0.45)", lineHeight: 1.6 }}>{t.shareCardDesc}</p>
+        </div>
+        <button onClick={handleDownload} disabled={downloading}
+          style={{ background: "#e8607a", border: "none", borderRadius: 12, padding: "11px 22px", color: "white", fontSize: "0.78rem", fontWeight: 700, letterSpacing: "0.07em", textTransform: "uppercase", cursor: downloading ? "wait" : "pointer", fontFamily: "Inter,sans-serif", display: "inline-flex", alignItems: "center", gap: 8, opacity: downloading ? 0.7 : 1, boxShadow: "0 3px 14px rgba(232,96,122,0.3)", whiteSpace: "nowrap", flexShrink: 0 }}>
+          {downloading
+            ? <><div style={{ width: 10, height: 10, borderRadius: "50%", border: "1.5px solid rgba(255,255,255,0.4)", borderTopColor: "white", animation: "spin 0.8s linear infinite" }} /> Generating...</>
+            : <><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> {t.shareCardBtn}</>
+          }
+        </button>
       </div>
-      <button onClick={handleDownload} disabled={downloading}
-        style={{ background: "#e8607a", border: "none", borderRadius: 12, padding: "11px 22px", color: "white", fontSize: "0.78rem", fontWeight: 700, letterSpacing: "0.07em", textTransform: "uppercase", cursor: downloading ? "wait" : "pointer", fontFamily: "Inter,sans-serif", display: "inline-flex", alignItems: "center", gap: 8, opacity: downloading ? 0.7 : 1, boxShadow: "0 3px 14px rgba(232,96,122,0.3)", whiteSpace: "nowrap", flexShrink: 0 }}>
-        {downloading
-          ? <><div style={{ width: 10, height: 10, borderRadius: "50%", border: "1.5px solid rgba(255,255,255,0.4)", borderTopColor: "white", animation: "spin 0.8s linear infinite" }} /> Generating...</>
-          : <><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> {t.shareCardBtn}</>
-        }
-      </button>
+      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+        <input ref={fileRef} type="file" accept="image/*" style={{ display: "none" }} onChange={handlePhotoSelect} />
+        <button onClick={() => fileRef.current?.click()}
+          style={{ background: photoUrl ? "rgba(232,96,122,0.1)" : "rgba(255,255,255,0.7)", border: `1.5px ${photoUrl ? "solid #e8607a" : "dashed rgba(26,53,96,0.2)"}`, borderRadius: 10, padding: "8px 16px", color: photoUrl ? "#e8607a" : "rgba(26,53,96,0.45)", fontSize: "0.72rem", fontWeight: 600, letterSpacing: "0.06em", textTransform: "uppercase", cursor: "pointer", fontFamily: "Inter,sans-serif", display: "inline-flex", alignItems: "center", gap: 7 }}>
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="10" r="3"/><path d="M7 20.662V19a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v1.662"/></svg>
+          {photoUrl ? "Photo added" : "Add couple photo (optional)"}
+        </button>
+        {photoUrl && (
+          <button onClick={() => setPhotoUrl(null)}
+            style={{ background: "none", border: "none", padding: "4px 8px", color: "rgba(26,53,96,0.35)", fontSize: "0.7rem", cursor: "pointer", borderRadius: 6, fontFamily: "Inter,sans-serif" }}>
+            Remove
+          </button>
+        )}
+      </div>
     </motion.div>
   );
 }
@@ -177,6 +232,10 @@ function DonateCard({ t }: { t: ReportT }) {
           <p style={{ margin: 0, fontFamily: "monospace", fontSize: "0.88rem", color: "#1a3560", letterSpacing: "0.06em", wordBreak: "break-all" }}>{CIH_RIB}</p>
         </div>
         <IbanRow iban={CIH_IBAN} copyLabel={t.cihCopy.replace("RIB","IBAN")} copiedLabel={t.cihCopied} />
+        <div style={{ background: "rgba(26,53,96,0.03)", border: "1px solid rgba(26,53,96,0.08)", borderRadius: 12, padding: "10px 18px", boxSizing: "border-box" }}>
+          <p style={{ margin: "0 0 3px", fontSize: "0.62rem", textTransform: "uppercase", letterSpacing: "0.14em", color: "rgba(26,53,96,0.35)", fontWeight: 600 }}>BIC / SWIFT</p>
+          <p style={{ margin: 0, fontFamily: "monospace", fontSize: "0.88rem", color: "#1a3560", letterSpacing: "0.12em" }}>{CIH_SWIFT}</p>
+        </div>
       </div>
     </motion.div>
   );
