@@ -1,12 +1,24 @@
 import { useState, useEffect, useCallback } from "react";
 import { useParams, useLocation, useSearch } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowRight, ArrowLeft, Save, Check, Edit3, Send } from "lucide-react";
+import { ArrowRight, ArrowLeft, Save, Check, Edit3, Send, Heart, Star, Compass, Leaf, Feather, MessageCircle, Sparkles, Sprout } from "lucide-react";
+
 import { useListQuestions, useSubmitResponses } from "@workspace/api-client-react";
 import type { Question } from "@workspace/api-client-react";
 import { useToast } from "@/hooks/use-toast";
 import { useI18n } from "@/lib/i18n";
 import type { LocaleData } from "@/locales/types";
+
+const CATEGORY_ICONS: Record<string, React.FC<{ size?: number; color?: string; strokeWidth?: number }>> = {
+  values: Star,
+  life_plans: Compass,
+  finances: Leaf,
+  family: Heart,
+  lifestyle: Feather,
+  communication: MessageCircle,
+  intimacy: Sparkles,
+  growth: Sprout,
+};
 
 type Answer = { questionId: number; value: string };
 
@@ -295,23 +307,27 @@ export default function QuestionnairePage() {
       {/* Sticky header */}
       <div style={{ position: "sticky", top: 0, zIndex: 20, background: "rgba(248,244,240,0.96)", backdropFilter: "blur(12px)", borderBottom: "1px solid rgba(184,212,240,0.35)" }}>
         <div style={{ maxWidth: 640, margin: "0 auto", padding: "12px 20px" }}>
-          <div style={{ display: "flex", gap: 4, marginBottom: 10 }}>
+          <div style={{ display: "flex", gap: 2, marginBottom: 8, alignItems: "flex-end" }}>
             {categories.map((cat, i) => {
               const label = data.ui.categories[cat as keyof typeof data.ui.categories] ?? cat;
               const isCurrent = i === categoryIndex;
               const isComplete = isCategoryComplete(i);
               const isVisited = visitedPhases.has(i);
-              let bg = "rgba(184,212,240,0.35)";
-              if (isCurrent) bg = "#e8607a";
-              else if (isComplete) bg = "rgba(232,96,122,0.45)";
-              else if (isVisited) bg = "rgba(232,96,122,0.2)";
+              const IconComp = CATEGORY_ICONS[cat] ?? Heart;
+              let barBg = "rgba(184,212,240,0.35)";
+              let iconColor = "rgba(26,53,96,0.18)";
+              if (isCurrent)       { barBg = "#e8607a"; iconColor = "#e8607a"; }
+              else if (isComplete) { barBg = "rgba(232,96,122,0.45)"; iconColor = "rgba(232,96,122,0.6)"; }
+              else if (isVisited)  { barBg = "rgba(232,96,122,0.2)";  iconColor = "rgba(232,96,122,0.38)"; }
               return (
                 <button key={i} onClick={() => navigateTo(i)}
                   title={label}
                   data-testid={`phase-tab-${i}`}
                   aria-label={label}
-                  style={{ flex: 1, height: isCurrent ? 6 : 4, borderRadius: 999, background: bg, border: "none", cursor: "pointer", transition: "all 0.2s ease" }}
-                />
+                  style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 3, padding: `${isCurrent ? 5 : 3}px 2px ${isCurrent ? 3 : 1}px`, background: "transparent", border: "none", cursor: "pointer", transition: "all 0.2s ease" }}>
+                  <IconComp size={isCurrent ? 12 : 9} color={iconColor} strokeWidth={isCurrent ? 2 : 1.8} />
+                  <div style={{ height: isCurrent ? 5 : 3, width: "100%", borderRadius: 999, background: barBg, transition: "all 0.2s ease" }} />
+                </button>
               );
             })}
           </div>

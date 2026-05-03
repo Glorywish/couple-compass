@@ -119,6 +119,7 @@ const zh: LocaleData = {
       reportCopied: "报告链接已复制！",
       reportCopiedDesc: "拥有此链接的任何人都可以查看你们的报告",
       couplePhoto: "你们的合照",
+      downloadPdf: "下载 PDF",
     },
     errors: {
       sessionNotFound: "找不到该会话，请检查代码后重试。",

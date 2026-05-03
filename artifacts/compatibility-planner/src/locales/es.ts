@@ -119,6 +119,7 @@ const es: LocaleData = {
       reportCopied: "¡Enlace del informe copiado!",
       reportCopiedDesc: "Cualquiera con este enlace puede ver su informe",
       couplePhoto: "Su foto",
+      downloadPdf: "Descargar PDF",
     },
     errors: {
       sessionNotFound: "Sesión no encontrada. Por favor verifica tu código e intenta de nuevo.",

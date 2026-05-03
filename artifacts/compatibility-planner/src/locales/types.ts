@@ -120,6 +120,7 @@ export interface LocaleData {
       reportCopied: string;
       reportCopiedDesc: string;
       couplePhoto: string;
+      downloadPdf: string;
     };
     errors: {
       sessionNotFound: string;

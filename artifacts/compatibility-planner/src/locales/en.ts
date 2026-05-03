@@ -119,6 +119,7 @@ const en: LocaleData = {
       reportCopied: "Report link copied!",
       reportCopiedDesc: "Anyone with this link can view your report",
       couplePhoto: "Your couple photo",
+      downloadPdf: "Download PDF",
     },
     errors: {
       sessionNotFound: "Session not found. Please check your code and try again.",

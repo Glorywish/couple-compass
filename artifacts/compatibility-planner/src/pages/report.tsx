@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useParams, useLocation } from "wouter";
 import { motion } from "framer-motion";
-import { ArrowLeft, Copy, Check, Share2, TrendingUp, TrendingDown, MessageCircle, Heart } from "lucide-react";
+import { ArrowLeft, Copy, Check, Share2, TrendingUp, TrendingDown, MessageCircle, Heart, FileDown } from "lucide-react";
 import { useGetReport, getGetReportQueryKey } from "@workspace/api-client-react";
 import { useToast } from "@/hooks/use-toast";
 import { useI18n } from "@/lib/i18n";
@@ -114,14 +114,25 @@ export default function ReportPage() {
     low:    { bar: "#b8d4f0", bg: "rgba(184,212,240,0.15)", border: "rgba(184,212,240,0.5)",  text: "#4a80b8" },
   };
 
+  const handleDownloadPdf = () => { window.print(); };
+
   return (
     <div style={{ minHeight: "100vh", background: "#f8f4f0", color: "#1a3560", paddingBottom: 80 }}>
-      <style>{`@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}} @keyframes heartbeat{0%,100%{transform:scale(1)}14%{transform:scale(1.08)}28%{transform:scale(1)}42%{transform:scale(1.05)}70%{transform:scale(1)}}`}</style>
+      <style>{`
+        @keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+        @keyframes heartbeat{0%,100%{transform:scale(1)}14%{transform:scale(1.08)}28%{transform:scale(1)}42%{transform:scale(1.05)}70%{transform:scale(1)}}
+        @media print {
+          body { background: white !important; }
+          .no-print { display: none !important; }
+          .print-page { page-break-inside: avoid; }
+          * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        }
+      `}</style>
 
       {/* Hero */}
       <div style={{ background: "linear-gradient(160deg,#eaf3ff 0%,#fce8ec 100%)", borderBottom: "1px solid rgba(184,212,240,0.4)", paddingBottom: 52 }}>
         <div style={{ maxWidth: 720, margin: "0 auto", padding: "44px 24px 0" }}>
-          <button onClick={() => setLocation("/")} data-testid="button-back-home"
+          <button onClick={() => setLocation("/")} data-testid="button-back-home" className="no-print"
             style={{ background: "transparent", color: "rgba(26,53,96,0.4)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: 8, fontSize: "0.76rem", letterSpacing: "0.08em", textTransform: "uppercase", fontFamily: "Inter,sans-serif", fontWeight: 500, padding: 0, marginBottom: 44 }}>
             <ArrowLeft size={13} /> {t.backHome}
           </button>
@@ -165,14 +176,18 @@ export default function ReportPage() {
                 <p style={{ fontSize: "0.58rem", letterSpacing: "0.2em", textTransform: "uppercase", color: "#e8607a", fontWeight: 600, marginBottom: 4 }}>{t.shareableLink}</p>
                 <p style={{ fontSize: "0.72rem", color: "rgba(26,53,96,0.35)", fontFamily: "monospace", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{reportUrl}</p>
               </div>
-              <div style={{ display: "flex", gap: 8, flexShrink: 0 }}>
-                <button onClick={handleCopy} data-testid="button-copy-report-link"
+              <div style={{ display: "flex", gap: 8, flexShrink: 0, flexWrap: "wrap" }}>
+                <button onClick={handleCopy} data-testid="button-copy-report-link" className="no-print"
                   style={{ background: "rgba(232,96,122,0.1)", border: "1px solid rgba(232,96,122,0.22)", borderRadius: 8, padding: "7px 14px", color: "#e8607a", fontSize: "0.72rem", fontWeight: 600, letterSpacing: "0.06em", textTransform: "uppercase", cursor: "pointer", fontFamily: "Inter,sans-serif", display: "flex", alignItems: "center", gap: 5 }}>
                   {copied ? <Check size={11} /> : <Copy size={11} />} {copied ? t.copiedBtn : t.copyBtn}
                 </button>
-                <button onClick={handleShare} data-testid="button-share-report"
+                <button onClick={handleShare} data-testid="button-share-report" className="no-print"
                   style={{ background: "rgba(232,96,122,0.1)", border: "1px solid rgba(232,96,122,0.22)", borderRadius: 8, padding: "7px 14px", color: "#e8607a", fontSize: "0.72rem", fontWeight: 600, letterSpacing: "0.06em", textTransform: "uppercase", cursor: "pointer", fontFamily: "Inter,sans-serif", display: "flex", alignItems: "center", gap: 5 }}>
                   <Share2 size={11} /> {t.shareBtn}
+                </button>
+                <button onClick={handleDownloadPdf} data-testid="button-download-pdf" className="no-print"
+                  style={{ background: "#e8607a", border: "none", borderRadius: 8, padding: "7px 14px", color: "white", fontSize: "0.72rem", fontWeight: 600, letterSpacing: "0.06em", textTransform: "uppercase", cursor: "pointer", fontFamily: "Inter,sans-serif", display: "flex", alignItems: "center", gap: 5, boxShadow: "0 2px 10px rgba(232,96,122,0.28)" }}>
+                  <FileDown size={11} /> {t.downloadPdf}
                 </button>
               </div>
             </div>

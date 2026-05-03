@@ -119,6 +119,7 @@ const ar: LocaleData = {
       reportCopied: "تم نسخ رابط التقرير!",
       reportCopiedDesc: "يمكن لأي شخص لديه هذا الرابط عرض تقريركما",
       couplePhoto: "صورتكما",
+      downloadPdf: "تحميل PDF",
     },
     errors: {
       sessionNotFound: "الجلسة غير موجودة. يرجى التحقق من الرمز والمحاولة مجدداً.",

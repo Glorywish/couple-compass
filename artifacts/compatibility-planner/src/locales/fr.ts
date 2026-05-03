@@ -119,6 +119,7 @@ const fr: LocaleData = {
       reportCopied: "Lien du rapport copié !",
       reportCopiedDesc: "Toute personne avec ce lien peut consulter votre rapport",
       couplePhoto: "Votre photo",
+      downloadPdf: "Télécharger PDF",
     },
     errors: {
       sessionNotFound: "Session introuvable. Veuillez vérifier votre code et réessayer.",

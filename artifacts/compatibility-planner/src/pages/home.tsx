@@ -1,18 +1,15 @@
-import { useState, useRef } from "react";
+import { useState } from "react";
 import { useLocation } from "wouter";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
+import { AnimatePresence } from "framer-motion";
 import { ArrowRight, Heart } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 
 const BASE = import.meta.env.BASE_URL;
 
 const SPARKLES = Array.from({ length: 20 }, (_, i) => ({
-  id: i,
-  x: (i * 41 + 13) % 100,
-  y: (i * 57 + 9) % 100,
-  r: 1.5 + (i % 3),
-  dur: 3 + (i % 5) * 0.7,
-  delay: -(i * 0.5) % 4,
+  id: i, x: (i * 41 + 13) % 100, y: (i * 57 + 9) % 100,
+  r: 1.5 + (i % 3), dur: 3 + (i % 5) * 0.7, delay: -(i * 0.5) % 4,
   color: i % 3 === 0 ? "#e8607a" : i % 3 === 1 ? "#b8d4f0" : "#f0a0b0",
 }));
 
@@ -34,7 +31,7 @@ function HeartCompass({ size = 220 }: { size?: number }) {
       <text x="110" y="44" textAnchor="middle" dominantBaseline="middle" fontSize="10" fontFamily="Inter,sans-serif" fontWeight="700" letterSpacing="0.1em" fill="#e8607a">N</text>
       <text x="110" y="183" textAnchor="middle" dominantBaseline="middle" fontSize="9" fontFamily="Inter,sans-serif" fontWeight="500" fill="rgba(26,53,96,0.4)">S</text>
       <text x="170" y="93" textAnchor="middle" dominantBaseline="middle" fontSize="9" fontFamily="Inter,sans-serif" fontWeight="500" fill="rgba(26,53,96,0.4)">E</text>
-      <text x="50"  y="93" textAnchor="middle" dominantBaseline="middle" fontSize="9" fontFamily="Inter,sans-serif" fontWeight="500" fill="rgba(26,53,96,0.4)">W</text>
+      <text x="50" y="93" textAnchor="middle" dominantBaseline="middle" fontSize="9" fontFamily="Inter,sans-serif" fontWeight="500" fill="rgba(26,53,96,0.4)">W</text>
       <path d="M110,24 C107,21 103,20 103,23.5 C103,26 106,27.5 110,30 C114,27.5 117,26 117,23.5 C117,20 113,21 110,24 Z" fill="#e8607a" opacity="0.7" />
     </svg>
   );
@@ -130,54 +127,59 @@ export default function Home() {
         </motion.div>
       </div>
 
-      {/* ── COUPLE PHOTOS ── */}
-      <div style={{ background:"white", padding:"80px 24px", borderTop:"1px solid rgba(184,212,240,0.4)" }}>
-        <div style={{ maxWidth:860, margin:"0 auto" }}>
-          <motion.div initial={{ opacity:0, y:20 }} whileInView={{ opacity:1, y:0 }} viewport={{ once:true }} transition={{ duration:0.6 }} className="text-center mb-14">
-            <p style={{ fontSize:"0.65rem", letterSpacing:"0.22em", textTransform:"uppercase", color:"#e8607a", fontWeight:600, marginBottom:10 }}>{t.home.coupleSection}</p>
-            <h2 style={{ fontFamily:"'DM Serif Display',serif", fontSize:"clamp(28px,5vw,40px)", color:"#1a3560", lineHeight:1.15, marginBottom:10 }}>
-              <em style={{ fontStyle:"italic", color:"#e8607a" }}>{t.home.coupleSectionHeading}</em>
-            </h2>
-            <p style={{ fontSize:"0.9rem", color:"rgba(26,53,96,0.5)", maxWidth:400, margin:"0 auto", lineHeight:1.8 }}>
-              {t.home.dimensionsDesc}
-            </p>
-          </motion.div>
+      {/* ── EDITORIAL 1: City couple — text left, image right ── */}
+      <div style={{ background:"white", borderTop:"1px solid rgba(184,212,240,0.4)", overflow:"hidden" }}>
+        <div style={{ maxWidth:1100, margin:"0 auto", padding:"80px 32px" }}>
+          <div className="flex flex-col md:flex-row items-center gap-12 md:gap-20">
 
-          <div className="grid md:grid-cols-2 gap-6 items-start">
-            {/* Left image */}
-            <motion.div initial={{ opacity:0, x:-24 }} whileInView={{ opacity:1, x:0 }} viewport={{ once:true }} transition={{ duration:0.7, ease:[0.16,1,0.3,1] }}
-              style={{ position:"relative", borderRadius:24, overflow:"hidden", boxShadow:"0 12px 48px rgba(232,96,122,0.16)" }}>
-              <img src={`${BASE}couple-city.png`} alt="Couple walking together at golden hour"
-                style={{ width:"100%", aspectRatio:"3/4", objectFit:"cover", display:"block" }} />
-              <div style={{ position:"absolute", bottom:0, left:0, right:0, padding:"24px 24px 22px", background:"linear-gradient(to top,rgba(232,96,122,0.65) 0%,transparent 100%)" }}>
-                <p style={{ fontFamily:"'DM Serif Display',serif", fontSize:"1.1rem", color:"white", fontStyle:"italic", lineHeight:1.4 }}>
-                  {t.home.coupleQuote1}
-                </p>
-              </div>
-            </motion.div>
+            {/* Text column */}
+            <motion.div initial={{ opacity:0, x:-32 }} whileInView={{ opacity:1, x:0 }} viewport={{ once:true }} transition={{ duration:0.8, ease:[0.16,1,0.3,1] }}
+              style={{ flex:1 }}>
+              <p style={{ fontSize:"0.62rem", letterSpacing:"0.22em", textTransform:"uppercase", color:"#e8607a", fontWeight:600, marginBottom:14 }}>
+                {t.home.coupleSection}
+              </p>
+              <h2 style={{ fontFamily:"'DM Serif Display',serif", fontSize:"clamp(32px,4.5vw,50px)", color:"#1a3560", lineHeight:1.1, marginBottom:28 }}>
+                <em style={{ fontStyle:"italic", color:"#e8607a" }}>{t.home.coupleSectionHeading}</em>
+              </h2>
 
-            {/* Right: image + quote card */}
-            <motion.div initial={{ opacity:0, x:24 }} whileInView={{ opacity:1, x:0 }} viewport={{ once:true }} transition={{ duration:0.7, delay:0.12, ease:[0.16,1,0.3,1] }}
-              style={{ display:"flex", flexDirection:"column", gap:16 }}>
-              <div style={{ position:"relative", borderRadius:24, overflow:"hidden", boxShadow:"0 12px 48px rgba(184,212,240,0.3)" }}>
-                <img src={`${BASE}couple-beach.png`} alt="Couple walking on beach at sunrise"
-                  style={{ width:"100%", aspectRatio:"3/4", objectFit:"cover", display:"block" }} />
-                <div style={{ position:"absolute", bottom:0, left:0, right:0, padding:"20px 22px 18px", background:"linear-gradient(to top,rgba(26,53,96,0.55) 0%,transparent 100%)" }}>
-                  <p style={{ fontFamily:"'DM Serif Display',serif", fontSize:"1rem", color:"white", fontStyle:"italic", lineHeight:1.4 }}>
+              <div style={{ display:"flex", flexDirection:"column", gap:16, marginBottom:32 }}>
+                <div style={{ display:"flex", gap:14, alignItems:"flex-start" }}>
+                  <Heart size={14} color="#e8607a" fill="rgba(232,96,122,0.3)" style={{ marginTop:4, flexShrink:0 }} />
+                  <p style={{ fontFamily:"'DM Serif Display',serif", fontSize:"1.1rem", color:"rgba(26,53,96,0.7)", fontStyle:"italic", lineHeight:1.7 }}>
+                    {t.home.coupleQuote1}
+                  </p>
+                </div>
+                <div style={{ display:"flex", gap:14, alignItems:"flex-start" }}>
+                  <Heart size={14} color="#b8d4f0" fill="rgba(184,212,240,0.3)" style={{ marginTop:4, flexShrink:0 }} />
+                  <p style={{ fontFamily:"'DM Serif Display',serif", fontSize:"1.1rem", color:"rgba(26,53,96,0.7)", fontStyle:"italic", lineHeight:1.7 }}>
                     {t.home.coupleQuote2}
                   </p>
                 </div>
               </div>
 
-              <div style={{ background:"linear-gradient(135deg,#fce8ec 0%,#eaf3ff 100%)", border:"1px solid rgba(232,96,122,0.18)", borderRadius:18, padding:"24px 24px 22px" }}>
-                <Heart size={18} color="#e8607a" fill="rgba(232,96,122,0.25)" style={{ marginBottom:12 }} />
-                <p style={{ fontFamily:"'DM Serif Display',serif", fontSize:"1.05rem", color:"#1a3560", fontStyle:"italic", lineHeight:1.75, marginBottom:10 }}>
-                  {t.home.coupleQuote3}
-                </p>
-                <p style={{ fontSize:"0.72rem", color:"rgba(26,53,96,0.4)", letterSpacing:"0.1em", textTransform:"uppercase", fontWeight:600 }}>
-                  Couple Compass
-                </p>
+              <motion.button whileHover={{ scale:1.03 }} whileTap={{ scale:0.97 }}
+                onClick={e => trigger(e, () => setLocation("/start"))}
+                style={{ display:"inline-flex", alignItems:"center", gap:8, background:"rgba(232,96,122,0.1)", border:"1px solid rgba(232,96,122,0.3)", borderRadius:12, padding:"11px 22px", color:"#e8607a", fontSize:"0.78rem", fontWeight:600, letterSpacing:"0.06em", textTransform:"uppercase", cursor:"pointer", fontFamily:"Inter,sans-serif" }}>
+                {t.home.cta1} <ArrowRight size={12} />
+              </motion.button>
+            </motion.div>
+
+            {/* Image column */}
+            <motion.div initial={{ opacity:0, x:32, scale:0.96 }} whileInView={{ opacity:1, x:0, scale:1 }} viewport={{ once:true }} transition={{ duration:0.9, ease:[0.16,1,0.3,1] }}
+              style={{ flexShrink:0, width:"100%", maxWidth:360, position:"relative" }}>
+              <div style={{ borderRadius:28, overflow:"hidden", boxShadow:"0 20px 64px rgba(232,96,122,0.18)" }}>
+                <img src={`${BASE}couple-city.png`} alt="Couple walking together at golden hour"
+                  style={{ width:"100%", aspectRatio:"3/4", objectFit:"cover", display:"block" }} />
               </div>
+              {/* floating badge */}
+              <motion.div
+                initial={{ opacity:0, y:12 }} whileInView={{ opacity:1, y:0 }} viewport={{ once:true }} transition={{ delay:0.4, duration:0.6 }}
+                style={{ position:"absolute", bottom:-16, left:-16, background:"white", border:"1px solid rgba(232,96,122,0.2)", borderRadius:16, padding:"12px 18px", boxShadow:"0 8px 32px rgba(232,96,122,0.14)", display:"flex", alignItems:"center", gap:10 }}>
+                <Heart size={16} color="#e8607a" fill="rgba(232,96,122,0.2)" />
+                <p style={{ fontFamily:"'DM Serif Display',serif", fontSize:"0.88rem", color:"#1a3560", fontStyle:"italic", whiteSpace:"nowrap" }}>
+                  {t.home.badge}
+                </p>
+              </motion.div>
             </motion.div>
           </div>
         </div>
@@ -208,23 +210,52 @@ export default function Home() {
         </div>
       </div>
 
-      {/* ── 8 DIMENSIONS ── */}
-      <div style={{ background:"linear-gradient(135deg,#eaf3ff 0%,#fce8ec 100%)", padding:"72px 24px", borderTop:"1px solid rgba(232,96,122,0.1)" }}>
-        <div style={{ maxWidth:760, margin:"0 auto", textAlign:"center" }}>
-          <motion.div initial={{ opacity:0, y:20 }} whileInView={{ opacity:1, y:0 }} viewport={{ once:true }} transition={{ duration:0.6 }}>
-            <p style={{ fontSize:"0.65rem", letterSpacing:"0.22em", textTransform:"uppercase", color:"#e8607a", fontWeight:600, marginBottom:12 }}>{t.home.dimensionsTitle}</p>
-            <h2 style={{ fontFamily:"'DM Serif Display',serif", fontSize:"clamp(26px,4.5vw,38px)", color:"#1a3560", marginBottom:10, lineHeight:1.2 }}>
-              {t.home.dimensionsTitle}
-            </h2>
-            <p style={{ fontSize:"0.9rem", color:"rgba(26,53,96,0.5)", marginBottom:32, lineHeight:1.8 }}>{t.home.dimensionsDesc}</p>
-            <div className="flex flex-wrap justify-center gap-2">
-              {Object.values(t.categories).map((cat) => (
-                <span key={cat} style={{ background:"rgba(255,255,255,0.75)", border:"1px solid rgba(232,96,122,0.22)", color:"#c03060", borderRadius:999, padding:"6px 16px", fontSize:"0.82rem", fontWeight:500 }}>
-                  {cat}
-                </span>
-              ))}
-            </div>
-          </motion.div>
+      {/* ── EDITORIAL 2: Beach couple — image left, quote right ── */}
+      <div style={{ background:"linear-gradient(135deg,#eaf3ff 0%,#fce8ec 100%)", borderTop:"1px solid rgba(232,96,122,0.1)", overflow:"hidden" }}>
+        <div style={{ maxWidth:1100, margin:"0 auto", padding:"80px 32px" }}>
+          <div className="flex flex-col-reverse md:flex-row items-center gap-12 md:gap-20">
+
+            {/* Image column */}
+            <motion.div initial={{ opacity:0, x:-32, scale:0.96 }} whileInView={{ opacity:1, x:0, scale:1 }} viewport={{ once:true }} transition={{ duration:0.9, ease:[0.16,1,0.3,1] }}
+              style={{ flexShrink:0, width:"100%", maxWidth:360, position:"relative" }}>
+              <div style={{ borderRadius:28, overflow:"hidden", boxShadow:"0 20px 64px rgba(184,212,240,0.4)" }}>
+                <img src={`${BASE}couple-beach.png`} alt="Couple walking on beach at sunrise"
+                  style={{ width:"100%", aspectRatio:"3/4", objectFit:"cover", display:"block" }} />
+              </div>
+              {/* floating score badge */}
+              <motion.div
+                initial={{ opacity:0, y:-12 }} whileInView={{ opacity:1, y:0 }} viewport={{ once:true }} transition={{ delay:0.4, duration:0.6 }}
+                style={{ position:"absolute", top:-16, right:-16, background:"#e8607a", borderRadius:16, padding:"10px 16px", boxShadow:"0 8px 24px rgba(232,96,122,0.3)", display:"flex", alignItems:"center", gap:8 }}>
+                <Heart size={14} color="white" fill="white" />
+                <p style={{ fontFamily:"'DM Serif Display',serif", fontSize:"0.85rem", color:"white", fontWeight:400, fontStyle:"italic", whiteSpace:"nowrap" }}>
+                  Couple Compass
+                </p>
+              </motion.div>
+            </motion.div>
+
+            {/* Text column */}
+            <motion.div initial={{ opacity:0, x:32 }} whileInView={{ opacity:1, x:0 }} viewport={{ once:true }} transition={{ duration:0.8, ease:[0.16,1,0.3,1] }}
+              style={{ flex:1 }}>
+              <Heart size={22} color="#e8607a" fill="rgba(232,96,122,0.2)" style={{ marginBottom:20 }} />
+              <p style={{ fontFamily:"'DM Serif Display',serif", fontSize:"clamp(1.2rem,2.5vw,1.7rem)", color:"#1a3560", fontStyle:"italic", lineHeight:1.7, marginBottom:28 }}>
+                {t.home.coupleQuote3}
+              </p>
+              <div style={{ width:40, height:2, background:"rgba(232,96,122,0.4)", marginBottom:24 }} />
+              <p style={{ fontSize:"0.72rem", color:"rgba(26,53,96,0.4)", letterSpacing:"0.14em", textTransform:"uppercase", fontWeight:600, marginBottom:28 }}>
+                Couple Compass
+              </p>
+              <p style={{ fontSize:"0.9rem", color:"rgba(26,53,96,0.5)", lineHeight:1.8, marginBottom:28 }}>
+                {t.home.dimensionsDesc}
+              </p>
+              <div style={{ display:"flex", flexWrap:"wrap", gap:8 }}>
+                {Object.values(t.categories).map((cat) => (
+                  <span key={cat} style={{ background:"rgba(255,255,255,0.75)", border:"1px solid rgba(232,96,122,0.22)", color:"#c03060", borderRadius:999, padding:"5px 14px", fontSize:"0.78rem", fontWeight:500 }}>
+                    {cat}
+                  </span>
+                ))}
+              </div>
+            </motion.div>
+          </div>
         </div>
       </div>
 
