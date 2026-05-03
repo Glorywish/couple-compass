@@ -1,0 +1,14 @@
+uploads = []
+outputs = []
+
+[[generated]]
+id = "IUqRLkpF3sw6v6or4kPNn"
+uri = "file://artifacts/compatibility-planner/public/couple-city.png"
+type = "image"
+title = "couple city walk"
+
+[[generated]]
+id = "kmgp85QUHHLzn3UNJK04W"
+uri = "file://artifacts/compatibility-planner/public/couple-beach.png"
+type = "image"
+title = "couple beach walk"

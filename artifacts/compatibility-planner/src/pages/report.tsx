@@ -54,6 +54,10 @@ export default function ReportPage() {
   const t = data.ui.report;
   const [copied, setCopied] = useState(false);
 
+  const couplePhoto = typeof localStorage !== "undefined"
+    ? localStorage.getItem(`cp_couple_photo_${params.sessionCode}`)
+    : null;
+
   const { data: report, isLoading, isError } = useGetReport(params.sessionCode, {
     query: { enabled: !!params.sessionCode, queryKey: getGetReportQueryKey(params.sessionCode) },
   });
@@ -64,12 +68,12 @@ export default function ReportPage() {
     navigator.clipboard.writeText(reportUrl);
     setCopied(true);
     setTimeout(() => setCopied(false), 2500);
-    toast({ title: "Report link copied!", description: "Anyone with this link can view your report" });
+    toast({ title: t.reportCopied, description: t.reportCopiedDesc });
   };
 
   const handleShare = async () => {
     if (navigator.share) {
-      try { await navigator.share({ title: "Our Compatibility Report — Couple Compass", url: reportUrl }); }
+      try { await navigator.share({ title: "Couple Compass", url: reportUrl }); }
       catch { /* dismissed */ }
     } else { handleCopy(); }
   };
@@ -84,7 +88,7 @@ export default function ReportPage() {
     </div>
   );
 
-  if (isError || !report) return (
+  const notReadyView = (
     <div style={{ minHeight: "100vh", background: "linear-gradient(160deg,#eaf3ff 0%,#fce8ec 100%)", display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
       <div style={{ textAlign: "center", maxWidth: 380 }}>
         <Heart size={36} color="#e8607a" fill="rgba(232,96,122,0.15)" style={{ margin: "0 auto 20px", opacity: 0.5 }} />
@@ -97,6 +101,9 @@ export default function ReportPage() {
       </div>
     </div>
   );
+
+  if (isError || !report) return notReadyView;
+  if (!("overallScore" in report)) return notReadyView;
 
   const scoreLabel = report.overallScore >= 80 ? t.scoreLabels.high : report.overallScore >= 60 ? t.scoreLabels.good : report.overallScore >= 40 ? t.scoreLabels.some : t.scoreLabels.discuss;
   const scoreColor = report.overallScore >= 75 ? "#e8607a" : report.overallScore >= 50 ? "#d4a853" : "#b8d4f0";
@@ -111,7 +118,7 @@ export default function ReportPage() {
     <div style={{ minHeight: "100vh", background: "#f8f4f0", color: "#1a3560", paddingBottom: 80 }}>
       <style>{`@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}} @keyframes heartbeat{0%,100%{transform:scale(1)}14%{transform:scale(1.08)}28%{transform:scale(1)}42%{transform:scale(1.05)}70%{transform:scale(1)}}`}</style>
 
-      {/* ── Hero ── */}
+      {/* Hero */}
       <div style={{ background: "linear-gradient(160deg,#eaf3ff 0%,#fce8ec 100%)", borderBottom: "1px solid rgba(184,212,240,0.4)", paddingBottom: 52 }}>
         <div style={{ maxWidth: 720, margin: "0 auto", padding: "44px 24px 0" }}>
           <button onClick={() => setLocation("/")} data-testid="button-back-home"
@@ -120,6 +127,19 @@ export default function ReportPage() {
           </button>
 
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7 }} style={{ textAlign: "center" }}>
+            {/* Couple photo if uploaded */}
+            {couplePhoto && (
+              <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.2, duration: 0.6 }}
+                style={{ marginBottom: 28 }}>
+                <p style={{ fontSize: "0.6rem", letterSpacing: "0.2em", textTransform: "uppercase", color: "#e8607a", fontWeight: 600, marginBottom: 10 }}>
+                  {t.couplePhoto}
+                </p>
+                <div style={{ width: 110, height: 110, borderRadius: "50%", overflow: "hidden", margin: "0 auto", border: "3px solid rgba(232,96,122,0.35)", boxShadow: "0 4px 24px rgba(232,96,122,0.18)" }}>
+                  <img src={couplePhoto} alt="couple" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                </div>
+              </motion.div>
+            )}
+
             <p style={{ fontSize: "0.65rem", letterSpacing: "0.25em", textTransform: "uppercase", color: "#e8607a", fontWeight: 600, marginBottom: 10 }}>
               {report.partner1Name} · {report.partner2Name}
             </p>
@@ -142,13 +162,13 @@ export default function ReportPage() {
             {/* Share card */}
             <div style={{ marginTop: 20, background: "rgba(255,255,255,0.7)", border: "1px solid rgba(184,212,240,0.5)", borderRadius: 12, padding: "14px 18px", display: "flex", flexWrap: "wrap", gap: 12, alignItems: "center", maxWidth: 560, marginLeft: "auto", marginRight: "auto" }}>
               <div style={{ flex: 1, minWidth: 0 }}>
-                <p style={{ fontSize: "0.58rem", letterSpacing: "0.2em", textTransform: "uppercase", color: "#e8607a", fontWeight: 600, marginBottom: 4 }}>Shareable Link</p>
+                <p style={{ fontSize: "0.58rem", letterSpacing: "0.2em", textTransform: "uppercase", color: "#e8607a", fontWeight: 600, marginBottom: 4 }}>{t.shareableLink}</p>
                 <p style={{ fontSize: "0.72rem", color: "rgba(26,53,96,0.35)", fontFamily: "monospace", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{reportUrl}</p>
               </div>
               <div style={{ display: "flex", gap: 8, flexShrink: 0 }}>
                 <button onClick={handleCopy} data-testid="button-copy-report-link"
                   style={{ background: "rgba(232,96,122,0.1)", border: "1px solid rgba(232,96,122,0.22)", borderRadius: 8, padding: "7px 14px", color: "#e8607a", fontSize: "0.72rem", fontWeight: 600, letterSpacing: "0.06em", textTransform: "uppercase", cursor: "pointer", fontFamily: "Inter,sans-serif", display: "flex", alignItems: "center", gap: 5 }}>
-                  {copied ? <Check size={11} /> : <Copy size={11} />} {copied ? "Copied" : "Copy"}
+                  {copied ? <Check size={11} /> : <Copy size={11} />} {copied ? t.copiedBtn : t.copyBtn}
                 </button>
                 <button onClick={handleShare} data-testid="button-share-report"
                   style={{ background: "rgba(232,96,122,0.1)", border: "1px solid rgba(232,96,122,0.22)", borderRadius: 8, padding: "7px 14px", color: "#e8607a", fontSize: "0.72rem", fontWeight: 600, letterSpacing: "0.06em", textTransform: "uppercase", cursor: "pointer", fontFamily: "Inter,sans-serif", display: "flex", alignItems: "center", gap: 5 }}>
@@ -160,12 +180,12 @@ export default function ReportPage() {
         </div>
       </div>
 
-      {/* ── Body ── */}
+      {/* Body */}
       <div style={{ maxWidth: 720, margin: "0 auto", padding: "52px 24px", display: "flex", flexDirection: "column", gap: 52 }}>
 
         {/* Category scores */}
         <motion.section initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2, duration: 0.5 }}>
-          <p style={{ fontSize: "0.6rem", letterSpacing: "0.22em", textTransform: "uppercase", color: "#e8607a", fontWeight: 600, marginBottom: 6 }}>By Category</p>
+          <p style={{ fontSize: "0.6rem", letterSpacing: "0.22em", textTransform: "uppercase", color: "#e8607a", fontWeight: 600, marginBottom: 6 }}>{t.byCategory}</p>
           <h2 style={{ fontFamily: "'DM Serif Display', serif", fontSize: "clamp(22px,4vw,30px)", color: "#1a3560", marginBottom: 24 }}>{t.scoresTitle}</h2>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(280px,1fr))", gap: 12 }}>
             {report.categoryScores.map((cat, i) => {
@@ -201,7 +221,7 @@ export default function ReportPage() {
           <motion.section initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4, duration: 0.5 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 6 }}>
               <TrendingUp size={16} color="#e8607a" />
-              <p style={{ fontSize: "0.6rem", letterSpacing: "0.22em", textTransform: "uppercase", color: "#e8607a", fontWeight: 600 }}>Strengths</p>
+              <p style={{ fontSize: "0.6rem", letterSpacing: "0.22em", textTransform: "uppercase", color: "#e8607a", fontWeight: 600 }}>{t.strengths}</p>
             </div>
             <h2 style={{ fontFamily: "'DM Serif Display', serif", fontSize: "clamp(22px,4vw,30px)", color: "#1a3560", marginBottom: 20 }}>{t.alignedTitle}</h2>
             <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
@@ -229,7 +249,7 @@ export default function ReportPage() {
           <motion.section initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5, duration: 0.5 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 6 }}>
               <TrendingDown size={16} color="#d4a853" />
-              <p style={{ fontSize: "0.6rem", letterSpacing: "0.22em", textTransform: "uppercase", color: "#d4a853", fontWeight: 600 }}>Growth Areas</p>
+              <p style={{ fontSize: "0.6rem", letterSpacing: "0.22em", textTransform: "uppercase", color: "#d4a853", fontWeight: 600 }}>{t.growthAreas}</p>
             </div>
             <h2 style={{ fontFamily: "'DM Serif Display', serif", fontSize: "clamp(22px,4vw,30px)", color: "#1a3560", marginBottom: 20 }}>{t.differingTitle}</h2>
             <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
@@ -256,7 +276,7 @@ export default function ReportPage() {
         <motion.section initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6, duration: 0.5 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 6 }}>
             <MessageCircle size={16} color="rgba(26,53,96,0.4)" />
-            <p style={{ fontSize: "0.6rem", letterSpacing: "0.22em", textTransform: "uppercase", color: "rgba(26,53,96,0.4)", fontWeight: 600 }}>Conversation Starters</p>
+            <p style={{ fontSize: "0.6rem", letterSpacing: "0.22em", textTransform: "uppercase", color: "rgba(26,53,96,0.4)", fontWeight: 600 }}>{t.conversationStarters}</p>
           </div>
           <h2 style={{ fontFamily: "'DM Serif Display', serif", fontSize: "clamp(22px,4vw,30px)", color: "#1a3560", marginBottom: 20 }}>{t.promptsTitle}</h2>
           <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
@@ -277,7 +297,7 @@ export default function ReportPage() {
         <div style={{ background: "linear-gradient(135deg,#fce8ec 0%,#eaf3ff 100%)", border: "1px solid rgba(232,96,122,0.18)", borderRadius: 22, padding: "44px 32px", textAlign: "center" }}>
           <Heart size={22} color="#e8607a" fill="rgba(232,96,122,0.3)" style={{ margin: "0 auto 18px", animation: "heartbeat 3s ease-in-out infinite" }} />
           <p style={{ fontFamily: "'DM Serif Display', serif", fontSize: "1.3rem", color: "rgba(26,53,96,0.7)", fontStyle: "italic", lineHeight: 1.8, maxWidth: 400, margin: "0 auto" }}>
-            "Understanding each other is the beginning of every great love story."
+            {t.closingQuote}
           </p>
         </div>
       </div>

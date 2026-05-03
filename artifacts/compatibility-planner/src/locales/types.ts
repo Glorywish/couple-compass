@@ -28,6 +28,12 @@ export interface LocaleData {
       footerCta1: string;
       footerCta2: string;
       footerBtn: string;
+      coupleSection: string;
+      coupleSectionHeading: string;
+      coupleQuote1: string;
+      coupleQuote2: string;
+      coupleQuote3: string;
+      scroll: string;
     };
     start: {
       title: string;
@@ -43,6 +49,11 @@ export interface LocaleData {
       copiedBtn: string;
       readyText: string;
       startBtn: string;
+      newSession: string;
+      photoLabel: string;
+      photoHint: string;
+      linkCopied: string;
+      linkCopiedDesc: string;
     };
     join: {
       title: string;
@@ -62,6 +73,13 @@ export interface LocaleData {
       scaleMin: string;
       scaleMax: string;
       placeholder: string;
+      reviewTitle: string;
+      reviewDesc: string;
+      editBtn: string;
+      notAnswered: string;
+      confirmSubmit: string;
+      partner1: string;
+      partner2: string;
     };
     waiting: {
       title: string;
@@ -72,6 +90,8 @@ export interface LocaleData {
       inProgress: string;
       waitingStatus: string;
       pollNote: string;
+      bothComplete: string;
+      waitingLabel: string;
     };
     report: {
       title: string;
@@ -89,6 +109,17 @@ export interface LocaleData {
       alignmentLabels: { high: string; medium: string; low: string };
       loading: string;
       summaryNote: string;
+      shareableLink: string;
+      copyBtn: string;
+      copiedBtn: string;
+      byCategory: string;
+      strengths: string;
+      growthAreas: string;
+      conversationStarters: string;
+      closingQuote: string;
+      reportCopied: string;
+      reportCopiedDesc: string;
+      couplePhoto: string;
     };
     errors: {
       sessionNotFound: string;

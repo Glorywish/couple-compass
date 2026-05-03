@@ -3,6 +3,7 @@ import { useParams, useLocation, useSearch } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowRight, ArrowLeft, Save, Check, Edit3, Send } from "lucide-react";
 import { useListQuestions, useSubmitResponses } from "@workspace/api-client-react";
+import type { Question } from "@workspace/api-client-react";
 import { useToast } from "@/hooks/use-toast";
 import { useI18n } from "@/lib/i18n";
 import type { LocaleData } from "@/locales/types";
@@ -57,10 +58,10 @@ function translateAnswer(questionId: number, value: string, questions: LocaleDat
   return value || "—";
 }
 
-// ─── Review screen ────────────────────────────────────────────────────────────
+// ─── Review screen ─────────────────────────────────────────────────────────────
 type ReviewProps = {
   categories: string[];
-  allQuestions: Array<{ id: number; category: string; text: string; type: string; options: string | null; weight: number }>;
+  allQuestions: Question[];
   answers: Map<number, string>;
   onEdit: (catIndex: number) => void;
   onSubmit: () => void;
@@ -70,12 +71,13 @@ type ReviewProps = {
 
 function ReviewScreen({ categories, allQuestions, answers, onEdit, onSubmit, isSubmitting, localeData }: ReviewProps) {
   const t = localeData.ui;
+  const tq = t.questionnaire;
   return (
     <div style={{ minHeight: "100vh", background: "#f8f4f0", color: "#1a3560", paddingBottom: 100 }}>
       <div style={{ position: "sticky", top: 0, zIndex: 20, background: "rgba(248,244,240,0.96)", backdropFilter: "blur(12px)", borderBottom: "1px solid rgba(184,212,240,0.4)", padding: "14px 24px" }}>
         <div style={{ maxWidth: 640, margin: "0 auto" }}>
-          <h1 style={{ fontFamily: "'DM Serif Display', serif", fontSize: "1.15rem", color: "#1a3560", marginBottom: 2 }}>Review your answers</h1>
-          <p style={{ fontSize: "0.7rem", color: "rgba(26,53,96,0.4)", letterSpacing: "0.06em" }}>Check everything before submitting</p>
+          <h1 style={{ fontFamily: "'DM Serif Display', serif", fontSize: "1.15rem", color: "#1a3560", marginBottom: 2 }}>{tq.reviewTitle}</h1>
+          <p style={{ fontSize: "0.7rem", color: "rgba(26,53,96,0.4)", letterSpacing: "0.06em" }}>{tq.reviewDesc}</p>
         </div>
       </div>
 
@@ -102,7 +104,7 @@ function ReviewScreen({ categories, allQuestions, answers, onEdit, onSubmit, isS
                 </div>
                 <button onClick={() => onEdit(catIdx)}
                   style={{ background: "rgba(232,96,122,0.09)", border: "1px solid rgba(232,96,122,0.22)", borderRadius: 7, padding: "4px 12px", color: "#e8607a", fontSize: "0.7rem", fontWeight: 600, letterSpacing: "0.06em", textTransform: "uppercase", cursor: "pointer", fontFamily: "Inter,sans-serif", display: "flex", alignItems: "center", gap: 5 }}>
-                  <Edit3 size={10} /> Edit
+                  <Edit3 size={10} /> {tq.editBtn}
                 </button>
               </div>
               <div>
@@ -112,8 +114,8 @@ function ReviewScreen({ categories, allQuestions, answers, onEdit, onSubmit, isS
                   const displayVal = val !== undefined
                     ? q.type === "choice" ? translateAnswer(q.id, val, localeData.questions)
                     : q.type === "scale" ? `${val} / 5`
-                    : val || "—"
-                    : "Not answered";
+                    : val || tq.notAnswered
+                    : tq.notAnswered;
                   return (
                     <div key={q.id} style={{ padding: "12px 18px", borderBottom: qi < catQs.length - 1 ? "1px solid rgba(184,212,240,0.2)" : "none" }}>
                       <p style={{ fontSize: "0.74rem", color: "rgba(26,53,96,0.45)", marginBottom: 4, lineHeight: 1.5 }}>{qText}</p>
@@ -139,7 +141,7 @@ function ReviewScreen({ categories, allQuestions, answers, onEdit, onSubmit, isS
               display: "flex", alignItems: "center", justifyContent: "center", gap: 10,
               boxShadow: isSubmitting ? "none" : "0 4px 16px rgba(232,96,122,0.3)",
             }}>
-            {isSubmitting ? "Submitting…" : "Confirm & Submit"} <Send size={15} />
+            {isSubmitting ? t.submitting : tq.confirmSubmit} <Send size={15} />
           </button>
         </div>
       </div>
@@ -161,7 +163,7 @@ export default function QuestionnairePage() {
   const { data: allQuestions, isLoading } = useListQuestions();
   const submitResponses = useSubmitResponses();
 
-  const partnerName = nameFromUrl || (params.partnerSlot === "partner1" ? "Partner 1" : "Partner 2");
+  const partnerName = nameFromUrl || (params.partnerSlot === "partner1" ? t.partner1 : t.partner2);
 
   const [answers, setAnswers] = useState<Map<number, string>>(() => loadAnswers(params.sessionCode, params.partnerSlot));
   const [categoryIndex, setCategoryIndex] = useState(() => loadPhase(params.sessionCode, params.partnerSlot));
@@ -290,39 +292,29 @@ export default function QuestionnairePage() {
     <div style={{ minHeight: "100vh", background: "#f8f4f0", color: "#1a3560", display: "flex", flexDirection: "column" }}>
       <style>{`@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}`}</style>
 
-      {/* ── Sticky header ── */}
+      {/* Sticky header */}
       <div style={{ position: "sticky", top: 0, zIndex: 20, background: "rgba(248,244,240,0.96)", backdropFilter: "blur(12px)", borderBottom: "1px solid rgba(184,212,240,0.35)" }}>
         <div style={{ maxWidth: 640, margin: "0 auto", padding: "12px 20px" }}>
-
-          {/* Phase bar */}
           <div style={{ display: "flex", gap: 4, marginBottom: 10 }}>
             {categories.map((cat, i) => {
               const label = data.ui.categories[cat as keyof typeof data.ui.categories] ?? cat;
               const isCurrent = i === categoryIndex;
               const isComplete = isCategoryComplete(i);
               const isVisited = visitedPhases.has(i);
-
               let bg = "rgba(184,212,240,0.35)";
               if (isCurrent) bg = "#e8607a";
               else if (isComplete) bg = "rgba(232,96,122,0.45)";
               else if (isVisited) bg = "rgba(232,96,122,0.2)";
-
               return (
                 <button key={i} onClick={() => navigateTo(i)}
                   title={label}
                   data-testid={`phase-tab-${i}`}
-                  aria-label={`Go to ${label}`}
-                  style={{
-                    flex: 1, height: isCurrent ? 6 : 4, borderRadius: 999,
-                    background: bg, border: "none", cursor: "pointer",
-                    transition: "all 0.2s ease",
-                  }}
+                  aria-label={label}
+                  style={{ flex: 1, height: isCurrent ? 6 : 4, borderRadius: 999, background: bg, border: "none", cursor: "pointer", transition: "all 0.2s ease" }}
                 />
               );
             })}
           </div>
-
-          {/* Label */}
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
             <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
               <span style={{ fontSize: "0.68rem", fontWeight: 600, letterSpacing: "0.12em", textTransform: "uppercase", color: "#e8607a" }}>
@@ -344,10 +336,9 @@ export default function QuestionnairePage() {
         </div>
       </div>
 
-      {/* ── Content ── */}
+      {/* Content */}
       <div style={{ maxWidth: 640, margin: "0 auto", width: "100%", padding: "32px 20px 120px", flex: 1 }}>
 
-        {/* Restored notice */}
         <AnimatePresence>
           {showRestored && (
             <motion.div
@@ -364,7 +355,6 @@ export default function QuestionnairePage() {
           )}
         </AnimatePresence>
 
-        {/* Questions */}
         <AnimatePresence mode="wait" custom={direction}>
           <motion.div key={categoryIndex} custom={direction}
             initial={{ opacity: 0, x: direction * 40 }}
@@ -380,7 +370,7 @@ export default function QuestionnairePage() {
               {categoryQuestions.map((q, idx) => {
                 const qTranslation = data.questions[q.id];
                 const questionText = qTranslation?.text ?? q.text;
-                const questionOptions = qTranslation?.options ?? (q.options ? JSON.parse(q.options) : null);
+                const questionOptions = qTranslation?.options ?? (q.options ?? null);
 
                 return (
                   <motion.div key={q.id}
@@ -463,13 +453,13 @@ export default function QuestionnairePage() {
                         value={answers.get(q.id) ?? ""}
                         onChange={e => setAnswer(q.id, e.target.value)}
                         placeholder={t.placeholder}
-                        data-testid={`textarea-${q.id}`}
-                        rows={4}
+                        data-testid={`open-${q.id}`}
+                        rows={3}
                         style={{
                           width: "100%", background: "rgba(234,243,255,0.5)", border: "1px solid rgba(184,212,240,0.5)",
-                          borderRadius: 10, padding: "12px 14px", color: "#1a3560", fontSize: "0.9rem",
-                          fontFamily: "Inter,sans-serif", outline: "none", resize: "none", lineHeight: 1.7,
-                          boxSizing: "border-box",
+                          borderRadius: 11, padding: "12px 14px", color: "#1a3560", fontSize: "0.9rem",
+                          fontFamily: "'DM Serif Display',serif", outline: "none", resize: "vertical",
+                          boxSizing: "border-box", lineHeight: 1.7,
                         }}
                       />
                     )}
@@ -481,39 +471,27 @@ export default function QuestionnairePage() {
         </AnimatePresence>
       </div>
 
-      {/* ── Fixed bottom nav ── */}
-      <div style={{ position: "fixed", bottom: 0, left: 0, right: 0, background: "rgba(248,244,240,0.97)", backdropFilter: "blur(12px)", borderTop: "1px solid rgba(184,212,240,0.35)", padding: "14px 20px" }}>
+      {/* Fixed bottom nav */}
+      <div style={{ position: "fixed", bottom: 0, left: 0, right: 0, background: "rgba(248,244,240,0.97)", backdropFilter: "blur(12px)", borderTop: "1px solid rgba(184,212,240,0.4)", padding: "14px 20px" }}>
         <div style={{ maxWidth: 640, margin: "0 auto", display: "flex", gap: 10 }}>
-          <button onClick={handleBack} disabled={categoryIndex === 0}
-            data-testid="button-prev-category"
+          {categoryIndex > 0 && (
+            <motion.button onClick={handleBack} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
+              data-testid="button-back"
+              style={{ flex: "0 0 auto", background: "white", border: "1px solid rgba(184,212,240,0.6)", borderRadius: 11, padding: "12px 20px", color: "rgba(26,53,96,0.5)", fontSize: "0.8rem", fontWeight: 500, cursor: "pointer", fontFamily: "Inter,sans-serif", display: "flex", alignItems: "center", gap: 7, letterSpacing: "0.06em", textTransform: "uppercase" }}>
+              <ArrowLeft size={13} /> {data.ui.back}
+            </motion.button>
+          )}
+          <motion.button onClick={handleNext} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
+            data-testid="button-next"
             style={{
-              background: "white", border: "1px solid rgba(184,212,240,0.5)",
-              borderRadius: 11, padding: "12px 20px",
-              color: categoryIndex === 0 ? "rgba(26,53,96,0.2)" : "rgba(26,53,96,0.65)",
-              fontSize: "0.8rem", fontWeight: 500, letterSpacing: "0.06em", textTransform: "uppercase",
-              cursor: categoryIndex === 0 ? "not-allowed" : "pointer", fontFamily: "Inter,sans-serif",
-              display: "flex", alignItems: "center", gap: 8,
+              flex: 1, background: "#e8607a", color: "white", border: "none", borderRadius: 11,
+              padding: "12px 24px", fontSize: "0.83rem", fontWeight: 600, letterSpacing: "0.06em", textTransform: "uppercase",
+              cursor: "pointer", fontFamily: "Inter,sans-serif", display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
+              boxShadow: "0 4px 16px rgba(232,96,122,0.28)",
             }}>
-            <ArrowLeft size={13} /> {data.ui.back}
-          </button>
-          <button onClick={handleNext}
-            disabled={!allCurrentAnswered || submitResponses.isPending}
-            data-testid="button-next-category"
-            style={{
-              flex: 1, background: allCurrentAnswered ? "#e8607a" : "rgba(232,96,122,0.2)",
-              border: "none", borderRadius: 11, padding: "12px 20px",
-              color: allCurrentAnswered ? "white" : "rgba(26,53,96,0.25)",
-              fontSize: "0.83rem", fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase",
-              cursor: allCurrentAnswered ? "pointer" : "not-allowed", fontFamily: "Inter,sans-serif",
-              display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
-              transition: "background 0.2s",
-              boxShadow: allCurrentAnswered ? "0 4px 14px rgba(232,96,122,0.28)" : "none",
-            }}>
-            {categoryIndex === totalCategories - 1
-              ? (allPhasesComplete ? "Review & Submit" : data.ui.submit)
-              : data.ui.next}
-            <ArrowRight size={13} />
-          </button>
+            {categoryIndex < totalCategories - 1 ? data.ui.next : data.ui.submit}
+            <ArrowRight size={14} />
+          </motion.button>
         </div>
       </div>
     </div>

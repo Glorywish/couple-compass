@@ -6,7 +6,6 @@ import { useI18n } from "@/lib/i18n";
 
 const BASE = import.meta.env.BASE_URL;
 
-/* ── floating sparkle dots ── */
 const SPARKLES = Array.from({ length: 20 }, (_, i) => ({
   id: i,
   x: (i * 41 + 13) % 100,
@@ -17,7 +16,6 @@ const SPARKLES = Array.from({ length: 20 }, (_, i) => ({
   color: i % 3 === 0 ? "#e8607a" : i % 3 === 1 ? "#b8d4f0" : "#f0a0b0",
 }));
 
-/* ── Heart Compass SVG ── */
 function HeartCompass({ size = 220 }: { size?: number }) {
   return (
     <svg width={size} height={size * (215 / 220)} viewBox="0 0 220 215" fill="none">
@@ -44,21 +42,13 @@ function HeartCompass({ size = 220 }: { size?: number }) {
 
 const STEP_ICONS = ["01", "02", "03"];
 
-/* ── Heart bloom overlay on navigation ── */
 function useHeartBloom() {
   const [bloom, setBloom] = useState<{ x: number; y: number } | null>(null);
-
   const trigger = (e: React.MouseEvent, cb: () => void) => {
     const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
-    const x = rect.left + rect.width / 2;
-    const y = rect.top + rect.height / 2;
-    setBloom({ x, y });
-    setTimeout(() => {
-      cb();
-      setTimeout(() => setBloom(null), 400);
-    }, 480);
+    setBloom({ x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 });
+    setTimeout(() => { cb(); setTimeout(() => setBloom(null), 400); }, 480);
   };
-
   return { bloom, trigger };
 }
 
@@ -71,26 +61,22 @@ export default function Home() {
   return (
     <div style={{ background: "linear-gradient(160deg,#eaf3ff 0%,#fce8ec 50%,#eaf3ff 100%)", minHeight: "100vh", color: "#1a3560", overflowX: "hidden" }}>
 
-      {/* ── Heart bloom overlay ── */}
+      {/* bloom overlay */}
       <AnimatePresence>
         {bloom && (
-          <motion.div
-            key="bloom"
+          <motion.div key="bloom"
             initial={{ scale: 0, opacity: 0.9, borderRadius: "50%" }}
             animate={{ scale: 28, opacity: 1, borderRadius: "50%" }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
-            style={{
-              position: "fixed", zIndex: 9999, pointerEvents: "none",
-              width: 80, height: 80,
+            style={{ position: "fixed", zIndex: 9999, pointerEvents: "none", width: 80, height: 80,
               left: bloom.x - 40, top: bloom.y - 40,
-              background: "radial-gradient(circle, #fce8ec 0%, #e8607a 60%)",
-            }}
+              background: "radial-gradient(circle, #fce8ec 0%, #e8607a 60%)" }}
           />
         )}
       </AnimatePresence>
 
-      {/* ── floating sparkles ── */}
+      {/* sparkles */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden" aria-hidden>
         {SPARKLES.map(s => (
           <div key={s.id} className="absolute rounded-full"
@@ -100,14 +86,10 @@ export default function Home() {
 
       {/* ── HERO ── */}
       <div className="relative min-h-screen flex flex-col items-center justify-center text-center px-6 pt-16 pb-24">
-        <div style={{ position:"absolute", top:"8%", left:"50%", transform:"translateX(-50%)", width:340, height:340, borderRadius:"50%", background:"radial-gradient(circle, rgba(232,96,122,0.13) 0%, transparent 70%)", pointerEvents:"none" }} />
+        <div style={{ position:"absolute", top:"8%", left:"50%", transform:"translateX(-50%)", width:340, height:340, borderRadius:"50%", background:"radial-gradient(circle,rgba(232,96,122,0.13) 0%,transparent 70%)", pointerEvents:"none" }} />
 
-        <motion.div
-          initial={{ opacity:0, scale:0.7, y:20 }}
-          animate={{ opacity:1, scale:1, y:0 }}
-          transition={{ duration:1.0, ease:[0.16,1,0.3,1] }}
-          style={{ animation:"heartbeat 3.5s ease-in-out infinite", filter:"drop-shadow(0 8px 32px rgba(232,96,122,0.22))", marginBottom:36 }}
-        >
+        <motion.div initial={{ opacity:0, scale:0.7, y:20 }} animate={{ opacity:1, scale:1, y:0 }} transition={{ duration:1.0, ease:[0.16,1,0.3,1] }}
+          style={{ animation:"heartbeat 3.5s ease-in-out infinite", filter:"drop-shadow(0 8px 32px rgba(232,96,122,0.22))", marginBottom:36 }}>
           <HeartCompass size={210} />
         </motion.div>
 
@@ -117,16 +99,13 @@ export default function Home() {
             <span style={{ fontSize:"0.66rem", letterSpacing:"0.22em", textTransform:"uppercase", color:"#e8607a", fontWeight:600 }}>{t.home.badge}</span>
             <div style={{ width:24, height:1, background:"rgba(232,96,122,0.4)" }} />
           </div>
-
           <h1 style={{ fontSize:"clamp(38px,7vw,70px)", fontFamily:"'DM Serif Display',serif", fontWeight:400, lineHeight:1.06, color:"#1a3560", marginBottom:"1.2rem" }}>
             {t.home.title1}<br />
             <em style={{ fontStyle:"italic", color:"#e8607a" }}>{t.home.title2}</em>
           </h1>
-
           <p style={{ fontSize:"1rem", color:"rgba(26,53,96,0.55)", maxWidth:440, margin:"0 auto 2.5rem", lineHeight:1.8, fontWeight:300 }}>
             {t.home.desc}
           </p>
-
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <motion.button whileHover={{ scale:1.04 }} whileTap={{ scale:0.97 }}
               onClick={e => trigger(e, () => setLocation("/start"))}
@@ -146,65 +125,60 @@ export default function Home() {
         <motion.div initial={{ opacity:0 }} animate={{ opacity:1 }} transition={{ delay:1.4 }}
           className="absolute bottom-10 flex flex-col items-center gap-2"
           style={{ animation:"pulse-soft 2.5s ease-in-out infinite", color:"rgba(232,96,122,0.5)" }}>
-          <span style={{ fontSize:"0.6rem", letterSpacing:"0.25em", textTransform:"uppercase" }}>Scroll</span>
+          <span style={{ fontSize:"0.6rem", letterSpacing:"0.25em", textTransform:"uppercase" }}>{t.home.scroll}</span>
           <div style={{ width:1, height:32, background:"linear-gradient(to bottom,rgba(232,96,122,0.6),transparent)" }} />
         </motion.div>
       </div>
 
-      {/* ── COUPLE PHOTO SECTION ── */}
+      {/* ── COUPLE PHOTOS ── */}
       <div style={{ background:"white", padding:"80px 24px", borderTop:"1px solid rgba(184,212,240,0.4)" }}>
         <div style={{ maxWidth:860, margin:"0 auto" }}>
           <motion.div initial={{ opacity:0, y:20 }} whileInView={{ opacity:1, y:0 }} viewport={{ once:true }} transition={{ duration:0.6 }} className="text-center mb-14">
-            <p style={{ fontSize:"0.65rem", letterSpacing:"0.22em", textTransform:"uppercase", color:"#e8607a", fontWeight:600, marginBottom:10 }}>Every Love Story</p>
+            <p style={{ fontSize:"0.65rem", letterSpacing:"0.22em", textTransform:"uppercase", color:"#e8607a", fontWeight:600, marginBottom:10 }}>{t.home.coupleSection}</p>
             <h2 style={{ fontFamily:"'DM Serif Display',serif", fontSize:"clamp(28px,5vw,40px)", color:"#1a3560", lineHeight:1.15, marginBottom:10 }}>
-              Navigate life <em style={{ fontStyle:"italic", color:"#e8607a" }}>together</em>
+              <em style={{ fontStyle:"italic", color:"#e8607a" }}>{t.home.coupleSectionHeading}</em>
             </h2>
             <p style={{ fontSize:"0.9rem", color:"rgba(26,53,96,0.5)", maxWidth:400, margin:"0 auto", lineHeight:1.8 }}>
-              Whether you're just starting out or planning forever — understanding each other is the journey.
+              {t.home.dimensionsDesc}
             </p>
           </motion.div>
 
-          {/* Photos grid */}
           <div className="grid md:grid-cols-2 gap-6 items-start">
-
-            {/* Left — rain couple, taller */}
+            {/* Left image */}
             <motion.div initial={{ opacity:0, x:-24 }} whileInView={{ opacity:1, x:0 }} viewport={{ once:true }} transition={{ duration:0.7, ease:[0.16,1,0.3,1] }}
               style={{ position:"relative", borderRadius:24, overflow:"hidden", boxShadow:"0 12px 48px rgba(232,96,122,0.16)" }}>
-              <img src={`${BASE}couple-rain.jpg`} alt="Couple walking in rain under pink umbrella"
-                style={{ width:"100%", aspectRatio:"1/1.05", objectFit:"cover", display:"block" }} />
-              {/* frosted caption overlay */}
-              <div style={{ position:"absolute", bottom:0, left:0, right:0, padding:"24px 24px 22px", background:"linear-gradient(to top,rgba(232,96,122,0.7) 0%,transparent 100%)" }}>
-                <p style={{ fontFamily:"'DM Serif Display',serif", fontSize:"1.15rem", color:"white", fontStyle:"italic", lineHeight:1.4 }}>
-                  "Even in the rain, together is the warmest place."
+              <img src={`${BASE}couple-city.png`} alt="Couple walking together at golden hour"
+                style={{ width:"100%", aspectRatio:"3/4", objectFit:"cover", display:"block" }} />
+              <div style={{ position:"absolute", bottom:0, left:0, right:0, padding:"24px 24px 22px", background:"linear-gradient(to top,rgba(232,96,122,0.65) 0%,transparent 100%)" }}>
+                <p style={{ fontFamily:"'DM Serif Display',serif", fontSize:"1.1rem", color:"white", fontStyle:"italic", lineHeight:1.4 }}>
+                  {t.home.coupleQuote1}
                 </p>
               </div>
             </motion.div>
 
-            {/* Right — beach couple + quote card stacked */}
+            {/* Right: image + quote card */}
             <motion.div initial={{ opacity:0, x:24 }} whileInView={{ opacity:1, x:0 }} viewport={{ once:true }} transition={{ duration:0.7, delay:0.12, ease:[0.16,1,0.3,1] }}
               style={{ display:"flex", flexDirection:"column", gap:16 }}>
               <div style={{ position:"relative", borderRadius:24, overflow:"hidden", boxShadow:"0 12px 48px rgba(184,212,240,0.3)" }}>
-                <img src={`${BASE}couple-beach.jpg`} alt="Couple walking on beach"
-                  style={{ width:"100%", aspectRatio:"1/0.9", objectFit:"cover", display:"block" }} />
+                <img src={`${BASE}couple-beach.png`} alt="Couple walking on beach at sunrise"
+                  style={{ width:"100%", aspectRatio:"3/4", objectFit:"cover", display:"block" }} />
                 <div style={{ position:"absolute", bottom:0, left:0, right:0, padding:"20px 22px 18px", background:"linear-gradient(to top,rgba(26,53,96,0.55) 0%,transparent 100%)" }}>
                   <p style={{ fontFamily:"'DM Serif Display',serif", fontSize:"1rem", color:"white", fontStyle:"italic", lineHeight:1.4 }}>
-                    "Side by side, always finding your way."
+                    {t.home.coupleQuote2}
                   </p>
                 </div>
               </div>
 
-              {/* Quote accent card */}
               <div style={{ background:"linear-gradient(135deg,#fce8ec 0%,#eaf3ff 100%)", border:"1px solid rgba(232,96,122,0.18)", borderRadius:18, padding:"24px 24px 22px" }}>
                 <Heart size={18} color="#e8607a" fill="rgba(232,96,122,0.25)" style={{ marginBottom:12 }} />
                 <p style={{ fontFamily:"'DM Serif Display',serif", fontSize:"1.05rem", color:"#1a3560", fontStyle:"italic", lineHeight:1.75, marginBottom:10 }}>
-                  "Compatibility isn't about being the same — it's about understanding your differences."
+                  {t.home.coupleQuote3}
                 </p>
                 <p style={{ fontSize:"0.72rem", color:"rgba(26,53,96,0.4)", letterSpacing:"0.1em", textTransform:"uppercase", fontWeight:600 }}>
-                  — Couple Compass
+                  Couple Compass
                 </p>
               </div>
             </motion.div>
-
           </div>
         </div>
       </div>
@@ -213,13 +187,12 @@ export default function Home() {
       <div style={{ background:"linear-gradient(180deg,#f8f4f0 0%,white 100%)", color:"#1a3560", padding:"80px 24px", borderTop:"1px solid rgba(184,212,240,0.4)" }}>
         <div style={{ maxWidth:760, margin:"0 auto" }}>
           <motion.div initial={{ opacity:0, y:20 }} whileInView={{ opacity:1, y:0 }} viewport={{ once:true }} transition={{ duration:0.6 }} className="text-center mb-14">
-            <p style={{ fontSize:"0.65rem", letterSpacing:"0.22em", textTransform:"uppercase", color:"#e8607a", fontWeight:600, marginBottom:12 }}>How it works</p>
+            <p style={{ fontSize:"0.65rem", letterSpacing:"0.22em", textTransform:"uppercase", color:"#e8607a", fontWeight:600, marginBottom:12 }}>{t.home.howTitle}</p>
             <h2 style={{ fontFamily:"'DM Serif Display',serif", fontSize:"clamp(28px,5vw,40px)", color:"#1a3560", lineHeight:1.15, marginBottom:12 }}>
               {t.home.howTitle}
             </h2>
             <p style={{ fontSize:"0.92rem", color:"rgba(26,53,96,0.5)", maxWidth:420, margin:"0 auto", lineHeight:1.8 }}>{t.home.howDesc}</p>
           </motion.div>
-
           <div className="grid md:grid-cols-3 gap-6">
             {t.home.steps.map((step, i) => (
               <motion.div key={i} initial={{ opacity:0, y:20 }} whileInView={{ opacity:1, y:0 }} viewport={{ once:true }} transition={{ delay:i*0.1, duration:0.5 }}
@@ -241,7 +214,7 @@ export default function Home() {
           <motion.div initial={{ opacity:0, y:20 }} whileInView={{ opacity:1, y:0 }} viewport={{ once:true }} transition={{ duration:0.6 }}>
             <p style={{ fontSize:"0.65rem", letterSpacing:"0.22em", textTransform:"uppercase", color:"#e8607a", fontWeight:600, marginBottom:12 }}>{t.home.dimensionsTitle}</p>
             <h2 style={{ fontFamily:"'DM Serif Display',serif", fontSize:"clamp(26px,4.5vw,38px)", color:"#1a3560", marginBottom:10, lineHeight:1.2 }}>
-              8 dimensions of alignment
+              {t.home.dimensionsTitle}
             </h2>
             <p style={{ fontSize:"0.9rem", color:"rgba(26,53,96,0.5)", marginBottom:32, lineHeight:1.8 }}>{t.home.dimensionsDesc}</p>
             <div className="flex flex-wrap justify-center gap-2">
@@ -270,7 +243,6 @@ export default function Home() {
             {t.home.footerBtn} <ArrowRight size={14} />
           </motion.button>
         </motion.div>
-
         <div style={{ marginTop:64, borderTop:"1px solid rgba(26,53,96,0.07)", paddingTop:28 }}>
           <p style={{ fontFamily:"'DM Serif Display',serif", fontSize:"1.1rem", color:"rgba(26,53,96,0.28)", fontStyle:"italic" }}>Couple Compass</p>
         </div>

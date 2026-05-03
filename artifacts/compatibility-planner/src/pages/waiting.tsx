@@ -35,7 +35,6 @@ export default function WaitingPage() {
       <div style={{ maxWidth: 440, width: "100%", textAlign: "center" }}>
         <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}>
 
-          {/* Pulsing heart */}
           <div style={{ position: "relative", width: 80, height: 80, margin: "0 auto 36px" }}>
             <motion.div
               animate={{ scale: [1, 1.2, 1], opacity: [0.3, 0.12, 0.3] }}
@@ -48,7 +47,7 @@ export default function WaitingPage() {
           </div>
 
           <p style={{ fontSize: "0.65rem", letterSpacing: "0.22em", textTransform: "uppercase", color: "#e8607a", fontWeight: 600, marginBottom: 10 }}>
-            {status?.bothCompleted ? "Both Complete" : "Waiting"}
+            {status?.bothCompleted ? t.bothComplete : t.waitingLabel}
           </p>
           <h1 style={{ fontFamily: "'DM Serif Display', serif", fontSize: "clamp(28px,5vw,38px)", color: "#1a3560", lineHeight: 1.15, marginBottom: 10 }}>
             {status?.bothCompleted ? t.titleDone : t.title}
@@ -57,11 +56,10 @@ export default function WaitingPage() {
             {status?.bothCompleted ? t.descDone : t.desc}
           </p>
 
-          {/* Status cards */}
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginBottom: 36 }}>
             {[
-              { name: myName ?? "You", done: myDone, testId: "status-partner1" },
-              { name: partnerName ?? "Partner", done: partnerDone, testId: "status-partner2" },
+              { name: myName ?? data.ui.questionnaire.partner1, done: myDone, testId: "status-partner1" },
+              { name: partnerName ?? data.ui.questionnaire.partner2, done: partnerDone, testId: "status-partner2" },
             ].map(({ name, done, testId }) => (
               <div key={testId} data-testid={testId} style={{
                 background: done ? "rgba(232,96,122,0.07)" : "white",

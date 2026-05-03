@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useLocation } from "wouter";
 import { motion } from "framer-motion";
-import { ArrowLeft, Copy, Check, ArrowRight } from "lucide-react";
+import { ArrowLeft, Copy, Check, ArrowRight, Camera } from "lucide-react";
 import { useCreateSession } from "@workspace/api-client-react";
 import { useToast } from "@/hooks/use-toast";
 import { useI18n } from "@/lib/i18n";
@@ -18,6 +18,7 @@ export default function StartPage() {
   const [name, setName] = useState("");
   const [session, setSession] = useState<{ sessionCode: string; partner1Name: string } | null>(null);
   const [copied, setCopied] = useState(false);
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const { toast } = useToast();
   const { data } = useI18n();
   const t = data.ui.start;
@@ -43,7 +44,19 @@ export default function StartPage() {
     navigator.clipboard.writeText(shareUrl);
     setCopied(true);
     setTimeout(() => setCopied(false), 2500);
-    toast({ title: "Link copied!", description: "Share it with your partner" });
+    toast({ title: t.linkCopied, description: t.linkCopiedDesc });
+  };
+
+  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !session) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      const dataUrl = ev.target?.result as string;
+      setPhotoPreview(dataUrl);
+      localStorage.setItem(`cp_couple_photo_${session.sessionCode}`, dataUrl);
+    };
+    reader.readAsDataURL(file);
   };
 
   return (
@@ -60,7 +73,7 @@ export default function StartPage() {
         {!session ? (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} style={{ marginTop: 48 }}>
             <p style={{ fontSize: "0.65rem", letterSpacing: "0.22em", textTransform: "uppercase", color: "#e8607a", fontWeight: 600, marginBottom: 10 }}>
-              New Session
+              {t.newSession}
             </p>
             <h1 style={{ fontFamily: "'DM Serif Display', serif", fontSize: "clamp(32px,5vw,44px)", color: "#1a3560", lineHeight: 1.1, marginBottom: 10 }}>
               {t.title}
@@ -89,8 +102,7 @@ export default function StartPage() {
                   display: "flex", alignItems: "center", justifyContent: "center", gap: 10,
                   transition: "background 0.2s",
                   boxShadow: name.trim() ? "0 4px 16px rgba(232,96,122,0.3)" : "none",
-                }}
-              >
+                }}>
                 {createSession.isPending ? t.creating : t.btn} {!createSession.isPending && <ArrowRight size={14} />}
               </motion.button>
             </form>
@@ -124,6 +136,29 @@ export default function StartPage() {
                 {copied ? <Check size={11} /> : <Copy size={11} />}
                 {copied ? t.copiedBtn : t.copyBtn}
               </motion.button>
+            </div>
+
+            {/* Photo upload */}
+            <div style={{ background: "linear-gradient(135deg,#fce8ec 0%,#eaf3ff 100%)", border: "1px solid rgba(232,96,122,0.18)", borderRadius: 14, padding: "18px 20px", marginBottom: 28 }}>
+              <p style={{ fontSize: "0.7rem", letterSpacing: "0.14em", textTransform: "uppercase", color: "rgba(26,53,96,0.45)", marginBottom: 12, fontWeight: 500 }}>
+                {t.photoLabel}
+              </p>
+              {photoPreview ? (
+                <div style={{ position: "relative", borderRadius: 12, overflow: "hidden", marginBottom: 10 }}>
+                  <img src={photoPreview} alt="couple photo" style={{ width: "100%", maxHeight: 220, objectFit: "cover", display: "block", borderRadius: 12 }} />
+                  <label htmlFor="photo-upload" style={{ position: "absolute", bottom: 10, right: 10, background: "rgba(255,255,255,0.85)", border: "1px solid rgba(232,96,122,0.3)", borderRadius: 8, padding: "5px 12px", fontSize: "0.7rem", fontWeight: 600, color: "#e8607a", cursor: "pointer", letterSpacing: "0.06em", textTransform: "uppercase", backdropFilter: "blur(4px)" }}>
+                    <Camera size={10} style={{ display: "inline", marginRight: 4 }} />{t.photoHint}
+                  </label>
+                </div>
+              ) : (
+                <label htmlFor="photo-upload"
+                  style={{ display: "flex", alignItems: "center", gap: 10, cursor: "pointer", padding: "12px 16px", background: "white", borderRadius: 10, border: "1.5px dashed rgba(232,96,122,0.35)", color: "rgba(26,53,96,0.45)", fontSize: "0.85rem" }}>
+                  <Camera size={16} color="#e8607a" />
+                  {t.photoHint}
+                </label>
+              )}
+              <input id="photo-upload" type="file" accept="image/*" onChange={handlePhotoChange}
+                style={{ display: "none" }} />
             </div>
 
             <div style={{ borderTop: "1px solid rgba(184,212,240,0.5)", paddingTop: 24 }}>
