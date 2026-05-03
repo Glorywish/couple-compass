@@ -138,6 +138,37 @@ paths:
               schema:
                 $ref: "#/components/schemas/ReportNotReady"
 
+  /sessions/{sessionCode}/email-report:
+    post:
+      operationId: emailReport
+      tags: [reports]
+      summary: Send the compatibility report to one or more email addresses
+      parameters:
+        - name: sessionCode
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EmailReportBody"
+      responses:
+        "200":
+          description: Email sent successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EmailReportResult"
+        "400":
+          description: Invalid request or report not ready
+        "404":
+          description: Session not found
+        "503":
+          description: Email service not configured
+
   /sessions/{sessionCode}/status:
     get:
       operationId: getSessionStatus
@@ -342,6 +373,24 @@ components:
           type: string
           nullable: true
       required: [questionId, questionText, category, partner1Answer, partner2Answer]
+
+    EmailReportBody:
+      type: object
+      properties:
+        emails:
+          type: array
+          items:
+            type: string
+          minItems: 1
+          description: One or more email addresses to send the report to
+      required: [emails]
+
+    EmailReportResult:
+      type: object
+      properties:
+        sent:
+          type: boolean
+      required: [sent]
 
     ReportNotReady:
       type: object

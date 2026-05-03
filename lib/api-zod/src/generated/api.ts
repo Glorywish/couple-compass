@@ -125,6 +125,24 @@ export const GetReportResponse = zod.object({
 });
 
 /**
+ * @summary Send the compatibility report to one or more email addresses
+ */
+export const EmailReportParams = zod.object({
+  sessionCode: zod.coerce.string(),
+});
+
+export const EmailReportBody = zod.object({
+  emails: zod
+    .array(zod.string())
+    .min(1)
+    .describe("One or more email addresses to send the report to"),
+});
+
+export const EmailReportResponse = zod.object({
+  sent: zod.boolean(),
+});
+
+/**
  * @summary Check completion status for both partners in a session
  */
 export const GetSessionStatusParams = zod.object({

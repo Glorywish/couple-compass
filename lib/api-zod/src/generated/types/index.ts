@@ -12,6 +12,8 @@ export * from "./categoryScore";
 export * from "./categoryScoreAlignment";
 export * from "./compatibilityReport";
 export * from "./createSessionBody";
+export * from "./emailReportBody";
+export * from "./emailReportResult";
 export * from "./healthStatus";
 export * from "./partnerResponseSet";
 export * from "./question";

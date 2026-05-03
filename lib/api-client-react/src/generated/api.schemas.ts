@@ -130,6 +130,18 @@ export interface CompatibilityReport {
   summary: string;
 }
 
+export interface EmailReportBody {
+  /**
+   * One or more email addresses to send the report to
+   * @minItems 1
+   */
+  emails: string[];
+}
+
+export interface EmailReportResult {
+  sent: boolean;
+}
+
 export interface ReportNotReady {
   message: string;
   partner1Completed: boolean;

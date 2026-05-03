@@ -121,6 +121,15 @@ export interface LocaleData {
       reportCopiedDesc: string;
       couplePhoto: string;
       downloadPdf: string;
+      emailReport: string;
+      emailSent: string;
+      emailSentDesc: string;
+      emailLabel: string;
+      partner1Email: string;
+      partner2Email: string;
+      sendEmail: string;
+      emailFailed: string;
+      emailNotConfigured: string;
     };
     errors: {
       sessionNotFound: string;

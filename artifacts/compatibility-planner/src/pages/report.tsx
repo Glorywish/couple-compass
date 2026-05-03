@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { useParams, useLocation } from "wouter";
 import { motion } from "framer-motion";
-import { ArrowLeft, Copy, Check, Share2, TrendingUp, TrendingDown, MessageCircle, Heart, FileDown } from "lucide-react";
-import { useGetReport, getGetReportQueryKey } from "@workspace/api-client-react";
+import { ArrowLeft, Copy, Check, Share2, TrendingUp, TrendingDown, MessageCircle, Heart, FileDown, Mail, Send, X } from "lucide-react";
+import { useGetReport, getGetReportQueryKey, useEmailReport } from "@workspace/api-client-react";
 import { useToast } from "@/hooks/use-toast";
 import { useI18n } from "@/lib/i18n";
 import type { LocaleData } from "@/locales/types";
@@ -53,6 +53,9 @@ export default function ReportPage() {
   const { data } = useI18n();
   const t = data.ui.report;
   const [copied, setCopied] = useState(false);
+  const [showEmailPanel, setShowEmailPanel] = useState(false);
+  const [email1, setEmail1] = useState("");
+  const [email2, setEmail2] = useState("");
 
   const couplePhoto = typeof localStorage !== "undefined"
     ? localStorage.getItem(`cp_couple_photo_${params.sessionCode}`)
@@ -60,6 +63,21 @@ export default function ReportPage() {
 
   const { data: report, isLoading, isError } = useGetReport(params.sessionCode, {
     query: { enabled: !!params.sessionCode, queryKey: getGetReportQueryKey(params.sessionCode) },
+  });
+
+  const { mutate: sendEmail, isPending: emailSending } = useEmailReport({
+    mutation: {
+      onSuccess: () => {
+        toast({ title: t.emailSent, description: t.emailSentDesc });
+        setShowEmailPanel(false);
+        setEmail1("");
+        setEmail2("");
+      },
+      onError: (err: Error & { status?: number }) => {
+        const msg = err?.status === 503 ? t.emailNotConfigured : t.emailFailed;
+        toast({ title: msg, variant: "destructive" });
+      },
+    },
   });
 
   const reportUrl = `${window.location.origin}${import.meta.env.BASE_URL}report/${params.sessionCode}`;
@@ -76,6 +94,12 @@ export default function ReportPage() {
       try { await navigator.share({ title: "Couple Compass", url: reportUrl }); }
       catch { /* dismissed */ }
     } else { handleCopy(); }
+  };
+
+  const handleSendEmail = () => {
+    const emails = [email1, email2].map(e => e.trim()).filter(e => e.includes("@"));
+    if (emails.length === 0) return;
+    sendEmail({ sessionCode: params.sessionCode, data: { emails } });
   };
 
   if (isLoading) return (

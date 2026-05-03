@@ -19,6 +19,8 @@ import type {
 import type {
   CompatibilityReport,
   CreateSessionBody,
+  EmailReportBody,
+  EmailReportResult,
   HealthStatus,
   PartnerResponseSet,
   Question,
@@ -534,6 +536,93 @@ export function useGetReport<
 
   return { ...query, queryKey: queryOptions.queryKey };
 }
+
+/**
+ * @summary Send the compatibility report to one or more email addresses
+ */
+export const getEmailReportUrl = (sessionCode: string) => {
+  return `/api/sessions/${sessionCode}/email-report`;
+};
+
+export const emailReport = async (
+  sessionCode: string,
+  emailReportBody: EmailReportBody,
+  options?: RequestInit,
+): Promise<EmailReportResult> => {
+  return customFetch<EmailReportResult>(getEmailReportUrl(sessionCode), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(emailReportBody),
+  });
+};
+
+export const getEmailReportMutationOptions = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof emailReport>>,
+    TError,
+    { sessionCode: string; data: BodyType<EmailReportBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof emailReport>>,
+  TError,
+  { sessionCode: string; data: BodyType<EmailReportBody> },
+  TContext
+> => {
+  const mutationKey = ["emailReport"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof emailReport>>,
+    { sessionCode: string; data: BodyType<EmailReportBody> }
+  > = (props) => {
+    const { sessionCode, data } = props ?? {};
+
+    return emailReport(sessionCode, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type EmailReportMutationResult = NonNullable<
+  Awaited<ReturnType<typeof emailReport>>
+>;
+export type EmailReportMutationBody = BodyType<EmailReportBody>;
+export type EmailReportMutationError = ErrorType<void>;
+
+/**
+ * @summary Send the compatibility report to one or more email addresses
+ */
+export const useEmailReport = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof emailReport>>,
+    TError,
+    { sessionCode: string; data: BodyType<EmailReportBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof emailReport>>,
+  TError,
+  { sessionCode: string; data: BodyType<EmailReportBody> },
+  TContext
+> => {
+  return useMutation(getEmailReportMutationOptions(options));
+};
 
 /**
  * @summary Check completion status for both partners in a session
