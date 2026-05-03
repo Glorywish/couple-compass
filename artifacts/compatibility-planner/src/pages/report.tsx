@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useParams, useLocation } from "wouter";
 import { motion } from "framer-motion";
-import { ArrowLeft, Copy, Check, Share2, TrendingUp, TrendingDown, MessageCircle } from "lucide-react";
+import { ArrowLeft, Copy, Check, Share2, TrendingUp, TrendingDown, MessageCircle, Heart } from "lucide-react";
 import { useGetReport, getGetReportQueryKey } from "@workspace/api-client-react";
 import { useToast } from "@/hooks/use-toast";
 import { useI18n } from "@/lib/i18n";
@@ -19,11 +19,11 @@ function ScoreRing({ score }: { score: number }) {
   const radius = 56;
   const circ = 2 * Math.PI * radius;
   const offset = circ - (score / 100) * circ;
-  const color = score >= 75 ? "#7eaa92" : score >= 50 ? "#d4a853" : "#c05f6e";
+  const color = score >= 75 ? "#e8607a" : score >= 50 ? "#d4a853" : "#b8d4f0";
   return (
     <div style={{ position: "relative", display: "inline-flex", alignItems: "center", justifyContent: "center" }}>
       <svg width={148} height={148} style={{ transform: "rotate(-90deg)" }}>
-        <circle cx={74} cy={74} r={radius} fill="none" stroke="rgba(245,240,232,0.08)" strokeWidth={6} />
+        <circle cx={74} cy={74} r={radius} fill="none" stroke="rgba(26,53,96,0.08)" strokeWidth={6} />
         <motion.circle cx={74} cy={74} r={radius} fill="none" stroke={color} strokeWidth={6} strokeLinecap="round"
           strokeDasharray={circ}
           initial={{ strokeDashoffset: circ }}
@@ -36,11 +36,11 @@ function ScoreRing({ score }: { score: number }) {
           initial={{ opacity: 0, scale: 0.5 }} animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.6, duration: 0.5 }}
           data-testid="text-overall-score"
-          style={{ fontFamily: "'DM Serif Display', serif", fontSize: "2.6rem", color: "#f5f0e8", lineHeight: 1 }}
+          style={{ fontFamily: "'DM Serif Display', serif", fontSize: "2.6rem", color: "#1a3560", lineHeight: 1 }}
         >
           {score}
         </motion.div>
-        <div style={{ fontSize: "0.72rem", color: "rgba(245,240,232,0.4)", letterSpacing: "0.1em" }}>/ 100</div>
+        <div style={{ fontSize: "0.72rem", color: "rgba(26,53,96,0.4)", letterSpacing: "0.1em" }}>/ 100</div>
       </div>
     </div>
   );
@@ -75,23 +75,23 @@ export default function ReportPage() {
   };
 
   if (isLoading) return (
-    <div style={{ minHeight: "100vh", background: "#0f1729", display: "flex", alignItems: "center", justifyContent: "center" }}>
+    <div style={{ minHeight: "100vh", background: "linear-gradient(160deg,#eaf3ff 0%,#fce8ec 100%)", display: "flex", alignItems: "center", justifyContent: "center" }}>
       <div style={{ textAlign: "center" }}>
-        <div style={{ width: 32, height: 32, borderRadius: "50%", border: "2px solid rgba(126,170,146,0.4)", borderTopColor: "#7eaa92", animation: "spin 1s linear infinite", margin: "0 auto 16px" }} />
-        <p style={{ color: "rgba(245,240,232,0.5)", fontSize: "0.9rem" }}>{t.loading}</p>
+        <div style={{ width: 32, height: 32, borderRadius: "50%", border: "2.5px solid rgba(232,96,122,0.3)", borderTopColor: "#e8607a", animation: "spin 1s linear infinite", margin: "0 auto 16px" }} />
+        <p style={{ color: "rgba(26,53,96,0.5)", fontSize: "0.9rem" }}>{t.loading}</p>
       </div>
       <style>{`@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}`}</style>
     </div>
   );
 
   if (isError || !report) return (
-    <div style={{ minHeight: "100vh", background: "#0f1729", display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
+    <div style={{ minHeight: "100vh", background: "linear-gradient(160deg,#eaf3ff 0%,#fce8ec 100%)", display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
       <div style={{ textAlign: "center", maxWidth: 380 }}>
-        <div style={{ fontSize: "3rem", marginBottom: 20, opacity: 0.4 }}>⊕</div>
-        <h2 style={{ fontFamily: "'DM Serif Display', serif", fontSize: "2rem", color: "#f5f0e8", marginBottom: 10 }}>{t.notReady}</h2>
-        <p style={{ color: "rgba(245,240,232,0.45)", marginBottom: 28, fontSize: "0.9rem", lineHeight: 1.75 }}>{t.notReadyDesc}</p>
+        <Heart size={36} color="#e8607a" fill="rgba(232,96,122,0.15)" style={{ margin: "0 auto 20px", opacity: 0.5 }} />
+        <h2 style={{ fontFamily: "'DM Serif Display', serif", fontSize: "2rem", color: "#1a3560", marginBottom: 10 }}>{t.notReady}</h2>
+        <p style={{ color: "rgba(26,53,96,0.5)", marginBottom: 28, fontSize: "0.9rem", lineHeight: 1.8 }}>{t.notReadyDesc}</p>
         <button onClick={() => setLocation("/")}
-          style={{ background: "rgba(126,170,146,0.15)", border: "1px solid rgba(126,170,146,0.3)", borderRadius: 10, padding: "10px 24px", color: "#a8c5b3", fontSize: "0.82rem", fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", cursor: "pointer", fontFamily: "Inter,sans-serif" }}>
+          style={{ background: "rgba(232,96,122,0.1)", border: "1px solid rgba(232,96,122,0.25)", borderRadius: 10, padding: "10px 24px", color: "#e8607a", fontSize: "0.82rem", fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", cursor: "pointer", fontFamily: "Inter,sans-serif" }}>
           {t.backHome}
         </button>
       </div>
@@ -99,59 +99,59 @@ export default function ReportPage() {
   );
 
   const scoreLabel = report.overallScore >= 80 ? t.scoreLabels.high : report.overallScore >= 60 ? t.scoreLabels.good : report.overallScore >= 40 ? t.scoreLabels.some : t.scoreLabels.discuss;
-  const scoreColor = report.overallScore >= 75 ? "#7eaa92" : report.overallScore >= 50 ? "#d4a853" : "#c05f6e";
+  const scoreColor = report.overallScore >= 75 ? "#e8607a" : report.overallScore >= 50 ? "#d4a853" : "#b8d4f0";
 
   const alignColors: Record<string, { bar: string; bg: string; border: string; text: string }> = {
-    high:   { bar: "#7eaa92", bg: "rgba(126,170,146,0.08)", border: "rgba(126,170,146,0.25)", text: "#a8c5b3" },
-    medium: { bar: "#d4a853", bg: "rgba(212,168,83,0.08)",  border: "rgba(212,168,83,0.25)",  text: "#e8c97a" },
-    low:    { bar: "#c05f6e", bg: "rgba(192,95,110,0.08)",  border: "rgba(192,95,110,0.25)",  text: "#e08a96" },
+    high:   { bar: "#e8607a", bg: "rgba(232,96,122,0.07)",  border: "rgba(232,96,122,0.22)", text: "#e8607a" },
+    medium: { bar: "#d4a853", bg: "rgba(212,168,83,0.07)",  border: "rgba(212,168,83,0.22)",  text: "#b07820" },
+    low:    { bar: "#b8d4f0", bg: "rgba(184,212,240,0.15)", border: "rgba(184,212,240,0.5)",  text: "#4a80b8" },
   };
 
   return (
-    <div style={{ minHeight: "100vh", background: "#0f1729", color: "#f5f0e8", paddingBottom: 80 }}>
-      <style>{`@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}`}</style>
+    <div style={{ minHeight: "100vh", background: "#f8f4f0", color: "#1a3560", paddingBottom: 80 }}>
+      <style>{`@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}} @keyframes heartbeat{0%,100%{transform:scale(1)}14%{transform:scale(1.08)}28%{transform:scale(1)}42%{transform:scale(1.05)}70%{transform:scale(1)}}`}</style>
 
       {/* ── Hero ── */}
-      <div style={{ background: "radial-gradient(ellipse 80% 60% at 50% 0%, rgba(26,37,64,0.9) 0%, transparent 70%)", borderBottom: "1px solid rgba(245,240,232,0.07)", paddingBottom: 48 }}>
+      <div style={{ background: "linear-gradient(160deg,#eaf3ff 0%,#fce8ec 100%)", borderBottom: "1px solid rgba(184,212,240,0.4)", paddingBottom: 52 }}>
         <div style={{ maxWidth: 720, margin: "0 auto", padding: "44px 24px 0" }}>
           <button onClick={() => setLocation("/")} data-testid="button-back-home"
-            style={{ background: "transparent", color: "rgba(245,240,232,0.45)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: 8, fontSize: "0.78rem", letterSpacing: "0.08em", textTransform: "uppercase", fontFamily: "Inter,sans-serif", fontWeight: 500, padding: 0, marginBottom: 44 }}>
+            style={{ background: "transparent", color: "rgba(26,53,96,0.4)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: 8, fontSize: "0.76rem", letterSpacing: "0.08em", textTransform: "uppercase", fontFamily: "Inter,sans-serif", fontWeight: 500, padding: 0, marginBottom: 44 }}>
             <ArrowLeft size={13} /> {t.backHome}
           </button>
 
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7 }} style={{ textAlign: "center" }}>
-            <p style={{ fontSize: "0.68rem", letterSpacing: "0.25em", textTransform: "uppercase", color: "#7eaa92", fontWeight: 600, marginBottom: 10 }}>
+            <p style={{ fontSize: "0.65rem", letterSpacing: "0.25em", textTransform: "uppercase", color: "#e8607a", fontWeight: 600, marginBottom: 10 }}>
               {report.partner1Name} · {report.partner2Name}
             </p>
-            <h1 style={{ fontFamily: "'DM Serif Display', serif", fontSize: "clamp(36px,6vw,56px)", color: "#f5f0e8", lineHeight: 1.05, marginBottom: 8 }}>
+            <h1 style={{ fontFamily: "'DM Serif Display', serif", fontSize: "clamp(36px,6vw,56px)", color: "#1a3560", lineHeight: 1.05, marginBottom: 8 }}>
               {t.title}
             </h1>
-            <p style={{ color: "rgba(245,240,232,0.4)", fontSize: "0.88rem", marginBottom: 44 }}>{t.basedOn}</p>
+            <p style={{ color: "rgba(26,53,96,0.4)", fontSize: "0.88rem", marginBottom: 44 }}>{t.basedOn}</p>
 
             <ScoreRing score={report.overallScore} />
             <div style={{ marginTop: 20 }}>
               <div style={{ fontFamily: "'DM Serif Display', serif", fontSize: "1.35rem", color: scoreColor, fontStyle: "italic" }}>{scoreLabel}</div>
-              <div style={{ fontSize: "0.75rem", color: "rgba(245,240,232,0.35)", letterSpacing: "0.08em", marginTop: 4 }}>{t.scoreLabel}</div>
+              <div style={{ fontSize: "0.72rem", color: "rgba(26,53,96,0.35)", letterSpacing: "0.08em", marginTop: 4 }}>{t.scoreLabel}</div>
             </div>
 
             {/* Summary */}
-            <div style={{ marginTop: 36, background: "#1a2540", border: "1px solid rgba(126,170,146,0.18)", borderRadius: 16, padding: "24px 28px", textAlign: "left", maxWidth: 560, marginLeft: "auto", marginRight: "auto" }}>
-              <p data-testid="text-summary" style={{ color: "rgba(245,240,232,0.75)", lineHeight: 1.85, fontSize: "0.95rem" }}>{report.summary}</p>
+            <div style={{ marginTop: 36, background: "white", border: "1px solid rgba(232,96,122,0.15)", borderRadius: 18, padding: "24px 28px", textAlign: "left", maxWidth: 560, marginLeft: "auto", marginRight: "auto", boxShadow: "0 4px 24px rgba(232,96,122,0.08)" }}>
+              <p data-testid="text-summary" style={{ color: "rgba(26,53,96,0.7)", lineHeight: 1.85, fontSize: "0.95rem" }}>{report.summary}</p>
             </div>
 
             {/* Share card */}
-            <div style={{ marginTop: 20, background: "rgba(245,240,232,0.03)", border: "1px solid rgba(245,240,232,0.08)", borderRadius: 12, padding: "14px 18px", display: "flex", flexWrap: "wrap", gap: 12, alignItems: "center", maxWidth: 560, marginLeft: "auto", marginRight: "auto" }}>
+            <div style={{ marginTop: 20, background: "rgba(255,255,255,0.7)", border: "1px solid rgba(184,212,240,0.5)", borderRadius: 12, padding: "14px 18px", display: "flex", flexWrap: "wrap", gap: 12, alignItems: "center", maxWidth: 560, marginLeft: "auto", marginRight: "auto" }}>
               <div style={{ flex: 1, minWidth: 0 }}>
-                <p style={{ fontSize: "0.6rem", letterSpacing: "0.2em", textTransform: "uppercase", color: "#7eaa92", fontWeight: 600, marginBottom: 4 }}>Shareable Link</p>
-                <p style={{ fontSize: "0.72rem", color: "rgba(245,240,232,0.35)", fontFamily: "monospace", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{reportUrl}</p>
+                <p style={{ fontSize: "0.58rem", letterSpacing: "0.2em", textTransform: "uppercase", color: "#e8607a", fontWeight: 600, marginBottom: 4 }}>Shareable Link</p>
+                <p style={{ fontSize: "0.72rem", color: "rgba(26,53,96,0.35)", fontFamily: "monospace", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{reportUrl}</p>
               </div>
               <div style={{ display: "flex", gap: 8, flexShrink: 0 }}>
                 <button onClick={handleCopy} data-testid="button-copy-report-link"
-                  style={{ background: "rgba(126,170,146,0.12)", border: "1px solid rgba(126,170,146,0.25)", borderRadius: 8, padding: "7px 14px", color: "#a8c5b3", fontSize: "0.72rem", fontWeight: 600, letterSpacing: "0.06em", textTransform: "uppercase", cursor: "pointer", fontFamily: "Inter,sans-serif", display: "flex", alignItems: "center", gap: 5 }}>
+                  style={{ background: "rgba(232,96,122,0.1)", border: "1px solid rgba(232,96,122,0.22)", borderRadius: 8, padding: "7px 14px", color: "#e8607a", fontSize: "0.72rem", fontWeight: 600, letterSpacing: "0.06em", textTransform: "uppercase", cursor: "pointer", fontFamily: "Inter,sans-serif", display: "flex", alignItems: "center", gap: 5 }}>
                   {copied ? <Check size={11} /> : <Copy size={11} />} {copied ? "Copied" : "Copy"}
                 </button>
                 <button onClick={handleShare} data-testid="button-share-report"
-                  style={{ background: "rgba(126,170,146,0.12)", border: "1px solid rgba(126,170,146,0.25)", borderRadius: 8, padding: "7px 14px", color: "#a8c5b3", fontSize: "0.72rem", fontWeight: 600, letterSpacing: "0.06em", textTransform: "uppercase", cursor: "pointer", fontFamily: "Inter,sans-serif", display: "flex", alignItems: "center", gap: 5 }}>
+                  style={{ background: "rgba(232,96,122,0.1)", border: "1px solid rgba(232,96,122,0.22)", borderRadius: 8, padding: "7px 14px", color: "#e8607a", fontSize: "0.72rem", fontWeight: 600, letterSpacing: "0.06em", textTransform: "uppercase", cursor: "pointer", fontFamily: "Inter,sans-serif", display: "flex", alignItems: "center", gap: 5 }}>
                   <Share2 size={11} /> {t.shareBtn}
                 </button>
               </div>
@@ -160,13 +160,13 @@ export default function ReportPage() {
         </div>
       </div>
 
-      {/* ── Body sections ── */}
+      {/* ── Body ── */}
       <div style={{ maxWidth: 720, margin: "0 auto", padding: "52px 24px", display: "flex", flexDirection: "column", gap: 52 }}>
 
         {/* Category scores */}
         <motion.section initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2, duration: 0.5 }}>
-          <p style={{ fontSize: "0.62rem", letterSpacing: "0.22em", textTransform: "uppercase", color: "#7eaa92", fontWeight: 600, marginBottom: 6 }}>By Category</p>
-          <h2 style={{ fontFamily: "'DM Serif Display', serif", fontSize: "clamp(22px,4vw,30px)", color: "#f5f0e8", marginBottom: 24 }}>{t.scoresTitle}</h2>
+          <p style={{ fontSize: "0.6rem", letterSpacing: "0.22em", textTransform: "uppercase", color: "#e8607a", fontWeight: 600, marginBottom: 6 }}>By Category</p>
+          <h2 style={{ fontFamily: "'DM Serif Display', serif", fontSize: "clamp(22px,4vw,30px)", color: "#1a3560", marginBottom: 24 }}>{t.scoresTitle}</h2>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(280px,1fr))", gap: 12 }}>
             {report.categoryScores.map((cat, i) => {
               const label = data.ui.categories[cat.category as keyof typeof data.ui.categories] ?? cat.label;
@@ -176,20 +176,20 @@ export default function ReportPage() {
                   initial={{ opacity: 0, x: -14 }} animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.3 + i * 0.05 }}
                   data-testid={`category-score-${cat.category}`}
-                  style={{ background: "#1a2540", border: "1px solid rgba(245,240,232,0.07)", borderRadius: 12, padding: "16px 18px" }}>
+                  style={{ background: "white", border: "1px solid rgba(184,212,240,0.4)", borderRadius: 14, padding: "16px 18px", boxShadow: "0 2px 12px rgba(26,53,96,0.05)" }}>
                   <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
-                    <span style={{ fontSize: "0.88rem", color: "#f5f0e8", fontWeight: 500 }}>{label}</span>
-                    <span style={{ fontSize: "0.65rem", padding: "3px 10px", borderRadius: 999, background: c.bg, border: `1px solid ${c.border}`, color: c.text, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase" }}>
+                    <span style={{ fontSize: "0.88rem", color: "#1a3560", fontWeight: 500 }}>{label}</span>
+                    <span style={{ fontSize: "0.62rem", padding: "3px 10px", borderRadius: 999, background: c.bg, border: `1px solid ${c.border}`, color: c.text, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase" }}>
                       {t.alignmentLabels[cat.alignment as keyof typeof t.alignmentLabels]}
                     </span>
                   </div>
-                  <div style={{ height: 4, borderRadius: 999, background: "rgba(245,240,232,0.06)", overflow: "hidden" }}>
+                  <div style={{ height: 4, borderRadius: 999, background: "rgba(26,53,96,0.07)", overflow: "hidden" }}>
                     <motion.div style={{ height: "100%", borderRadius: 999, background: c.bar }}
                       initial={{ width: 0 }} animate={{ width: `${cat.score}%` }}
                       transition={{ delay: 0.4 + i * 0.05, duration: 0.9, ease: "easeOut" }}
                     />
                   </div>
-                  <div style={{ textAlign: "right", fontSize: "0.72rem", color: "rgba(245,240,232,0.35)", marginTop: 6 }}>{cat.score}%</div>
+                  <div style={{ textAlign: "right", fontSize: "0.72rem", color: "rgba(26,53,96,0.35)", marginTop: 6 }}>{cat.score}%</div>
                 </motion.div>
               );
             })}
@@ -200,23 +200,23 @@ export default function ReportPage() {
         {report.alignedAreas.length > 0 && (
           <motion.section initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4, duration: 0.5 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 6 }}>
-              <TrendingUp size={16} color="#7eaa92" />
-              <p style={{ fontSize: "0.62rem", letterSpacing: "0.22em", textTransform: "uppercase", color: "#7eaa92", fontWeight: 600 }}>Strengths</p>
+              <TrendingUp size={16} color="#e8607a" />
+              <p style={{ fontSize: "0.6rem", letterSpacing: "0.22em", textTransform: "uppercase", color: "#e8607a", fontWeight: 600 }}>Strengths</p>
             </div>
-            <h2 style={{ fontFamily: "'DM Serif Display', serif", fontSize: "clamp(22px,4vw,30px)", color: "#f5f0e8", marginBottom: 20 }}>{t.alignedTitle}</h2>
+            <h2 style={{ fontFamily: "'DM Serif Display', serif", fontSize: "clamp(22px,4vw,30px)", color: "#1a3560", marginBottom: 20 }}>{t.alignedTitle}</h2>
             <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
               {report.alignedAreas.map((item, i) => (
                 <motion.div key={item.questionId}
                   initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.5 + i * 0.06 }}
                   data-testid={`aligned-item-${item.questionId}`}
-                  style={{ background: "rgba(126,170,146,0.06)", border: "1px solid rgba(126,170,146,0.18)", borderRadius: 12, padding: "16px 18px" }}>
-                  <p style={{ fontSize: "0.9rem", color: "#f5f0e8", marginBottom: 10, lineHeight: 1.65, fontWeight: 500 }}>
+                  style={{ background: "rgba(232,96,122,0.05)", border: "1px solid rgba(232,96,122,0.18)", borderRadius: 12, padding: "16px 18px" }}>
+                  <p style={{ fontSize: "0.9rem", color: "#1a3560", marginBottom: 10, lineHeight: 1.65, fontWeight: 500 }}>
                     {data.questions[item.questionId]?.text ?? item.questionText}
                   </p>
-                  <div style={{ display: "flex", flexWrap: "wrap", gap: 16, fontSize: "0.8rem", color: "rgba(245,240,232,0.5)" }}>
-                    <span><span style={{ color: "#f5f0e8", fontWeight: 500 }}>{report.partner1Name}:</span> {translateAnswer(item.questionId, item.partner1Answer, data.questions)}</span>
-                    <span><span style={{ color: "#f5f0e8", fontWeight: 500 }}>{report.partner2Name}:</span> {translateAnswer(item.questionId, item.partner2Answer, data.questions)}</span>
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: 16, fontSize: "0.8rem", color: "rgba(26,53,96,0.5)" }}>
+                    <span><span style={{ color: "#1a3560", fontWeight: 500 }}>{report.partner1Name}:</span> {translateAnswer(item.questionId, item.partner1Answer, data.questions)}</span>
+                    <span><span style={{ color: "#1a3560", fontWeight: 500 }}>{report.partner2Name}:</span> {translateAnswer(item.questionId, item.partner2Answer, data.questions)}</span>
                   </div>
                 </motion.div>
               ))}
@@ -229,22 +229,22 @@ export default function ReportPage() {
           <motion.section initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5, duration: 0.5 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 6 }}>
               <TrendingDown size={16} color="#d4a853" />
-              <p style={{ fontSize: "0.62rem", letterSpacing: "0.22em", textTransform: "uppercase", color: "#d4a853", fontWeight: 600 }}>Growth Areas</p>
+              <p style={{ fontSize: "0.6rem", letterSpacing: "0.22em", textTransform: "uppercase", color: "#d4a853", fontWeight: 600 }}>Growth Areas</p>
             </div>
-            <h2 style={{ fontFamily: "'DM Serif Display', serif", fontSize: "clamp(22px,4vw,30px)", color: "#f5f0e8", marginBottom: 20 }}>{t.differingTitle}</h2>
+            <h2 style={{ fontFamily: "'DM Serif Display', serif", fontSize: "clamp(22px,4vw,30px)", color: "#1a3560", marginBottom: 20 }}>{t.differingTitle}</h2>
             <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
               {report.differingAreas.map((item, i) => (
                 <motion.div key={item.questionId}
                   initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.6 + i * 0.06 }}
                   data-testid={`differing-item-${item.questionId}`}
-                  style={{ background: "rgba(212,168,83,0.05)", border: "1px solid rgba(212,168,83,0.18)", borderRadius: 12, padding: "16px 18px" }}>
-                  <p style={{ fontSize: "0.9rem", color: "#f5f0e8", marginBottom: 10, lineHeight: 1.65, fontWeight: 500 }}>
+                  style={{ background: "rgba(212,168,83,0.06)", border: "1px solid rgba(212,168,83,0.2)", borderRadius: 12, padding: "16px 18px" }}>
+                  <p style={{ fontSize: "0.9rem", color: "#1a3560", marginBottom: 10, lineHeight: 1.65, fontWeight: 500 }}>
                     {data.questions[item.questionId]?.text ?? item.questionText}
                   </p>
-                  <div style={{ display: "flex", flexWrap: "wrap", gap: 16, fontSize: "0.8rem", color: "rgba(245,240,232,0.5)" }}>
-                    <span><span style={{ color: "#f5f0e8", fontWeight: 500 }}>{report.partner1Name}:</span> {translateAnswer(item.questionId, item.partner1Answer, data.questions)}</span>
-                    <span><span style={{ color: "#f5f0e8", fontWeight: 500 }}>{report.partner2Name}:</span> {translateAnswer(item.questionId, item.partner2Answer, data.questions)}</span>
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: 16, fontSize: "0.8rem", color: "rgba(26,53,96,0.5)" }}>
+                    <span><span style={{ color: "#1a3560", fontWeight: 500 }}>{report.partner1Name}:</span> {translateAnswer(item.questionId, item.partner1Answer, data.questions)}</span>
+                    <span><span style={{ color: "#1a3560", fontWeight: 500 }}>{report.partner2Name}:</span> {translateAnswer(item.questionId, item.partner2Answer, data.questions)}</span>
                   </div>
                 </motion.div>
               ))}
@@ -255,28 +255,28 @@ export default function ReportPage() {
         {/* Discussion prompts */}
         <motion.section initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6, duration: 0.5 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 6 }}>
-            <MessageCircle size={16} color="rgba(245,240,232,0.5)" />
-            <p style={{ fontSize: "0.62rem", letterSpacing: "0.22em", textTransform: "uppercase", color: "rgba(245,240,232,0.5)", fontWeight: 600 }}>Conversation Starters</p>
+            <MessageCircle size={16} color="rgba(26,53,96,0.4)" />
+            <p style={{ fontSize: "0.6rem", letterSpacing: "0.22em", textTransform: "uppercase", color: "rgba(26,53,96,0.4)", fontWeight: 600 }}>Conversation Starters</p>
           </div>
-          <h2 style={{ fontFamily: "'DM Serif Display', serif", fontSize: "clamp(22px,4vw,30px)", color: "#f5f0e8", marginBottom: 20 }}>{t.promptsTitle}</h2>
+          <h2 style={{ fontFamily: "'DM Serif Display', serif", fontSize: "clamp(22px,4vw,30px)", color: "#1a3560", marginBottom: 20 }}>{t.promptsTitle}</h2>
           <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
             {report.discussionPrompts.map((prompt, i) => (
               <motion.div key={i}
                 initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.7 + i * 0.07 }}
                 data-testid={`discussion-prompt-${i}`}
-                style={{ background: "#1a2540", border: "1px solid rgba(245,240,232,0.07)", borderRadius: 12, padding: "16px 18px", display: "flex", gap: 14 }}>
-                <span style={{ color: "#7eaa92", fontSize: "0.85rem", flexShrink: 0, marginTop: 2 }}>→</span>
-                <p style={{ fontSize: "0.9rem", color: "rgba(245,240,232,0.7)", lineHeight: 1.75 }}>{prompt}</p>
+                style={{ background: "white", border: "1px solid rgba(184,212,240,0.4)", borderRadius: 12, padding: "16px 18px", display: "flex", gap: 14, boxShadow: "0 1px 8px rgba(26,53,96,0.04)" }}>
+                <span style={{ color: "#e8607a", fontSize: "0.85rem", flexShrink: 0, marginTop: 2 }}>→</span>
+                <p style={{ fontSize: "0.9rem", color: "rgba(26,53,96,0.65)", lineHeight: 1.8 }}>{prompt}</p>
               </motion.div>
             ))}
           </div>
         </motion.section>
 
         {/* Closing */}
-        <div style={{ background: "#1a2540", border: "1px solid rgba(126,170,146,0.15)", borderRadius: 20, padding: "40px 32px", textAlign: "center" }}>
-          <p style={{ fontSize: "0.62rem", letterSpacing: "0.22em", textTransform: "uppercase", color: "#7eaa92", fontWeight: 600, marginBottom: 16 }}>Couple Compass</p>
-          <p style={{ fontFamily: "'DM Serif Display', serif", fontSize: "1.3rem", color: "rgba(245,240,232,0.75)", fontStyle: "italic", lineHeight: 1.75, maxWidth: 400, margin: "0 auto" }}>
+        <div style={{ background: "linear-gradient(135deg,#fce8ec 0%,#eaf3ff 100%)", border: "1px solid rgba(232,96,122,0.18)", borderRadius: 22, padding: "44px 32px", textAlign: "center" }}>
+          <Heart size={22} color="#e8607a" fill="rgba(232,96,122,0.3)" style={{ margin: "0 auto 18px", animation: "heartbeat 3s ease-in-out infinite" }} />
+          <p style={{ fontFamily: "'DM Serif Display', serif", fontSize: "1.3rem", color: "rgba(26,53,96,0.7)", fontStyle: "italic", lineHeight: 1.8, maxWidth: 400, margin: "0 auto" }}>
             "Understanding each other is the beginning of every great love story."
           </p>
         </div>

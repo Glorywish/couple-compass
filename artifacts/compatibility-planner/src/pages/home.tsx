@@ -1,62 +1,66 @@
 import { useLocation } from "wouter";
 import { motion } from "framer-motion";
-import { ArrowRight, Compass } from "lucide-react";
+import { ArrowRight, Heart } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 
-/* ── tiny star field ── */
-const STARS = Array.from({ length: 38 }, (_, i) => ({
+/* ── floating sparkle dots ── */
+const SPARKLES = Array.from({ length: 22 }, (_, i) => ({
   id: i,
-  x: (i * 37 + 11) % 100,
-  y: (i * 53 + 7) % 100,
-  r: 0.8 + (i % 3) * 0.6,
-  dur: 2.5 + (i % 5) * 0.7,
-  delay: -(i * 0.4) % 5,
+  x: (i * 41 + 13) % 100,
+  y: (i * 57 + 9) % 100,
+  r: 2 + (i % 3),
+  dur: 3 + (i % 5) * 0.6,
+  delay: -(i * 0.5) % 4,
+  color: i % 3 === 0 ? "#e8607a" : i % 3 === 1 ? "#b8d4f0" : "#f0a0b0",
 }));
 
-/* ── compass SVG ── */
-function CompassRose({ size = 220 }: { size?: number }) {
+/* ── Heart Compass SVG ── */
+function HeartCompass({ size = 220 }: { size?: number }) {
+  const s = size / 220;
   return (
-    <svg width={size} height={size} viewBox="0 0 220 220" fill="none">
-      {/* outer ring */}
-      <circle cx="110" cy="110" r="105" stroke="rgba(126,170,146,0.18)" strokeWidth="1" />
-      <circle cx="110" cy="110" r="85"  stroke="rgba(126,170,146,0.10)" strokeWidth="0.5" strokeDasharray="4 6" />
-      <circle cx="110" cy="110" r="60"  stroke="rgba(126,170,146,0.12)" strokeWidth="0.5" />
-      {/* tick marks */}
-      {Array.from({ length: 36 }, (_, i) => {
-        const a = (i * 10 * Math.PI) / 180;
-        const big = i % 9 === 0;
-        const r1 = big ? 95 : 100, r2 = 105;
-        return (
-          <line key={i}
-            x1={110 + r1 * Math.sin(a)} y1={110 - r1 * Math.cos(a)}
-            x2={110 + r2 * Math.sin(a)} y2={110 - r2 * Math.cos(a)}
-            stroke={big ? "rgba(126,170,146,0.55)" : "rgba(126,170,146,0.2)"}
-            strokeWidth={big ? 1.2 : 0.6}
-          />
-        );
-      })}
-      {/* N/S arrow – ivory */}
-      <polygon points="110,18 118,110 110,100 102,110" fill="#f5f0e8" opacity="0.9" />
-      <polygon points="110,202 118,110 110,120 102,110" fill="rgba(245,240,232,0.3)" />
-      {/* E/W arrow – sage */}
-      <polygon points="202,110 110,118 120,110 110,102" fill="rgba(126,170,146,0.5)" />
-      <polygon points="18,110  110,118 100,110 110,102" fill="rgba(126,170,146,0.25)" />
-      {/* center dot */}
-      <circle cx="110" cy="110" r="5" fill="#7eaa92" />
-      <circle cx="110" cy="110" r="2.5" fill="#f5f0e8" />
-      {/* cardinal letters */}
-      {[
-        { label: "N", x: 110, y: 11 },
-        { label: "S", x: 110, y: 215 },
-        { label: "E", x: 214, y: 114 },
-        { label: "W", x: 6,   y: 114 },
-      ].map(({ label, x, y }) => (
-        <text key={label} x={x} y={y} textAnchor="middle" dominantBaseline="middle"
-          fontSize="10" fontFamily="Inter,sans-serif" fontWeight="600" letterSpacing="0.1em"
-          fill={label === "N" ? "#f5f0e8" : "rgba(126,170,146,0.6)"}>
-          {label}
-        </text>
-      ))}
+    <svg width={size} height={size} viewBox="0 0 220 215" fill="none">
+      {/* ── Outer heart (glow ring) ── */}
+      <path
+        d="M110,188 C55,152 12,118 12,76 C12,47 34,26 66,26 C84,26 100,35 110,48 C120,35 136,26 154,26 C186,26 208,47 208,76 C208,118 165,152 110,188 Z"
+        fill="none" stroke="rgba(232,96,122,0.18)" strokeWidth="12"
+      />
+      {/* ── Outer heart (border) ── */}
+      <path
+        d="M110,188 C55,152 12,118 12,76 C12,47 34,26 66,26 C84,26 100,35 110,48 C120,35 136,26 154,26 C186,26 208,47 208,76 C208,118 165,152 110,188 Z"
+        fill="rgba(252,232,236,0.55)" stroke="rgba(232,96,122,0.55)" strokeWidth="1.5"
+      />
+      {/* ── Inner heart (filled) ── */}
+      <path
+        d="M110,175 C65,143 28,113 28,79 C28,57 46,40 70,40 C86,40 100,49 110,61 C120,49 134,40 150,40 C174,40 192,57 192,79 C192,113 155,143 110,175 Z"
+        fill="rgba(255,255,255,0.7)"
+      />
+
+      {/* ── Compass needle – North (rose) ── */}
+      <polygon points="110,50 116,100 110,92 104,100" fill="#e8607a" opacity="0.9" />
+      {/* ── Compass needle – South (light) ── */}
+      <polygon points="110,175 116,120 110,128 104,120" fill="rgba(184,212,240,0.6)" />
+      {/* ── Compass needle – East ── */}
+      <polygon points="168,90 118,96 126,90 118,84" fill="rgba(232,96,122,0.3)" />
+      {/* ── Compass needle – West ── */}
+      <polygon points="52,90 102,96 94,90 102,84" fill="rgba(184,212,240,0.35)" />
+
+      {/* ── Center dot ── */}
+      <circle cx="110" cy="92" r="6" fill="#e8607a" />
+      <circle cx="110" cy="92" r="3" fill="white" />
+
+      {/* ── Cardinal letters ── */}
+      <text x="110" y="44" textAnchor="middle" dominantBaseline="middle"
+        fontSize="10" fontFamily="Inter,sans-serif" fontWeight="700" letterSpacing="0.1em" fill="#e8607a">N</text>
+      <text x="110" y="183" textAnchor="middle" dominantBaseline="middle"
+        fontSize="9" fontFamily="Inter,sans-serif" fontWeight="500" fill="rgba(26,53,96,0.4)">S</text>
+      <text x="170" y="93" textAnchor="middle" dominantBaseline="middle"
+        fontSize="9" fontFamily="Inter,sans-serif" fontWeight="500" fill="rgba(26,53,96,0.4)">E</text>
+      <text x="50"  y="93" textAnchor="middle" dominantBaseline="middle"
+        fontSize="9" fontFamily="Inter,sans-serif" fontWeight="500" fill="rgba(26,53,96,0.4)">W</text>
+
+      {/* ── Small heart accent at top center ── */}
+      <path d="M110,24 C107,21 103,20 103,23.5 C103,26 106,27.5 110,30 C114,27.5 117,26 117,23.5 C117,20 113,21 110,24 Z"
+        fill="#e8607a" opacity="0.7" />
     </svg>
   );
 }
@@ -69,35 +73,38 @@ export default function Home() {
   const t = data.ui;
 
   return (
-    <div style={{ background: "#0f1729", minHeight: "100vh", color: "#f5f0e8", overflowX: "hidden" }}>
+    <div style={{ background: "linear-gradient(160deg,#eaf3ff 0%,#fce8ec 50%,#eaf3ff 100%)", minHeight: "100vh", color: "#1a3560", overflowX: "hidden" }}>
 
-      {/* ── star field ── */}
-      <div className="fixed inset-0 pointer-events-none" aria-hidden>
-        {STARS.map(s => (
+      {/* ── floating sparkles ── */}
+      <div className="fixed inset-0 pointer-events-none overflow-hidden" aria-hidden>
+        {SPARKLES.map(s => (
           <div key={s.id} className="absolute rounded-full"
             style={{
               left: `${s.x}%`, top: `${s.y}%`,
               width: s.r * 2, height: s.r * 2,
-              background: "white",
+              background: s.color,
               animation: `twinkle ${s.dur}s ease-in-out ${s.delay}s infinite`,
+              opacity: 0,
             }}
           />
         ))}
       </div>
 
       {/* ── HERO ── */}
-      <div className="relative min-h-screen flex flex-col items-center justify-center text-center px-6 pt-16 pb-24"
-        style={{ background: "radial-gradient(ellipse 70% 65% at 50% -5%, rgba(26,37,64,0.95) 0%, transparent 75%)" }}>
+      <div className="relative min-h-screen flex flex-col items-center justify-center text-center px-6 pt-16 pb-24">
 
-        {/* Compass rose */}
+        {/* Soft radial glow behind heart */}
+        <div style={{ position: "absolute", top: "8%", left: "50%", transform: "translateX(-50%)", width: 320, height: 320, borderRadius: "50%", background: "radial-gradient(circle, rgba(232,96,122,0.12) 0%, transparent 70%)", pointerEvents: "none" }} />
+
+        {/* Heart Compass */}
         <motion.div
-          initial={{ opacity: 0, scale: 0.85, rotate: -15 }}
-          animate={{ opacity: 1, scale: 1, rotate: 0 }}
-          transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
+          initial={{ opacity: 0, scale: 0.7, y: 20 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          transition={{ duration: 1.0, ease: [0.16, 1, 0.3, 1] }}
           className="relative mb-10"
-          style={{ animation: "spin-slow 60s linear infinite" }}
+          style={{ animation: "heartbeat 3.5s ease-in-out infinite", filter: "drop-shadow(0 8px 32px rgba(232,96,122,0.22))" }}
         >
-          <CompassRose size={200} />
+          <HeartCompass size={210} />
         </motion.div>
 
         <motion.div
@@ -108,51 +115,49 @@ export default function Home() {
         >
           {/* eyebrow */}
           <div className="flex items-center justify-center gap-2 mb-5">
-            <div style={{ width: 28, height: 1, background: "rgba(126,170,146,0.6)" }} />
-            <span style={{ fontSize: "0.68rem", letterSpacing: "0.22em", textTransform: "uppercase", color: "#7eaa92", fontWeight: 500 }}>
+            <div style={{ width: 24, height: 1, background: "rgba(232,96,122,0.4)" }} />
+            <span style={{ fontSize: "0.66rem", letterSpacing: "0.22em", textTransform: "uppercase", color: "#e8607a", fontWeight: 600 }}>
               {t.home.badge}
             </span>
-            <div style={{ width: 28, height: 1, background: "rgba(126,170,146,0.6)" }} />
+            <div style={{ width: 24, height: 1, background: "rgba(232,96,122,0.4)" }} />
           </div>
 
-          {/* headline */}
-          <h1 style={{ fontSize: "clamp(42px, 7vw, 72px)", fontFamily: "'DM Serif Display', serif", fontWeight: 400, lineHeight: 1.05, color: "#f5f0e8", marginBottom: "1.25rem" }}>
+          <h1 style={{ fontSize: "clamp(38px,7vw,70px)", fontFamily: "'DM Serif Display', serif", fontWeight: 400, lineHeight: 1.06, color: "#1a3560", marginBottom: "1.2rem" }}>
             {t.home.title1}
             <br />
-            <em style={{ fontStyle: "italic", color: "#7eaa92" }}>{t.home.title2}</em>
+            <em style={{ fontStyle: "italic", color: "#e8607a" }}>{t.home.title2}</em>
           </h1>
 
-          <p style={{ fontSize: "1.05rem", color: "rgba(245,240,232,0.6)", maxWidth: 460, margin: "0 auto 2.5rem", lineHeight: 1.75, fontWeight: 300 }}>
+          <p style={{ fontSize: "1rem", color: "rgba(26,53,96,0.58)", maxWidth: 440, margin: "0 auto 2.5rem", lineHeight: 1.8, fontWeight: 300 }}>
             {t.home.desc}
           </p>
 
           {/* CTAs */}
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <motion.button
-              whileHover={{ scale: 1.03 }}
-              whileTap={{ scale: 0.97 }}
+              whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}
               onClick={() => setLocation("/start")}
               data-testid="button-start-session"
               style={{
                 display: "flex", alignItems: "center", gap: 10, justifyContent: "center",
-                background: "#7eaa92", color: "#0f1729",
-                border: "none", borderRadius: 12, padding: "14px 32px",
-                fontSize: "0.85rem", fontWeight: 600, letterSpacing: "0.06em",
+                background: "#e8607a", color: "white",
+                border: "none", borderRadius: 14, padding: "14px 32px",
+                fontSize: "0.83rem", fontWeight: 600, letterSpacing: "0.06em",
                 textTransform: "uppercase", cursor: "pointer", fontFamily: "Inter,sans-serif",
+                boxShadow: "0 4px 20px rgba(232,96,122,0.35)",
               }}
             >
-              {t.home.cta1} <ArrowRight size={15} />
+              {t.home.cta1} <ArrowRight size={14} />
             </motion.button>
             <motion.button
-              whileHover={{ scale: 1.03 }}
-              whileTap={{ scale: 0.97 }}
+              whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}
               onClick={() => setLocation("/join")}
               data-testid="button-join-session"
               style={{
                 display: "flex", alignItems: "center", gap: 10, justifyContent: "center",
-                background: "transparent", color: "#f5f0e8",
-                border: "1px solid rgba(245,240,232,0.2)", borderRadius: 12, padding: "14px 32px",
-                fontSize: "0.85rem", fontWeight: 500, letterSpacing: "0.06em",
+                background: "rgba(255,255,255,0.7)", color: "#1a3560",
+                border: "1px solid rgba(26,53,96,0.15)", borderRadius: 14, padding: "14px 32px",
+                fontSize: "0.83rem", fontWeight: 500, letterSpacing: "0.06em",
                 textTransform: "uppercase", cursor: "pointer", fontFamily: "Inter,sans-serif",
               }}
             >
@@ -161,32 +166,32 @@ export default function Home() {
           </div>
         </motion.div>
 
-        {/* scroll indicator */}
+        {/* scroll cue */}
         <motion.div
           initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.4 }}
           className="absolute bottom-10 flex flex-col items-center gap-2"
-          style={{ animation: "pulse-soft 2.5s ease-in-out infinite", color: "rgba(126,170,146,0.6)" }}
+          style={{ animation: "pulse-soft 2.5s ease-in-out infinite", color: "rgba(232,96,122,0.5)" }}
         >
-          <span style={{ fontSize: "0.62rem", letterSpacing: "0.25em", textTransform: "uppercase" }}>Scroll</span>
-          <div style={{ width: 1, height: 36, background: "linear-gradient(to bottom, rgba(126,170,146,0.7), transparent)" }} />
+          <span style={{ fontSize: "0.6rem", letterSpacing: "0.25em", textTransform: "uppercase" }}>Scroll</span>
+          <div style={{ width: 1, height: 32, background: "linear-gradient(to bottom, rgba(232,96,122,0.6), transparent)" }} />
         </motion.div>
       </div>
 
       {/* ── HOW IT WORKS ── */}
-      <div style={{ background: "#f5f0e8", color: "#1a2540", padding: "96px 24px" }}>
+      <div style={{ background: "white", color: "#1a3560", padding: "96px 24px", borderTop: "1px solid rgba(184,212,240,0.5)" }}>
         <div style={{ maxWidth: 760, margin: "0 auto" }}>
           <motion.div
             initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }} transition={{ duration: 0.6 }}
             className="text-center mb-16"
           >
-            <p style={{ fontSize: "0.68rem", letterSpacing: "0.22em", textTransform: "uppercase", color: "#7eaa92", fontWeight: 600, marginBottom: 12 }}>
+            <p style={{ fontSize: "0.65rem", letterSpacing: "0.22em", textTransform: "uppercase", color: "#e8607a", fontWeight: 600, marginBottom: 12 }}>
               How it works
             </p>
-            <h2 style={{ fontFamily: "'DM Serif Display', serif", fontSize: "clamp(28px,5vw,42px)", color: "#1a2540", lineHeight: 1.15, marginBottom: 12 }}>
+            <h2 style={{ fontFamily: "'DM Serif Display', serif", fontSize: "clamp(28px,5vw,42px)", color: "#1a3560", lineHeight: 1.15, marginBottom: 12 }}>
               {t.home.howTitle}
             </h2>
-            <p style={{ fontSize: "0.95rem", color: "#7a8ba8", maxWidth: 420, margin: "0 auto", lineHeight: 1.75 }}>
+            <p style={{ fontSize: "0.92rem", color: "rgba(26,53,96,0.55)", maxWidth: 420, margin: "0 auto", lineHeight: 1.8 }}>
               {t.home.howDesc}
             </p>
           </motion.div>
@@ -197,24 +202,24 @@ export default function Home() {
                 initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }} transition={{ delay: i * 0.12, duration: 0.5 }}
                 style={{
-                  background: "white", border: "1px solid rgba(26,37,64,0.08)",
-                  borderRadius: 16, padding: "28px 24px",
-                  boxShadow: "0 2px 24px rgba(15,23,41,0.06)",
+                  background: i % 2 === 0 ? "#fce8ec" : "#eaf3ff",
+                  border: "1px solid rgba(184,212,240,0.4)",
+                  borderRadius: 18, padding: "28px 24px",
+                  boxShadow: "0 2px 20px rgba(26,53,96,0.06)",
                 }}
               >
                 <div style={{
                   width: 44, height: 44, borderRadius: 12,
-                  background: "#0f1729", color: "#7eaa92",
+                  background: "#e8607a", color: "white",
                   display: "flex", alignItems: "center", justifyContent: "center",
-                  fontSize: "0.78rem", fontWeight: 700, letterSpacing: "0.05em",
-                  marginBottom: 18,
+                  fontSize: "0.78rem", fontWeight: 700, letterSpacing: "0.04em", marginBottom: 18,
                 }}>
                   {STEP_ICONS[i]}
                 </div>
-                <h3 style={{ fontFamily: "'DM Serif Display', serif", fontSize: "1.25rem", color: "#1a2540", marginBottom: 8 }}>
+                <h3 style={{ fontFamily: "'DM Serif Display', serif", fontSize: "1.25rem", color: "#1a3560", marginBottom: 8 }}>
                   {step.title}
                 </h3>
-                <p style={{ fontSize: "0.88rem", color: "#7a8ba8", lineHeight: 1.75 }}>{step.desc}</p>
+                <p style={{ fontSize: "0.87rem", color: "rgba(26,53,96,0.55)", lineHeight: 1.8 }}>{step.desc}</p>
               </motion.div>
             ))}
           </div>
@@ -222,26 +227,26 @@ export default function Home() {
       </div>
 
       {/* ── 8 DIMENSIONS ── */}
-      <div style={{ background: "#1a2540", padding: "80px 24px" }}>
+      <div style={{ background: "linear-gradient(135deg,#eaf3ff 0%,#fce8ec 100%)", padding: "80px 24px", borderTop: "1px solid rgba(232,96,122,0.12)" }}>
         <div style={{ maxWidth: 760, margin: "0 auto", textAlign: "center" }}>
           <motion.div
             initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }} transition={{ duration: 0.6 }}
           >
-            <p style={{ fontSize: "0.68rem", letterSpacing: "0.22em", textTransform: "uppercase", color: "#7eaa92", fontWeight: 600, marginBottom: 12 }}>
+            <p style={{ fontSize: "0.65rem", letterSpacing: "0.22em", textTransform: "uppercase", color: "#e8607a", fontWeight: 600, marginBottom: 12 }}>
               {t.home.dimensionsTitle}
             </p>
-            <h2 style={{ fontFamily: "'DM Serif Display', serif", fontSize: "clamp(26px,4.5vw,38px)", color: "#f5f0e8", marginBottom: 10, lineHeight: 1.2 }}>
+            <h2 style={{ fontFamily: "'DM Serif Display', serif", fontSize: "clamp(26px,4.5vw,38px)", color: "#1a3560", marginBottom: 10, lineHeight: 1.2 }}>
               8 dimensions of alignment
             </h2>
-            <p style={{ fontSize: "0.9rem", color: "rgba(245,240,232,0.45)", marginBottom: 36, lineHeight: 1.75 }}>
+            <p style={{ fontSize: "0.9rem", color: "rgba(26,53,96,0.5)", marginBottom: 36, lineHeight: 1.8 }}>
               {t.home.dimensionsDesc}
             </p>
             <div className="flex flex-wrap justify-center gap-2">
               {Object.values(t.categories).map((cat) => (
                 <span key={cat} style={{
-                  background: "rgba(126,170,146,0.1)", border: "1px solid rgba(126,170,146,0.25)",
-                  color: "#a8c5b3", borderRadius: 999, padding: "6px 16px",
+                  background: "rgba(255,255,255,0.7)", border: "1px solid rgba(232,96,122,0.25)",
+                  color: "#e8607a", borderRadius: 999, padding: "6px 16px",
                   fontSize: "0.82rem", fontWeight: 500,
                 }}>
                   {cat}
@@ -253,16 +258,16 @@ export default function Home() {
       </div>
 
       {/* ── FOOTER CTA ── */}
-      <div style={{ background: "#0f1729", padding: "96px 24px", textAlign: "center" }}>
+      <div style={{ background: "white", padding: "96px 24px", textAlign: "center", borderTop: "1px solid rgba(184,212,240,0.5)" }}>
         <motion.div
           initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }} transition={{ duration: 0.6 }}
         >
-          <Compass size={32} color="#7eaa92" style={{ margin: "0 auto 20px" }} />
-          <h2 style={{ fontFamily: "'DM Serif Display', serif", fontSize: "clamp(28px,5vw,42px)", color: "#f5f0e8", marginBottom: 12, lineHeight: 1.15 }}>
+          <Heart size={28} color="#e8607a" fill="#e8607a" style={{ margin: "0 auto 20px", opacity: 0.85 }} />
+          <h2 style={{ fontFamily: "'DM Serif Display', serif", fontSize: "clamp(28px,5vw,42px)", color: "#1a3560", marginBottom: 12, lineHeight: 1.15 }}>
             <em style={{ fontStyle: "italic" }}>{t.home.footerCta1}</em>
           </h2>
-          <p style={{ fontSize: "0.95rem", color: "rgba(245,240,232,0.5)", marginBottom: 36, maxWidth: 380, margin: "0 auto 36px", lineHeight: 1.75 }}>
+          <p style={{ fontSize: "0.92rem", color: "rgba(26,53,96,0.5)", marginBottom: 36, maxWidth: 380, margin: "0 auto 36px", lineHeight: 1.8 }}>
             {t.home.footerCta2}
           </p>
           <motion.button
@@ -271,18 +276,19 @@ export default function Home() {
             data-testid="button-footer-cta"
             style={{
               display: "inline-flex", alignItems: "center", gap: 10,
-              background: "#7eaa92", color: "#0f1729",
-              border: "none", borderRadius: 12, padding: "14px 36px",
-              fontSize: "0.85rem", fontWeight: 600, letterSpacing: "0.06em",
+              background: "#e8607a", color: "white",
+              border: "none", borderRadius: 14, padding: "14px 36px",
+              fontSize: "0.83rem", fontWeight: 600, letterSpacing: "0.06em",
               textTransform: "uppercase", cursor: "pointer", fontFamily: "Inter,sans-serif",
+              boxShadow: "0 4px 20px rgba(232,96,122,0.3)",
             }}
           >
-            {t.home.footerBtn} <ArrowRight size={15} />
+            {t.home.footerBtn} <ArrowRight size={14} />
           </motion.button>
         </motion.div>
 
-        <div style={{ marginTop: 72, borderTop: "1px solid rgba(245,240,232,0.07)", paddingTop: 32 }}>
-          <p style={{ fontFamily: "'DM Serif Display', serif", fontSize: "1.1rem", color: "rgba(245,240,232,0.35)", fontStyle: "italic" }}>
+        <div style={{ marginTop: 72, borderTop: "1px solid rgba(26,53,96,0.07)", paddingTop: 32 }}>
+          <p style={{ fontFamily: "'DM Serif Display', serif", fontSize: "1.1rem", color: "rgba(26,53,96,0.3)", fontStyle: "italic" }}>
             Couple Compass
           </p>
         </div>

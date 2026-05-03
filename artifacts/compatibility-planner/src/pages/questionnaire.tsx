@@ -71,12 +71,11 @@ type ReviewProps = {
 function ReviewScreen({ categories, allQuestions, answers, onEdit, onSubmit, isSubmitting, localeData }: ReviewProps) {
   const t = localeData.ui;
   return (
-    <div style={{ minHeight: "100vh", background: "#0f1729", color: "#f5f0e8", paddingBottom: 100 }}>
-      {/* Header */}
-      <div style={{ position: "sticky", top: 0, zIndex: 20, background: "rgba(15,23,41,0.95)", backdropFilter: "blur(12px)", borderBottom: "1px solid rgba(245,240,232,0.07)", padding: "14px 24px" }}>
+    <div style={{ minHeight: "100vh", background: "#f8f4f0", color: "#1a3560", paddingBottom: 100 }}>
+      <div style={{ position: "sticky", top: 0, zIndex: 20, background: "rgba(248,244,240,0.96)", backdropFilter: "blur(12px)", borderBottom: "1px solid rgba(184,212,240,0.4)", padding: "14px 24px" }}>
         <div style={{ maxWidth: 640, margin: "0 auto" }}>
-          <h1 style={{ fontFamily: "'DM Serif Display', serif", fontSize: "1.15rem", color: "#f5f0e8", marginBottom: 2 }}>Review your answers</h1>
-          <p style={{ fontSize: "0.72rem", color: "rgba(245,240,232,0.4)", letterSpacing: "0.06em" }}>Check everything before submitting</p>
+          <h1 style={{ fontFamily: "'DM Serif Display', serif", fontSize: "1.15rem", color: "#1a3560", marginBottom: 2 }}>Review your answers</h1>
+          <p style={{ fontSize: "0.7rem", color: "rgba(26,53,96,0.4)", letterSpacing: "0.06em" }}>Check everything before submitting</p>
         </div>
       </div>
 
@@ -87,29 +86,25 @@ function ReviewScreen({ categories, allQuestions, answers, onEdit, onSubmit, isS
           const allAnswered = catQs.every(q =>
             q.type === "choice" ? answers.has(q.id) && answers.get(q.id) !== "" : answers.has(q.id)
           );
-
           return (
             <motion.div key={cat}
               initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
               transition={{ delay: catIdx * 0.05 }}
-              style={{ background: "#1a2540", border: "1px solid rgba(245,240,232,0.07)", borderRadius: 14, overflow: "hidden" }}
+              style={{ background: "white", border: "1px solid rgba(184,212,240,0.4)", borderRadius: 16, overflow: "hidden", boxShadow: "0 2px 12px rgba(26,53,96,0.05)" }}
             >
-              {/* Category header */}
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 18px", borderBottom: "1px solid rgba(245,240,232,0.06)", background: "rgba(245,240,232,0.02)" }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 18px", borderBottom: "1px solid rgba(184,212,240,0.25)", background: "rgba(234,243,255,0.5)" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                   {allAnswered
-                    ? <Check size={13} color="#7eaa92" />
+                    ? <Check size={13} color="#e8607a" />
                     : <div style={{ width: 13, height: 13, borderRadius: "50%", border: "2px solid #d4a853" }} />
                   }
-                  <span style={{ fontSize: "0.88rem", fontWeight: 600, color: "#f5f0e8" }}>{catLabel}</span>
+                  <span style={{ fontSize: "0.88rem", fontWeight: 600, color: "#1a3560" }}>{catLabel}</span>
                 </div>
                 <button onClick={() => onEdit(catIdx)}
-                  style={{ background: "rgba(126,170,146,0.12)", border: "1px solid rgba(126,170,146,0.25)", borderRadius: 6, padding: "4px 12px", color: "#a8c5b3", fontSize: "0.72rem", fontWeight: 600, letterSpacing: "0.06em", textTransform: "uppercase", cursor: "pointer", fontFamily: "Inter,sans-serif", display: "flex", alignItems: "center", gap: 5 }}>
+                  style={{ background: "rgba(232,96,122,0.09)", border: "1px solid rgba(232,96,122,0.22)", borderRadius: 7, padding: "4px 12px", color: "#e8607a", fontSize: "0.7rem", fontWeight: 600, letterSpacing: "0.06em", textTransform: "uppercase", cursor: "pointer", fontFamily: "Inter,sans-serif", display: "flex", alignItems: "center", gap: 5 }}>
                   <Edit3 size={10} /> Edit
                 </button>
               </div>
-
-              {/* Answers */}
               <div>
                 {catQs.map((q, qi) => {
                   const qText = localeData.questions[q.id]?.text ?? q.text;
@@ -119,11 +114,10 @@ function ReviewScreen({ categories, allQuestions, answers, onEdit, onSubmit, isS
                     : q.type === "scale" ? `${val} / 5`
                     : val || "—"
                     : "Not answered";
-
                   return (
-                    <div key={q.id} style={{ padding: "12px 18px", borderBottom: qi < catQs.length - 1 ? "1px solid rgba(245,240,232,0.04)" : "none" }}>
-                      <p style={{ fontSize: "0.75rem", color: "rgba(245,240,232,0.4)", marginBottom: 4, lineHeight: 1.5 }}>{qText}</p>
-                      <p style={{ fontSize: "0.88rem", color: val ? "#f5f0e8" : "#d4a853", fontWeight: 500 }}>{displayVal}</p>
+                    <div key={q.id} style={{ padding: "12px 18px", borderBottom: qi < catQs.length - 1 ? "1px solid rgba(184,212,240,0.2)" : "none" }}>
+                      <p style={{ fontSize: "0.74rem", color: "rgba(26,53,96,0.45)", marginBottom: 4, lineHeight: 1.5 }}>{qText}</p>
+                      <p style={{ fontSize: "0.88rem", color: val ? "#1a3560" : "#d4a853", fontWeight: 500 }}>{displayVal}</p>
                     </div>
                   );
                 })}
@@ -133,17 +127,17 @@ function ReviewScreen({ categories, allQuestions, answers, onEdit, onSubmit, isS
         })}
       </div>
 
-      {/* Fixed submit */}
-      <div style={{ position: "fixed", bottom: 0, left: 0, right: 0, background: "rgba(15,23,41,0.97)", backdropFilter: "blur(12px)", borderTop: "1px solid rgba(245,240,232,0.07)", padding: "16px 24px" }}>
+      <div style={{ position: "fixed", bottom: 0, left: 0, right: 0, background: "rgba(248,244,240,0.97)", backdropFilter: "blur(12px)", borderTop: "1px solid rgba(184,212,240,0.4)", padding: "16px 24px" }}>
         <div style={{ maxWidth: 640, margin: "0 auto" }}>
           <button onClick={onSubmit} disabled={isSubmitting}
             data-testid="button-confirm-submit"
             style={{
-              width: "100%", background: isSubmitting ? "rgba(126,170,146,0.4)" : "#7eaa92", color: "#0f1729",
+              width: "100%", background: isSubmitting ? "rgba(232,96,122,0.4)" : "#e8607a", color: "white",
               border: "none", borderRadius: 12, padding: "15px 28px",
-              fontSize: "0.88rem", fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase",
+              fontSize: "0.85rem", fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase",
               cursor: isSubmitting ? "not-allowed" : "pointer", fontFamily: "Inter,sans-serif",
               display: "flex", alignItems: "center", justifyContent: "center", gap: 10,
+              boxShadow: isSubmitting ? "none" : "0 4px 16px rgba(232,96,122,0.3)",
             }}>
             {isSubmitting ? "Submitting…" : "Confirm & Submit"} <Send size={15} />
           </button>
@@ -169,15 +163,9 @@ export default function QuestionnairePage() {
 
   const partnerName = nameFromUrl || (params.partnerSlot === "partner1" ? "Partner 1" : "Partner 2");
 
-  const [answers, setAnswers] = useState<Map<number, string>>(() =>
-    loadAnswers(params.sessionCode, params.partnerSlot)
-  );
-  const [categoryIndex, setCategoryIndex] = useState(() =>
-    loadPhase(params.sessionCode, params.partnerSlot)
-  );
-  const [visitedPhases, setVisitedPhases] = useState<Set<number>>(() =>
-    loadVisited(params.sessionCode, params.partnerSlot)
-  );
+  const [answers, setAnswers] = useState<Map<number, string>>(() => loadAnswers(params.sessionCode, params.partnerSlot));
+  const [categoryIndex, setCategoryIndex] = useState(() => loadPhase(params.sessionCode, params.partnerSlot));
+  const [visitedPhases, setVisitedPhases] = useState<Set<number>>(() => loadVisited(params.sessionCode, params.partnerSlot));
   const [direction, setDirection] = useState(1);
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
   const [showReview, setShowReview] = useState(false);
@@ -279,10 +267,10 @@ export default function QuestionnairePage() {
   };
 
   if (isLoading) return (
-    <div style={{ minHeight: "100vh", background: "#0f1729", display: "flex", alignItems: "center", justifyContent: "center" }}>
+    <div style={{ minHeight: "100vh", background: "linear-gradient(160deg,#eaf3ff 0%,#fce8ec 100%)", display: "flex", alignItems: "center", justifyContent: "center" }}>
       <div style={{ textAlign: "center" }}>
-        <div style={{ width: 32, height: 32, borderRadius: "50%", border: "2px solid rgba(126,170,146,0.4)", borderTopColor: "#7eaa92", animation: "spin 1s linear infinite", margin: "0 auto 14px" }} />
-        <p style={{ color: "rgba(245,240,232,0.45)", fontSize: "0.88rem" }}>{t.loading}</p>
+        <div style={{ width: 32, height: 32, borderRadius: "50%", border: "2.5px solid rgba(232,96,122,0.25)", borderTopColor: "#e8607a", animation: "spin 1s linear infinite", margin: "0 auto 14px" }} />
+        <p style={{ color: "rgba(26,53,96,0.45)", fontSize: "0.88rem" }}>{t.loading}</p>
       </div>
       <style>{`@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}`}</style>
     </div>
@@ -299,14 +287,14 @@ export default function QuestionnairePage() {
   const categoryLabel = data.ui.categories[currentCategory as keyof typeof data.ui.categories] ?? currentCategory;
 
   return (
-    <div style={{ minHeight: "100vh", background: "#0f1729", color: "#f5f0e8", display: "flex", flexDirection: "column" }}>
+    <div style={{ minHeight: "100vh", background: "#f8f4f0", color: "#1a3560", display: "flex", flexDirection: "column" }}>
       <style>{`@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}`}</style>
 
-      {/* ── Sticky phase header ── */}
-      <div style={{ position: "sticky", top: 0, zIndex: 20, background: "rgba(15,23,41,0.96)", backdropFilter: "blur(12px)", borderBottom: "1px solid rgba(245,240,232,0.07)" }}>
+      {/* ── Sticky header ── */}
+      <div style={{ position: "sticky", top: 0, zIndex: 20, background: "rgba(248,244,240,0.96)", backdropFilter: "blur(12px)", borderBottom: "1px solid rgba(184,212,240,0.35)" }}>
         <div style={{ maxWidth: 640, margin: "0 auto", padding: "12px 20px" }}>
 
-          {/* Phase pills row */}
+          {/* Phase bar */}
           <div style={{ display: "flex", gap: 4, marginBottom: 10 }}>
             {categories.map((cat, i) => {
               const label = data.ui.categories[cat as keyof typeof data.ui.categories] ?? cat;
@@ -314,10 +302,10 @@ export default function QuestionnairePage() {
               const isComplete = isCategoryComplete(i);
               const isVisited = visitedPhases.has(i);
 
-              let bg = "rgba(245,240,232,0.08)";
-              if (isCurrent) bg = "#7eaa92";
-              else if (isComplete) bg = "rgba(126,170,146,0.45)";
-              else if (isVisited) bg = "rgba(126,170,146,0.2)";
+              let bg = "rgba(184,212,240,0.35)";
+              if (isCurrent) bg = "#e8607a";
+              else if (isComplete) bg = "rgba(232,96,122,0.45)";
+              else if (isVisited) bg = "rgba(232,96,122,0.2)";
 
               return (
                 <button key={i} onClick={() => navigateTo(i)}
@@ -328,32 +316,27 @@ export default function QuestionnairePage() {
                     flex: 1, height: isCurrent ? 6 : 4, borderRadius: 999,
                     background: bg, border: "none", cursor: "pointer",
                     transition: "all 0.2s ease",
-                    position: "relative",
                   }}
-                  onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.height = "6px"; }}
-                  onMouseLeave={e => { if (i !== categoryIndex) (e.currentTarget as HTMLButtonElement).style.height = "4px"; }}
                 />
               );
             })}
           </div>
 
-          {/* Label row */}
+          {/* Label */}
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              <span style={{ fontSize: "0.7rem", fontWeight: 600, letterSpacing: "0.12em", textTransform: "uppercase", color: "#7eaa92" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
+              <span style={{ fontSize: "0.68rem", fontWeight: 600, letterSpacing: "0.12em", textTransform: "uppercase", color: "#e8607a" }}>
                 {categoryLabel}
               </span>
-              {isCategoryComplete(categoryIndex) && (
-                <Check size={11} color="#7eaa92" />
-              )}
+              {isCategoryComplete(categoryIndex) && <Check size={11} color="#e8607a" />}
             </div>
-            <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
               {lastSaved && (
-                <span style={{ display: "flex", alignItems: "center", gap: 4, fontSize: "0.68rem", color: "rgba(245,240,232,0.3)" }}>
+                <span style={{ display: "flex", alignItems: "center", gap: 4, fontSize: "0.66rem", color: "rgba(26,53,96,0.3)" }}>
                   <Save size={9} /> {t.saved}
                 </span>
               )}
-              <span style={{ fontSize: "0.68rem", color: "rgba(245,240,232,0.35)", letterSpacing: "0.05em" }}>
+              <span style={{ fontSize: "0.66rem", color: "rgba(26,53,96,0.35)", letterSpacing: "0.05em" }}>
                 {categoryIndex + 1} / {totalCategories}
               </span>
             </div>
@@ -371,12 +354,12 @@ export default function QuestionnairePage() {
               initial={{ opacity: 0, y: -8, height: 0 }}
               animate={{ opacity: 1, y: 0, height: "auto" }}
               exit={{ opacity: 0, y: -8, height: 0 }}
-              style={{ background: "rgba(126,170,146,0.1)", border: "1px solid rgba(126,170,146,0.25)", borderRadius: 10, padding: "10px 16px", marginBottom: 20, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}
+              style={{ background: "rgba(232,96,122,0.08)", border: "1px solid rgba(232,96,122,0.2)", borderRadius: 10, padding: "10px 16px", marginBottom: 20, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}
             >
-              <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: "0.82rem", color: "#a8c5b3" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: "0.82rem", color: "#e8607a" }}>
                 <Save size={12} /> {t.restored}
               </div>
-              <button onClick={() => setShowRestored(false)} style={{ background: "none", border: "none", color: "rgba(245,240,232,0.35)", cursor: "pointer", fontSize: "0.85rem", padding: 0 }}>✕</button>
+              <button onClick={() => setShowRestored(false)} style={{ background: "none", border: "none", color: "rgba(26,53,96,0.3)", cursor: "pointer", fontSize: "0.85rem", padding: 0 }}>✕</button>
             </motion.div>
           )}
         </AnimatePresence>
@@ -389,11 +372,11 @@ export default function QuestionnairePage() {
             exit={{ opacity: 0, x: direction * -40 }}
             transition={{ duration: 0.32, ease: [0.16, 1, 0.3, 1] }}
           >
-            <h2 style={{ fontFamily: "'DM Serif Display', serif", fontSize: "clamp(24px,5vw,34px)", color: "#f5f0e8", marginBottom: 28, lineHeight: 1.15 }}>
+            <h2 style={{ fontFamily: "'DM Serif Display', serif", fontSize: "clamp(24px,5vw,34px)", color: "#1a3560", marginBottom: 28, lineHeight: 1.15 }}>
               {categoryLabel}
             </h2>
 
-            <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
               {categoryQuestions.map((q, idx) => {
                 const qTranslation = data.questions[q.id];
                 const questionText = qTranslation?.text ?? q.text;
@@ -404,20 +387,19 @@ export default function QuestionnairePage() {
                     initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: idx * 0.06, duration: 0.4 }}
                     data-testid={`question-card-${q.id}`}
-                    style={{ background: "#1a2540", border: "1px solid rgba(245,240,232,0.07)", borderRadius: 14, padding: "22px 20px" }}
+                    style={{ background: "white", border: "1px solid rgba(184,212,240,0.4)", borderRadius: 16, padding: "22px 20px", boxShadow: "0 2px 14px rgba(26,53,96,0.05)" }}
                   >
-                    <p style={{ fontSize: "0.95rem", color: "#f5f0e8", fontWeight: 500, marginBottom: 18, lineHeight: 1.65 }}>
+                    <p style={{ fontSize: "0.95rem", color: "#1a3560", fontWeight: 500, marginBottom: 18, lineHeight: 1.65 }}>
                       {questionText}
                     </p>
 
                     {/* Scale */}
                     {q.type === "scale" && (
                       <div>
-                        <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.72rem", color: "rgba(245,240,232,0.4)", marginBottom: 14 }}>
+                        <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.7rem", color: "rgba(26,53,96,0.4)", marginBottom: 12 }}>
                           <span>{t.scaleMin}</span>
                           <span>{t.scaleMax}</span>
                         </div>
-                        {/* Custom scale dots */}
                         <div style={{ display: "flex", justifyContent: "space-between", gap: 8 }}>
                           {[1, 2, 3, 4, 5].map(v => {
                             const selected = answers.get(q.id) === String(v);
@@ -425,13 +407,14 @@ export default function QuestionnairePage() {
                               <button key={v} onClick={() => setAnswer(q.id, String(v))}
                                 data-testid={`scale-btn-${q.id}-${v}`}
                                 style={{
-                                  flex: 1, aspectRatio: "1", borderRadius: 10,
-                                  background: selected ? "#7eaa92" : "rgba(245,240,232,0.06)",
-                                  border: selected ? "1px solid #7eaa92" : "1px solid rgba(245,240,232,0.1)",
-                                  color: selected ? "#0f1729" : "rgba(245,240,232,0.6)",
+                                  flex: 1, aspectRatio: "1", borderRadius: 12,
+                                  background: selected ? "#e8607a" : "rgba(234,243,255,0.7)",
+                                  border: selected ? "1px solid #e8607a" : "1px solid rgba(184,212,240,0.5)",
+                                  color: selected ? "white" : "rgba(26,53,96,0.5)",
                                   fontSize: "0.95rem", fontWeight: selected ? 700 : 400,
                                   cursor: "pointer", transition: "all 0.15s", fontFamily: "Inter,sans-serif",
-                                  transform: selected ? "scale(1.08)" : "scale(1)",
+                                  transform: selected ? "scale(1.07)" : "scale(1)",
+                                  boxShadow: selected ? "0 3px 12px rgba(232,96,122,0.3)" : "none",
                                 }}>
                                 {v}
                               </button>
@@ -450,16 +433,22 @@ export default function QuestionnairePage() {
                             <button key={optIdx} onClick={() => setAnswer(q.id, String(optIdx))}
                               data-testid={`choice-${q.id}-${optIdx}`}
                               style={{
-                                textAlign: "left", padding: "12px 16px", borderRadius: 10,
-                                background: selected ? "rgba(126,170,146,0.15)" : "rgba(245,240,232,0.04)",
-                                border: `1px solid ${selected ? "rgba(126,170,146,0.45)" : "rgba(245,240,232,0.08)"}`,
-                                color: selected ? "#a8c5b3" : "rgba(245,240,232,0.7)",
+                                textAlign: "left", padding: "12px 16px", borderRadius: 11,
+                                background: selected ? "rgba(232,96,122,0.07)" : "rgba(234,243,255,0.5)",
+                                border: `1px solid ${selected ? "rgba(232,96,122,0.4)" : "rgba(184,212,240,0.5)"}`,
+                                color: selected ? "#c03050" : "rgba(26,53,96,0.7)",
                                 fontSize: "0.88rem", fontWeight: selected ? 500 : 400,
                                 cursor: "pointer", transition: "all 0.15s", fontFamily: "Inter,sans-serif",
                                 display: "flex", alignItems: "center", gap: 10,
                               }}>
-                              <span style={{ width: 18, height: 18, borderRadius: "50%", border: `1.5px solid ${selected ? "#7eaa92" : "rgba(245,240,232,0.2)"}`, background: selected ? "#7eaa92" : "transparent", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, transition: "all 0.15s" }}>
-                                {selected && <Check size={10} color="#0f1729" />}
+                              <span style={{
+                                width: 18, height: 18, borderRadius: "50%",
+                                border: `1.5px solid ${selected ? "#e8607a" : "rgba(184,212,240,0.8)"}`,
+                                background: selected ? "#e8607a" : "transparent",
+                                display: "flex", alignItems: "center", justifyContent: "center",
+                                flexShrink: 0, transition: "all 0.15s",
+                              }}>
+                                {selected && <Check size={10} color="white" />}
                               </span>
                               {opt}
                             </button>
@@ -477,8 +466,8 @@ export default function QuestionnairePage() {
                         data-testid={`textarea-${q.id}`}
                         rows={4}
                         style={{
-                          width: "100%", background: "rgba(245,240,232,0.05)", border: "1px solid rgba(245,240,232,0.1)",
-                          borderRadius: 10, padding: "12px 14px", color: "#f5f0e8", fontSize: "0.9rem",
+                          width: "100%", background: "rgba(234,243,255,0.5)", border: "1px solid rgba(184,212,240,0.5)",
+                          borderRadius: 10, padding: "12px 14px", color: "#1a3560", fontSize: "0.9rem",
                           fontFamily: "Inter,sans-serif", outline: "none", resize: "none", lineHeight: 1.7,
                           boxSizing: "border-box",
                         }}
@@ -493,14 +482,15 @@ export default function QuestionnairePage() {
       </div>
 
       {/* ── Fixed bottom nav ── */}
-      <div style={{ position: "fixed", bottom: 0, left: 0, right: 0, background: "rgba(15,23,41,0.97)", backdropFilter: "blur(12px)", borderTop: "1px solid rgba(245,240,232,0.07)", padding: "14px 20px" }}>
+      <div style={{ position: "fixed", bottom: 0, left: 0, right: 0, background: "rgba(248,244,240,0.97)", backdropFilter: "blur(12px)", borderTop: "1px solid rgba(184,212,240,0.35)", padding: "14px 20px" }}>
         <div style={{ maxWidth: 640, margin: "0 auto", display: "flex", gap: 10 }}>
           <button onClick={handleBack} disabled={categoryIndex === 0}
             data-testid="button-prev-category"
             style={{
-              background: "rgba(245,240,232,0.06)", border: "1px solid rgba(245,240,232,0.1)",
-              borderRadius: 10, padding: "12px 20px", color: categoryIndex === 0 ? "rgba(245,240,232,0.2)" : "rgba(245,240,232,0.7)",
-              fontSize: "0.82rem", fontWeight: 500, letterSpacing: "0.06em", textTransform: "uppercase",
+              background: "white", border: "1px solid rgba(184,212,240,0.5)",
+              borderRadius: 11, padding: "12px 20px",
+              color: categoryIndex === 0 ? "rgba(26,53,96,0.2)" : "rgba(26,53,96,0.65)",
+              fontSize: "0.8rem", fontWeight: 500, letterSpacing: "0.06em", textTransform: "uppercase",
               cursor: categoryIndex === 0 ? "not-allowed" : "pointer", fontFamily: "Inter,sans-serif",
               display: "flex", alignItems: "center", gap: 8,
             }}>
@@ -510,13 +500,14 @@ export default function QuestionnairePage() {
             disabled={!allCurrentAnswered || submitResponses.isPending}
             data-testid="button-next-category"
             style={{
-              flex: 1, background: allCurrentAnswered ? "#7eaa92" : "rgba(126,170,146,0.25)",
-              border: "none", borderRadius: 10, padding: "12px 20px",
-              color: allCurrentAnswered ? "#0f1729" : "rgba(245,240,232,0.3)",
-              fontSize: "0.85rem", fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase",
+              flex: 1, background: allCurrentAnswered ? "#e8607a" : "rgba(232,96,122,0.2)",
+              border: "none", borderRadius: 11, padding: "12px 20px",
+              color: allCurrentAnswered ? "white" : "rgba(26,53,96,0.25)",
+              fontSize: "0.83rem", fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase",
               cursor: allCurrentAnswered ? "pointer" : "not-allowed", fontFamily: "Inter,sans-serif",
               display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
               transition: "background 0.2s",
+              boxShadow: allCurrentAnswered ? "0 4px 14px rgba(232,96,122,0.28)" : "none",
             }}>
             {categoryIndex === totalCategories - 1
               ? (allPhasesComplete ? "Review & Submit" : data.ui.submit)
