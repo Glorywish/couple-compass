@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { db, sessionsTable, responseSetsTable, answersTable, questionsTable } from "@workspace/db";
+import { db, sessionsTable, partnerResponsesTable, answersTable, questionsTable } from "@workspace/db";
 import { eq } from "drizzle-orm";
 
 const emailReportRouter = Router();
@@ -187,16 +187,13 @@ emailReportRouter.post("/sessions/:sessionCode/email-report", async (req, res) =
       return;
     }
 
-    const [p1Set, p2Set] = await Promise.all([
-      db.select().from(responseSetsTable).where(eq(responseSetsTable.sessionId, session.id)),
+    const [responseSets, questions] = await Promise.all([
+      db.select().from(partnerResponsesTable).where(eq(partnerResponsesTable.sessionId, session.id)),
       db.select().from(questionsTable),
     ]);
 
-    const responseSets = p1Set;
-    const questions = p2Set;
-
     const allAnswers = await Promise.all(
-      responseSets.map(rs => db.select().from(answersTable).where(eq(answersTable.responseSetId, rs.id)))
+      responseSets.map(rs => db.select().from(answersTable).where(eq(answersTable.responseId, rs.id)))
     );
 
     const p1Slot = responseSets.find(r => r.partnerSlot === "partner1");

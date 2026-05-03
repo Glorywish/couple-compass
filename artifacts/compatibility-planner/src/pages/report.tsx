@@ -195,25 +195,63 @@ export default function ReportPage() {
             </div>
 
             {/* Share card */}
-            <div style={{ marginTop: 20, background: "rgba(255,255,255,0.7)", border: "1px solid rgba(184,212,240,0.5)", borderRadius: 12, padding: "14px 18px", display: "flex", flexWrap: "wrap", gap: 12, alignItems: "center", maxWidth: 560, marginLeft: "auto", marginRight: "auto" }}>
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <p style={{ fontSize: "0.58rem", letterSpacing: "0.2em", textTransform: "uppercase", color: "#e8607a", fontWeight: 600, marginBottom: 4 }}>{t.shareableLink}</p>
-                <p style={{ fontSize: "0.72rem", color: "rgba(26,53,96,0.35)", fontFamily: "monospace", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{reportUrl}</p>
+            <div style={{ marginTop: 20, maxWidth: 560, marginLeft: "auto", marginRight: "auto" }} className="no-print">
+              {/* Action row */}
+              <div style={{ background: "rgba(255,255,255,0.7)", border: "1px solid rgba(184,212,240,0.5)", borderRadius: showEmailPanel ? "12px 12px 0 0" : 12, padding: "14px 18px", display: "flex", flexWrap: "wrap", gap: 12, alignItems: "center" }}>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <p style={{ fontSize: "0.58rem", letterSpacing: "0.2em", textTransform: "uppercase", color: "#e8607a", fontWeight: 600, marginBottom: 4 }}>{t.shareableLink}</p>
+                  <p style={{ fontSize: "0.72rem", color: "rgba(26,53,96,0.35)", fontFamily: "monospace", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{reportUrl}</p>
+                </div>
+                <div style={{ display: "flex", gap: 8, flexShrink: 0, flexWrap: "wrap" }}>
+                  <button onClick={handleCopy} data-testid="button-copy-report-link"
+                    style={{ background: "rgba(232,96,122,0.1)", border: "1px solid rgba(232,96,122,0.22)", borderRadius: 8, padding: "7px 14px", color: "#e8607a", fontSize: "0.72rem", fontWeight: 600, letterSpacing: "0.06em", textTransform: "uppercase", cursor: "pointer", fontFamily: "Inter,sans-serif", display: "flex", alignItems: "center", gap: 5 }}>
+                    {copied ? <Check size={11} /> : <Copy size={11} />} {copied ? t.copiedBtn : t.copyBtn}
+                  </button>
+                  <button onClick={handleShare} data-testid="button-share-report"
+                    style={{ background: "rgba(232,96,122,0.1)", border: "1px solid rgba(232,96,122,0.22)", borderRadius: 8, padding: "7px 14px", color: "#e8607a", fontSize: "0.72rem", fontWeight: 600, letterSpacing: "0.06em", textTransform: "uppercase", cursor: "pointer", fontFamily: "Inter,sans-serif", display: "flex", alignItems: "center", gap: 5 }}>
+                    <Share2 size={11} /> {t.shareBtn}
+                  </button>
+                  <button onClick={handleDownloadPdf} data-testid="button-download-pdf"
+                    style={{ background: "rgba(232,96,122,0.1)", border: "1px solid rgba(232,96,122,0.22)", borderRadius: 8, padding: "7px 14px", color: "#e8607a", fontSize: "0.72rem", fontWeight: 600, letterSpacing: "0.06em", textTransform: "uppercase", cursor: "pointer", fontFamily: "Inter,sans-serif", display: "flex", alignItems: "center", gap: 5 }}>
+                    <FileDown size={11} /> {t.downloadPdf}
+                  </button>
+                  <button onClick={() => setShowEmailPanel(p => !p)} data-testid="button-email-report"
+                    style={{ background: showEmailPanel ? "#e8607a" : "#e8607a", border: "none", borderRadius: 8, padding: "7px 14px", color: "white", fontSize: "0.72rem", fontWeight: 600, letterSpacing: "0.06em", textTransform: "uppercase", cursor: "pointer", fontFamily: "Inter,sans-serif", display: "flex", alignItems: "center", gap: 5, boxShadow: "0 2px 10px rgba(232,96,122,0.28)" }}>
+                    {showEmailPanel ? <X size={11} /> : <Mail size={11} />} {t.emailReport}
+                  </button>
+                </div>
               </div>
-              <div style={{ display: "flex", gap: 8, flexShrink: 0, flexWrap: "wrap" }}>
-                <button onClick={handleCopy} data-testid="button-copy-report-link" className="no-print"
-                  style={{ background: "rgba(232,96,122,0.1)", border: "1px solid rgba(232,96,122,0.22)", borderRadius: 8, padding: "7px 14px", color: "#e8607a", fontSize: "0.72rem", fontWeight: 600, letterSpacing: "0.06em", textTransform: "uppercase", cursor: "pointer", fontFamily: "Inter,sans-serif", display: "flex", alignItems: "center", gap: 5 }}>
-                  {copied ? <Check size={11} /> : <Copy size={11} />} {copied ? t.copiedBtn : t.copyBtn}
-                </button>
-                <button onClick={handleShare} data-testid="button-share-report" className="no-print"
-                  style={{ background: "rgba(232,96,122,0.1)", border: "1px solid rgba(232,96,122,0.22)", borderRadius: 8, padding: "7px 14px", color: "#e8607a", fontSize: "0.72rem", fontWeight: 600, letterSpacing: "0.06em", textTransform: "uppercase", cursor: "pointer", fontFamily: "Inter,sans-serif", display: "flex", alignItems: "center", gap: 5 }}>
-                  <Share2 size={11} /> {t.shareBtn}
-                </button>
-                <button onClick={handleDownloadPdf} data-testid="button-download-pdf" className="no-print"
-                  style={{ background: "#e8607a", border: "none", borderRadius: 8, padding: "7px 14px", color: "white", fontSize: "0.72rem", fontWeight: 600, letterSpacing: "0.06em", textTransform: "uppercase", cursor: "pointer", fontFamily: "Inter,sans-serif", display: "flex", alignItems: "center", gap: 5, boxShadow: "0 2px 10px rgba(232,96,122,0.28)" }}>
-                  <FileDown size={11} /> {t.downloadPdf}
-                </button>
-              </div>
+
+              {/* Email panel — expands below the action row */}
+              {showEmailPanel && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }}
+                  transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
+                  style={{ background: "rgba(252,232,236,0.5)", border: "1px solid rgba(232,96,122,0.22)", borderTop: "none", borderRadius: "0 0 12px 12px", padding: "18px 18px 16px", overflow: "hidden" }}>
+                  <p style={{ fontSize: "0.6rem", letterSpacing: "0.2em", textTransform: "uppercase", color: "#e8607a", fontWeight: 600, marginBottom: 12 }}>{t.emailLabel}</p>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 14 }}>
+                    <input
+                      type="email" value={email1} onChange={e => setEmail1(e.target.value)}
+                      placeholder={t.partner1Email}
+                      style={{ background: "white", border: "1px solid rgba(232,96,122,0.25)", borderRadius: 8, padding: "9px 14px", fontSize: "0.82rem", color: "#1a3560", fontFamily: "Inter,sans-serif", outline: "none", width: "100%", boxSizing: "border-box" }}
+                    />
+                    <input
+                      type="email" value={email2} onChange={e => setEmail2(e.target.value)}
+                      placeholder={t.partner2Email}
+                      onKeyDown={e => e.key === "Enter" && handleSendEmail()}
+                      style={{ background: "white", border: "1px solid rgba(232,96,122,0.25)", borderRadius: 8, padding: "9px 14px", fontSize: "0.82rem", color: "#1a3560", fontFamily: "Inter,sans-serif", outline: "none", width: "100%", boxSizing: "border-box" }}
+                    />
+                  </div>
+                  <button onClick={handleSendEmail} disabled={emailSending || (!email1.includes("@") && !email2.includes("@"))}
+                    data-testid="button-send-email"
+                    style={{ background: "#e8607a", border: "none", borderRadius: 8, padding: "9px 20px", color: "white", fontSize: "0.78rem", fontWeight: 600, letterSpacing: "0.06em", textTransform: "uppercase", cursor: emailSending ? "wait" : "pointer", fontFamily: "Inter,sans-serif", display: "inline-flex", alignItems: "center", gap: 7, opacity: emailSending ? 0.7 : 1, boxShadow: "0 2px 10px rgba(232,96,122,0.28)", transition: "opacity 0.2s" }}>
+                    {emailSending
+                      ? <><div style={{ width: 10, height: 10, borderRadius: "50%", border: "1.5px solid rgba(255,255,255,0.4)", borderTopColor: "white", animation: "spin 0.8s linear infinite" }} /> Sending...</>
+                      : <><Send size={11} /> {t.sendEmail}</>
+                    }
+                  </button>
+                </motion.div>
+              )}
             </div>
           </motion.div>
         </div>
