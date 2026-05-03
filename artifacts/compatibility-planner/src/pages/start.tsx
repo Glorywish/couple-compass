@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useLocation } from "wouter";
 import { motion } from "framer-motion";
-import { ArrowLeft, Copy, Check, ArrowRight, Camera } from "lucide-react";
+import { ArrowLeft, Copy, Check, ArrowRight, Camera, Hash } from "lucide-react";
 import { useCreateSession } from "@workspace/api-client-react";
 import { useToast } from "@/hooks/use-toast";
 import { useI18n } from "@/lib/i18n";
@@ -18,6 +18,7 @@ export default function StartPage() {
   const [name, setName] = useState("");
   const [session, setSession] = useState<{ sessionCode: string; partner1Name: string } | null>(null);
   const [copied, setCopied] = useState(false);
+  const [codeCopied, setCodeCopied] = useState(false);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const { toast } = useToast();
   const { data } = useI18n();
@@ -45,6 +46,13 @@ export default function StartPage() {
     setCopied(true);
     setTimeout(() => setCopied(false), 2500);
     toast({ title: t.linkCopied, description: t.linkCopiedDesc });
+  };
+
+  const handleCopyCode = () => {
+    if (!session) return;
+    navigator.clipboard.writeText(session.sessionCode);
+    setCodeCopied(true);
+    setTimeout(() => setCodeCopied(false), 2500);
   };
 
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -114,9 +122,15 @@ export default function StartPage() {
               <p style={{ fontSize: "0.65rem", letterSpacing: "0.22em", textTransform: "uppercase", color: "#e8607a", fontWeight: 600, marginBottom: 12 }}>
                 {t.codeLabel}
               </p>
-              <div data-testid="text-session-code" style={{ fontSize: "clamp(1.5rem, 9vw, 3rem)", fontFamily: "monospace", fontWeight: 700, letterSpacing: "clamp(0.08em, 2vw, 0.22em)", color: "#1a3560", wordBreak: "break-all", lineHeight: 1.2, maxWidth: "100%" }}>
+              <div data-testid="text-session-code" style={{ fontSize: "clamp(1.5rem, 9vw, 3rem)", fontFamily: "monospace", fontWeight: 700, letterSpacing: "clamp(0.08em, 2vw, 0.22em)", color: "#1a3560", wordBreak: "break-all", lineHeight: 1.2, maxWidth: "100%", marginBottom: 16 }}>
                 {session.sessionCode}
               </div>
+              <motion.button onClick={handleCopyCode} whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }}
+                data-testid="button-copy-code"
+                style={{ background: codeCopied ? "rgba(26,53,96,0.07)" : "rgba(232,96,122,0.08)", border: `1px solid ${codeCopied ? "rgba(26,53,96,0.18)" : "rgba(232,96,122,0.25)"}`, borderRadius: 10, padding: "8px 20px", color: codeCopied ? "#1a3560" : "#e8607a", fontSize: "0.72rem", fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", cursor: "pointer", fontFamily: "Inter,sans-serif", display: "inline-flex", alignItems: "center", gap: 6, transition: "all 0.2s" }}>
+                {codeCopied ? <Check size={11} /> : <Hash size={11} />}
+                {codeCopied ? t.copiedBtn : t.copyBtn}
+              </motion.button>
             </div>
 
             <h1 style={{ fontFamily: "'DM Serif Display', serif", fontSize: "clamp(26px,4vw,34px)", color: "#1a3560", lineHeight: 1.2, marginBottom: 8 }}>
