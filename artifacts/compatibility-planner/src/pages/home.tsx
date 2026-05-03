@@ -221,24 +221,23 @@ export default function Home() {
 
           <motion.div initial={{ opacity:0, y:14 }} animate={{ opacity:1, y:0 }} transition={{ delay:1.1 }}
             style={{ marginTop:28, display:"flex", flexDirection:"column", alignItems:"center", gap:10 }}>
-            <span style={{ fontSize:"0.6rem", letterSpacing:"0.2em", textTransform:"uppercase", color:"rgba(26,53,96,0.35)", fontWeight:600 }}>Also on mobile</span>
+            <span style={{ fontSize:"0.6rem", letterSpacing:"0.2em", textTransform:"uppercase", color:"rgba(26,53,96,0.35)", fontWeight:600 }}>Also on mobile — iOS &amp; Android, free</span>
             <div style={{ display:"flex", gap:10, flexWrap:"wrap", justifyContent:"center" }}>
-              <a href="https://apps.apple.com" target="_blank" rel="noreferrer"
-                style={{ display:"inline-flex", alignItems:"center", gap:9, background:"#1a3560", borderRadius:13, padding:"9px 18px", textDecoration:"none", boxShadow:"0 3px 14px rgba(26,53,96,0.22)" }}>
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
+              <a href="https://expo.dev/go" target="_blank" rel="noreferrer"
+                style={{ display:"inline-flex", alignItems:"center", gap:9, background:"#e8607a", borderRadius:13, padding:"10px 20px", textDecoration:"none", boxShadow:"0 3px 16px rgba(232,96,122,0.35)" }}>
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="white"><path d="M5 3h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2zm7 2c-3.87 0-7 3.13-7 7s3.13 7 7 7 7-3.13 7-7-3.13-7-7-7zm0 2a5 5 0 1 1 0 10A5 5 0 0 1 12 7zm0 2a3 3 0 1 0 0 6 3 3 0 0 0 0-6z"/></svg>
                 <div>
-                  <div style={{ fontSize:"0.55rem", color:"rgba(255,255,255,0.6)", letterSpacing:"0.08em", textTransform:"uppercase", lineHeight:1 }}>Download on the</div>
-                  <div style={{ fontSize:"0.85rem", color:"white", fontWeight:600, fontFamily:"Inter,sans-serif", lineHeight:1.3 }}>App Store</div>
+                  <div style={{ fontSize:"0.55rem", color:"rgba(255,255,255,0.75)", letterSpacing:"0.08em", textTransform:"uppercase", lineHeight:1 }}>Try free with</div>
+                  <div style={{ fontSize:"0.85rem", color:"white", fontWeight:600, fontFamily:"Inter,sans-serif", lineHeight:1.3 }}>Expo Go</div>
                 </div>
               </a>
-              <a href="https://play.google.com" target="_blank" rel="noreferrer"
-                style={{ display:"inline-flex", alignItems:"center", gap:9, background:"#1a3560", borderRadius:13, padding:"9px 18px", textDecoration:"none", boxShadow:"0 3px 14px rgba(26,53,96,0.22)" }}>
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M3.18 23.76c.3.17.64.24.99.2l12.19-7.03-2.56-2.56L3.18 23.76zm17.1-10.65L17.6 11.5l-2.83 2.83 2.81 2.81 2.7-1.56c.77-.45.77-1.82 0-2.27zM2.74.32A1.2 1.2 0 0 0 2.5 1v22a1.2 1.2 0 0 0 .24.68l.09.09 12.32-12.32v-.28L2.83.23l-.09.09zm11.37 12.05L2.74 23.74V.26l11.37 12.11z"/></svg>
+              <div style={{ display:"inline-flex", alignItems:"center", gap:9, background:"rgba(255,255,255,0.6)", border:"1px solid rgba(26,53,96,0.12)", borderRadius:13, padding:"10px 20px" }}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(26,53,96,0.35)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="5" y="2" width="14" height="20" rx="2"/><circle cx="12" cy="17" r="1"/></svg>
                 <div>
-                  <div style={{ fontSize:"0.55rem", color:"rgba(255,255,255,0.6)", letterSpacing:"0.08em", textTransform:"uppercase", lineHeight:1 }}>Get it on</div>
-                  <div style={{ fontSize:"0.85rem", color:"white", fontWeight:600, fontFamily:"Inter,sans-serif", lineHeight:1.3 }}>Google Play</div>
+                  <div style={{ fontSize:"0.55rem", color:"rgba(26,53,96,0.4)", letterSpacing:"0.08em", textTransform:"uppercase", lineHeight:1 }}>App Store &amp; Play Store</div>
+                  <div style={{ fontSize:"0.82rem", color:"rgba(26,53,96,0.45)", fontWeight:500, fontFamily:"Inter,sans-serif", lineHeight:1.3 }}>Coming soon</div>
                 </div>
-              </a>
+              </div>
             </div>
           </motion.div>
         </motion.div>
