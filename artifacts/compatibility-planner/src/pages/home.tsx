@@ -5,6 +5,9 @@ import { AnimatePresence } from "framer-motion";
 import { ArrowRight, Heart } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 
+const CIH_RIB  = "230 640 5881663211034200 41";
+const CIH_IBAN = "MA64 2306 4058 8166 3211 0342 0041";
+
 const BASE = import.meta.env.BASE_URL;
 
 const SPARKLES = Array.from({ length: 20 }, (_, i) => ({
@@ -47,6 +50,81 @@ function useHeartBloom() {
     setTimeout(() => { cb(); setTimeout(() => setBloom(null), 400); }, 480);
   };
   return { bloom, trigger };
+}
+
+type HomeT = ReturnType<typeof useI18n>["data"]["ui"]["home"];
+
+function HomeSupportSection({ t }: { t: HomeT }) {
+  const [ribCopied, setRibCopied] = useState(false);
+  const [ibanCopied, setIbanCopied] = useState(false);
+
+  const copy = (text: string, which: "rib" | "iban") => {
+    navigator.clipboard.writeText(text).then(() => {
+      if (which === "rib") { setRibCopied(true); setTimeout(() => setRibCopied(false), 2500); }
+      else { setIbanCopied(true); setTimeout(() => setIbanCopied(false), 2500); }
+    });
+  };
+
+  return (
+    <div style={{ background: "white", borderTop: "1px solid rgba(184,212,240,0.4)", padding: "80px 24px" }}>
+      <div style={{ maxWidth: 720, margin: "0 auto", display: "flex", flexDirection: "column", gap: 40 }}>
+
+        {/* Donation block */}
+        <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6 }}
+          style={{ background: "linear-gradient(135deg,#fce8ec 0%,#eaf3ff 100%)", border: "1px solid rgba(232,96,122,0.18)", borderRadius: 24, padding: "40px 36px", textAlign: "center" }}>
+          <div style={{ fontSize: "2rem", marginBottom: 16 }}>💛</div>
+          <h2 style={{ fontFamily: "'DM Serif Display',serif", fontSize: "clamp(22px,4vw,30px)", color: "#1a3560", marginBottom: 10 }}>{t.supportTitle}</h2>
+          <p style={{ fontSize: "0.88rem", color: "rgba(26,53,96,0.5)", lineHeight: 1.8, maxWidth: 480, margin: "0 auto 28px" }}>{t.supportDesc}</p>
+
+          {/* Buttons row */}
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 10, justifyContent: "center", marginBottom: 24 }}>
+            <a href="https://paypal.me/morganamona" target="_blank" rel="noreferrer"
+              style={{ background: "#003087", borderRadius: 12, padding: "12px 24px", color: "white", fontSize: "0.78rem", fontWeight: 700, textDecoration: "none", letterSpacing: "0.07em", textTransform: "uppercase", boxShadow: "0 3px 14px rgba(0,48,135,0.22)", display: "inline-flex", alignItems: "center", gap: 8 }}>
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="white"><path d="M7.076 21.337H2.47a.641.641 0 0 1-.633-.74L4.944.901C5.026.382 5.474 0 5.998 0h7.46c2.57 0 4.578.543 5.69 1.81 1.01 1.15 1.304 2.42 1.012 4.287-.023.143-.047.288-.077.437-.983 5.05-4.349 6.797-8.647 6.797h-2.19c-.524 0-.968.382-1.05.9l-1.12 7.106zm14.146-14.42a3.35 3.35 0 0 0-.607-.541c-.013.076-.026.175-.041.254-.93 4.778-4.005 7.201-9.138 7.201h-2.19a.563.563 0 0 0-.556.479l-1.187 7.527h-.506l-.24 1.516a.56.56 0 0 0 .554.647h3.882c.46 0 .85-.334.922-.788.06-.26.76-4.852.816-5.09a.932.932 0 0 1 .92-.788h.58c3.76 0 6.705-1.528 7.565-5.946.36-1.847.174-3.388-.774-4.471z"/></svg>
+              {t.supportPaypal}
+            </a>
+            <button onClick={() => copy(CIH_RIB, "rib")}
+              style={{ background: "white", border: "1.5px solid rgba(26,53,96,0.15)", borderRadius: 12, padding: "12px 24px", color: "#1a3560", fontSize: "0.78rem", fontWeight: 700, letterSpacing: "0.07em", textTransform: "uppercase", cursor: "pointer", fontFamily: "Inter,sans-serif", display: "inline-flex", alignItems: "center", gap: 8 }}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+              {ribCopied ? t.supportCihCopied : t.supportCihCopy}
+            </button>
+            <button onClick={() => copy(CIH_IBAN, "iban")}
+              style={{ background: "white", border: "1.5px solid rgba(26,53,96,0.15)", borderRadius: 12, padding: "12px 24px", color: "#1a3560", fontSize: "0.78rem", fontWeight: 700, letterSpacing: "0.07em", textTransform: "uppercase", cursor: "pointer", fontFamily: "Inter,sans-serif", display: "inline-flex", alignItems: "center", gap: 8 }}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+              {ibanCopied ? t.supportIbanCopied : t.supportIbanCopy}
+            </button>
+          </div>
+
+          {/* Bank details */}
+          <div style={{ display: "flex", flexDirection: "column", gap: 8, maxWidth: 460, margin: "0 auto", textAlign: "left" }}>
+            <div style={{ background: "rgba(255,255,255,0.7)", border: "1px solid rgba(26,53,96,0.08)", borderRadius: 10, padding: "10px 16px" }}>
+              <p style={{ margin: "0 0 2px", fontSize: "0.6rem", textTransform: "uppercase", letterSpacing: "0.14em", color: "rgba(26,53,96,0.35)", fontWeight: 600 }}>CIH Bank — RIB</p>
+              <p style={{ margin: 0, fontFamily: "monospace", fontSize: "0.85rem", color: "#1a3560", letterSpacing: "0.04em" }}>{CIH_RIB}</p>
+            </div>
+            <div style={{ background: "rgba(255,255,255,0.7)", border: "1px solid rgba(26,53,96,0.08)", borderRadius: 10, padding: "10px 16px" }}>
+              <p style={{ margin: "0 0 2px", fontSize: "0.6rem", textTransform: "uppercase", letterSpacing: "0.14em", color: "rgba(26,53,96,0.35)", fontWeight: 600 }}>IBAN</p>
+              <p style={{ margin: 0, fontFamily: "monospace", fontSize: "0.85rem", color: "#1a3560", letterSpacing: "0.04em" }}>{CIH_IBAN}</p>
+            </div>
+          </div>
+        </motion.div>
+
+        {/* LinkedIn block */}
+        <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6, delay: 0.1 }}
+          style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 16, background: "#f5f8ff", border: "1px solid rgba(184,212,240,0.5)", borderRadius: 18, padding: "24px 28px" }}>
+          <div>
+            <p style={{ margin: "0 0 4px", fontFamily: "'DM Serif Display',serif", fontSize: "1.05rem", color: "#1a3560" }}>{t.linkedinLabel}</p>
+            <p style={{ margin: 0, fontSize: "0.78rem", color: "rgba(26,53,96,0.4)" }}>linkedin.com/in/majdaki</p>
+          </div>
+          <a href="https://www.linkedin.com/in/majdaki" target="_blank" rel="noreferrer"
+            style={{ background: "#0077b5", borderRadius: 12, padding: "11px 22px", color: "white", fontSize: "0.78rem", fontWeight: 700, textDecoration: "none", letterSpacing: "0.07em", textTransform: "uppercase", display: "inline-flex", alignItems: "center", gap: 8, whiteSpace: "nowrap", boxShadow: "0 3px 14px rgba(0,119,181,0.25)", flexShrink: 0 }}>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="white"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6zM2 9h4v12H2z"/><circle cx="4" cy="4" r="2"/></svg>
+            {t.linkedinBtn}
+          </a>
+        </motion.div>
+
+      </div>
+    </div>
+  );
 }
 
 export default function Home() {
@@ -258,6 +336,9 @@ export default function Home() {
           </div>
         </div>
       </div>
+
+      {/* ── SUPPORT + LINKEDIN ── */}
+      <HomeSupportSection t={t.home} />
 
       {/* ── FOOTER CTA ── */}
       <div style={{ background:"white", padding:"88px 24px", textAlign:"center", borderTop:"1px solid rgba(184,212,240,0.4)" }}>

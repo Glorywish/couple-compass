@@ -34,6 +34,15 @@ export interface LocaleData {
       coupleQuote2: string;
       coupleQuote3: string;
       scroll: string;
+      supportTitle: string;
+      supportDesc: string;
+      supportPaypal: string;
+      supportCihCopy: string;
+      supportCihCopied: string;
+      supportIbanCopy: string;
+      supportIbanCopied: string;
+      linkedinLabel: string;
+      linkedinBtn: string;
     };
     start: {
       title: string;

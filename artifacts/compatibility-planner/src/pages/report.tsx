@@ -7,7 +7,8 @@ import { useToast } from "@/hooks/use-toast";
 import { useI18n } from "@/lib/i18n";
 import type { LocaleData } from "@/locales/types";
 
-const CIH_RIB = "230 640 5881663211034200 41";
+const CIH_RIB  = "230 640 5881663211034200 41";
+const CIH_IBAN = "MA64 2306 4058 8166 3211 0342 0041";
 
 type ReportT = LocaleData["ui"]["report"];
 
@@ -170,11 +171,32 @@ function DonateCard({ t }: { t: ReportT }) {
           {ribCopied ? t.cihCopied : t.cihCopy}
         </button>
       </div>
-      <div style={{ background: "rgba(26,53,96,0.03)", border: "1px solid rgba(26,53,96,0.08)", borderRadius: 12, padding: "12px 18px", width: "100%", maxWidth: 420, boxSizing: "border-box" }}>
-        <p style={{ margin: "0 0 4px", fontSize: "0.62rem", textTransform: "uppercase", letterSpacing: "0.14em", color: "rgba(26,53,96,0.35)", fontWeight: 600 }}>{t.cihTitle}</p>
-        <p style={{ margin: 0, fontFamily: "monospace", fontSize: "0.88rem", color: "#1a3560", letterSpacing: "0.06em", wordBreak: "break-all" }}>{CIH_RIB}</p>
+      <div style={{ display: "flex", flexDirection: "column", gap: 8, width: "100%", maxWidth: 420 }}>
+        <div style={{ background: "rgba(26,53,96,0.03)", border: "1px solid rgba(26,53,96,0.08)", borderRadius: 12, padding: "12px 18px", boxSizing: "border-box" }}>
+          <p style={{ margin: "0 0 4px", fontSize: "0.62rem", textTransform: "uppercase", letterSpacing: "0.14em", color: "rgba(26,53,96,0.35)", fontWeight: 600 }}>{t.cihTitle} — RIB</p>
+          <p style={{ margin: 0, fontFamily: "monospace", fontSize: "0.88rem", color: "#1a3560", letterSpacing: "0.06em", wordBreak: "break-all" }}>{CIH_RIB}</p>
+        </div>
+        <IbanRow iban={CIH_IBAN} copyLabel={t.cihCopy.replace("RIB","IBAN")} copiedLabel={t.cihCopied} />
       </div>
     </motion.div>
+  );
+}
+
+function IbanRow({ iban, copyLabel, copiedLabel }: { iban: string; copyLabel: string; copiedLabel: string }) {
+  const [copied, setCopied] = useState(false);
+  const doCopy = () => {
+    navigator.clipboard.writeText(iban).then(() => { setCopied(true); setTimeout(() => setCopied(false), 2500); });
+  };
+  return (
+    <div style={{ background: "rgba(26,53,96,0.03)", border: "1px solid rgba(26,53,96,0.08)", borderRadius: 12, padding: "12px 18px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, boxSizing: "border-box" }}>
+      <div style={{ minWidth: 0 }}>
+        <p style={{ margin: "0 0 3px", fontSize: "0.62rem", textTransform: "uppercase", letterSpacing: "0.14em", color: "rgba(26,53,96,0.35)", fontWeight: 600 }}>IBAN</p>
+        <p style={{ margin: 0, fontFamily: "monospace", fontSize: "0.82rem", color: "#1a3560", letterSpacing: "0.04em", wordBreak: "break-all" }}>{iban}</p>
+      </div>
+      <button onClick={doCopy} style={{ flexShrink: 0, background: "white", border: "1px solid rgba(26,53,96,0.14)", borderRadius: 8, padding: "6px 12px", fontSize: "0.7rem", fontWeight: 700, color: "#1a3560", cursor: "pointer", fontFamily: "Inter,sans-serif", letterSpacing: "0.05em", whiteSpace: "nowrap" }}>
+        {copied ? copiedLabel : copyLabel}
+      </button>
+    </div>
   );
 }
 

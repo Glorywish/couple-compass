@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { useLocation } from "wouter";
-import { Users, CheckCircle, Clock, Mail, AlertCircle, ChevronDown, ChevronUp, ArrowLeft } from "lucide-react";
+import { Users, CheckCircle, Clock, Mail, AlertCircle, ChevronDown, ChevronUp, ArrowLeft, Star } from "lucide-react";
 
 const PAYPAL_URL = "https://paypal.me/morganamona";
 
@@ -51,6 +51,82 @@ function StatCard({ label, value, color, icon }: { label: string; value: number;
       <div>
         <p style={{ fontSize: "1.6rem", fontWeight: 700, color: "#1a3560", margin: 0, lineHeight: 1.1 }}>{value}</p>
         <p style={{ fontSize: "0.72rem", color: "rgba(26,53,96,0.5)", margin: "4px 0 0", letterSpacing: "0.05em" }}>{label}</p>
+      </div>
+    </div>
+  );
+}
+
+function StarsDisplay({ n }: { n: number }) {
+  return (
+    <span style={{ display: "inline-flex", gap: 2 }}>
+      {[1,2,3,4,5].map(i => (
+        <Star key={i} size={14} color="#e8607a" fill={i <= n ? "#e8607a" : "none"} />
+      ))}
+    </span>
+  );
+}
+
+function RatingsTab({ sessions, avgRating, totalRatings }: { sessions: SessionData[]; avgRating: number | null; totalRatings: number }) {
+  const rated = sessions.filter(s => s.rating !== null).sort((a, b) => {
+    if (!a.rating || !b.rating) return 0;
+    return b.rating.stars - a.rating.stars;
+  });
+
+  const dist = [5,4,3,2,1].map(star => ({
+    star,
+    count: rated.filter(s => s.rating?.stars === star).length,
+  }));
+
+  if (totalRatings === 0) {
+    return (
+      <div style={{ textAlign: "center", padding: "60px 24px", color: "rgba(26,53,96,0.35)", fontSize: "0.9rem" }}>
+        No ratings yet. They will appear here once couples submit feedback.
+      </div>
+    );
+  }
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+      {/* Distribution bar */}
+      <div style={{ background: "white", border: "1px solid rgba(184,212,240,0.4)", borderRadius: 14, padding: "24px 28px", display: "flex", gap: 32, flexWrap: "wrap", alignItems: "center" }}>
+        <div style={{ textAlign: "center" }}>
+          <p style={{ fontSize: "3rem", fontWeight: 700, color: "#1a3560", margin: 0, lineHeight: 1 }}>{avgRating}</p>
+          <StarsDisplay n={Math.round(avgRating ?? 0)} />
+          <p style={{ margin: "6px 0 0", fontSize: "0.72rem", color: "rgba(26,53,96,0.4)" }}>{totalRatings} rating{totalRatings !== 1 ? "s" : ""}</p>
+        </div>
+        <div style={{ flex: 1, minWidth: 200, display: "flex", flexDirection: "column", gap: 6 }}>
+          {dist.map(({ star, count }) => (
+            <div key={star} style={{ display: "flex", alignItems: "center", gap: 10 }}>
+              <span style={{ fontSize: "0.72rem", color: "rgba(26,53,96,0.5)", width: 12, textAlign: "right", flexShrink: 0 }}>{star}</span>
+              <Star size={11} color="#e8607a" fill="#e8607a" style={{ flexShrink: 0 }} />
+              <div style={{ flex: 1, height: 8, background: "rgba(26,53,96,0.06)", borderRadius: 4, overflow: "hidden" }}>
+                <div style={{ height: "100%", borderRadius: 4, background: "#e8607a", width: totalRatings > 0 ? `${(count / totalRatings) * 100}%` : "0%", transition: "width 0.6s ease" }} />
+              </div>
+              <span style={{ fontSize: "0.72rem", color: "rgba(26,53,96,0.4)", width: 18, textAlign: "right", flexShrink: 0 }}>{count}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Comments list */}
+      <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+        {rated.map(s => (
+          <div key={s.id} style={{ background: "white", border: "1px solid rgba(184,212,240,0.4)", borderRadius: 12, padding: "16px 20px", boxShadow: "0 1px 6px rgba(26,53,96,0.04)" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: s.rating?.note ? 10 : 0 }}>
+              <StarsDisplay n={s.rating!.stars} />
+              <span style={{ fontSize: "0.78rem", fontWeight: 600, color: "#1a3560" }}>{s.partner1Name}{s.partner2Name ? ` & ${s.partner2Name}` : ""}</span>
+              <span style={{ marginLeft: "auto", fontFamily: "monospace", fontSize: "0.65rem", color: "rgba(26,53,96,0.28)" }}>{s.sessionCode}</span>
+            </div>
+            {s.rating?.note && (
+              <p style={{ margin: 0, fontSize: "0.85rem", color: "rgba(26,53,96,0.6)", fontStyle: "italic", lineHeight: 1.7, borderLeft: "2px solid rgba(232,96,122,0.3)", paddingLeft: 12 }}>
+                "{s.rating.note}"
+              </p>
+            )}
+          </div>
+        ))}
+        {rated.filter(s => !s.rating?.note).length > 0 && rated.filter(s => !s.rating?.note).length === rated.length && (
+          <p style={{ textAlign: "center", fontSize: "0.8rem", color: "rgba(26,53,96,0.35)", marginTop: 8 }}>No written comments yet — only star ratings.</p>
+        )}
       </div>
     </div>
   );
@@ -143,6 +219,7 @@ export default function AdminPage() {
   const [error, setError] = useState("");
   const [data, setData] = useState<StatsData | null>(null);
   const [filter, setFilter] = useState<"all" | "complete" | "partial" | "pending">("all");
+  const [tab, setTab] = useState<"sessions" | "ratings">("sessions");
 
   const fetchStats = async (s: string) => {
     setLoading(true);
@@ -215,32 +292,58 @@ export default function AdminPage() {
 
       <div style={{ maxWidth: 900, margin: "0 auto", padding: "32px 24px" }}>
         {/* Stat cards */}
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(180px,1fr))", gap: 14, marginBottom: 32 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(175px,1fr))", gap: 14, marginBottom: 32 }}>
           <StatCard label="Total sessions" value={summary.total} color="#1a3560" icon={<Users size={18} />} />
           <StatCard label="Both completed" value={summary.bothCompleted} color="#e8607a" icon={<CheckCircle size={18} />} />
           <StatCard label="In progress" value={summary.oneCompleted} color="#d4a853" icon={<Clock size={18} />} />
           <StatCard label="Pending" value={summary.noneCompleted} color="rgba(26,53,96,0.3)" icon={<AlertCircle size={18} />} />
           <StatCard label="Reminders sent" value={summary.remindersSent} color="#e8607a" icon={<Mail size={18} />} />
           <StatCard label="Reminders pending" value={summary.remindersPending} color="#d4a853" icon={<Mail size={18} />} />
+          <StatCard label="Total ratings" value={summary.totalRatings} color="#e8607a" icon={<Star size={18} />} />
+          <div style={{ background: "white", border: "1px solid rgba(232,96,122,0.15)", borderRadius: 14, padding: "20px 22px", boxShadow: "0 2px 12px rgba(26,53,96,0.05)", display: "flex", alignItems: "center", gap: 16 }}>
+            <div style={{ width: 42, height: 42, borderRadius: 12, background: "rgba(232,96,122,0.1)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+              <Star size={18} color="#e8607a" fill="rgba(232,96,122,0.4)" />
+            </div>
+            <div>
+              <p style={{ fontSize: "1.6rem", fontWeight: 700, color: "#1a3560", margin: 0, lineHeight: 1.1 }}>{summary.avgRating !== null ? `${summary.avgRating}` : "—"}</p>
+              <p style={{ fontSize: "0.72rem", color: "rgba(26,53,96,0.5)", margin: "4px 0 0", letterSpacing: "0.05em" }}>Avg rating / 5</p>
+            </div>
+          </div>
         </div>
 
-        {/* Filter tabs */}
-        <div style={{ display: "flex", gap: 8, marginBottom: 16 }}>
-          {(["all", "complete", "partial", "pending"] as const).map(f => (
-            <button key={f} onClick={() => setFilter(f)}
-              style={{ background: filter === f ? "#e8607a" : "white", border: `1px solid ${filter === f ? "#e8607a" : "rgba(184,212,240,0.5)"}`, borderRadius: 8, padding: "6px 14px", color: filter === f ? "white" : "rgba(26,53,96,0.6)", fontSize: "0.72rem", fontWeight: 600, letterSpacing: "0.06em", textTransform: "capitalize", cursor: "pointer", fontFamily: "Inter,sans-serif", transition: "all 0.15s" }}>
-              {f === "all" ? `All (${summary.total})` : f === "complete" ? `Complete (${summary.bothCompleted})` : f === "partial" ? `In Progress (${summary.oneCompleted})` : `Pending (${summary.noneCompleted})`}
+        {/* Tab switcher */}
+        <div style={{ display: "flex", gap: 4, marginBottom: 20, background: "white", border: "1px solid rgba(184,212,240,0.4)", borderRadius: 12, padding: 4, width: "fit-content" }}>
+          {(["sessions", "ratings"] as const).map(t => (
+            <button key={t} onClick={() => setTab(t)}
+              style={{ background: tab === t ? "#e8607a" : "transparent", border: "none", borderRadius: 9, padding: "7px 18px", color: tab === t ? "white" : "rgba(26,53,96,0.55)", fontSize: "0.78rem", fontWeight: 600, letterSpacing: "0.05em", textTransform: "capitalize", cursor: "pointer", fontFamily: "Inter,sans-serif", transition: "all 0.15s" }}>
+              {t === "sessions" ? `Sessions (${summary.total})` : `Ratings & Comments (${summary.totalRatings})`}
             </button>
           ))}
         </div>
 
-        {/* Sessions list */}
-        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-          {filtered.length === 0
-            ? <p style={{ textAlign: "center", color: "rgba(26,53,96,0.35)", padding: 40, fontSize: "0.9rem" }}>No sessions found</p>
-            : filtered.map(s => <SessionRow key={s.id} s={s} />)
-          }
-        </div>
+        {tab === "sessions" && (
+          <>
+            {/* Filter tabs */}
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 16 }}>
+              {(["all", "complete", "partial", "pending"] as const).map(f => (
+                <button key={f} onClick={() => setFilter(f)}
+                  style={{ background: filter === f ? "#1a3560" : "white", border: `1px solid ${filter === f ? "#1a3560" : "rgba(184,212,240,0.5)"}`, borderRadius: 8, padding: "6px 14px", color: filter === f ? "white" : "rgba(26,53,96,0.6)", fontSize: "0.72rem", fontWeight: 600, letterSpacing: "0.06em", textTransform: "capitalize", cursor: "pointer", fontFamily: "Inter,sans-serif", transition: "all 0.15s" }}>
+                  {f === "all" ? `All (${summary.total})` : f === "complete" ? `Complete (${summary.bothCompleted})` : f === "partial" ? `In Progress (${summary.oneCompleted})` : `Pending (${summary.noneCompleted})`}
+                </button>
+              ))}
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+              {filtered.length === 0
+                ? <p style={{ textAlign: "center", color: "rgba(26,53,96,0.35)", padding: 40, fontSize: "0.9rem" }}>No sessions found</p>
+                : filtered.map(s => <SessionRow key={s.id} s={s} />)
+              }
+            </div>
+          </>
+        )}
+
+        {tab === "ratings" && (
+          <RatingsTab sessions={data!.sessions} avgRating={summary.avgRating} totalRatings={summary.totalRatings} />
+        )}
 
         {/* Donation nudge */}
         <div style={{ marginTop: 40, background: "linear-gradient(135deg,#fce8ec 0%,#eaf3ff 100%)", border: "1px solid rgba(232,96,122,0.18)", borderRadius: 16, padding: "28px 32px", display: "flex", alignItems: "center", gap: 20, flexWrap: "wrap" }}>
