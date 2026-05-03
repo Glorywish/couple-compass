@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useLocation } from "wouter";
 import { motion } from "framer-motion";
 import { ArrowLeft, Copy, Check, ArrowRight, Camera, Hash } from "lucide-react";
+import QRCode from "react-qr-code";
 import { useCreateSession } from "@workspace/api-client-react";
 import { useToast } from "@/hooks/use-toast";
 import { useI18n } from "@/lib/i18n";
@@ -131,6 +132,16 @@ export default function StartPage() {
                 {codeCopied ? <Check size={11} /> : <Hash size={11} />}
                 {codeCopied ? t.copiedBtn : t.copyBtn}
               </motion.button>
+
+              {/* QR code */}
+              <div style={{ marginTop: 20, display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
+                <div style={{ background: "white", padding: 10, borderRadius: 12, border: "1px solid rgba(184,212,240,0.5)", display: "inline-block" }}>
+                  <QRCode value={shareUrl} size={120} fgColor="#1a3560" bgColor="white" level="M" />
+                </div>
+                <p style={{ fontSize: "0.62rem", letterSpacing: "0.12em", textTransform: "uppercase", color: "rgba(26,53,96,0.35)", fontFamily: "Inter,sans-serif", margin: 0 }}>
+                  {t.qrScan ?? "Partner scans to join"}
+                </p>
+              </div>
             </div>
 
             <h1 style={{ fontFamily: "'DM Serif Display', serif", fontSize: "clamp(26px,4vw,34px)", color: "#1a3560", lineHeight: 1.2, marginBottom: 8 }}>

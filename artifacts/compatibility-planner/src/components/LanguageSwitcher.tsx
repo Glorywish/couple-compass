@@ -2,25 +2,26 @@ import { useState, useRef, useEffect } from "react";
 import { Globe } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import type { LocaleCode } from "@/locales/types";
+import GB from "country-flag-icons/react/3x2/GB";
+import SA from "country-flag-icons/react/3x2/SA";
+import FR from "country-flag-icons/react/3x2/FR";
+import ES from "country-flag-icons/react/3x2/ES";
+import CN from "country-flag-icons/react/3x2/CN";
 
-const LANGUAGES: { code: LocaleCode; name: string; country: string }[] = [
-  { code: "en", name: "English",  country: "gb" },
-  { code: "ar", name: "العربية", country: "sa" },
-  { code: "fr", name: "Français", country: "fr" },
-  { code: "es", name: "Español",  country: "es" },
-  { code: "zh", name: "中文",     country: "cn" },
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type AnyFlag = React.ComponentType<any>;
+
+const LANGUAGES: { code: LocaleCode; name: string; Flag: AnyFlag }[] = [
+  { code: "en", name: "English",  Flag: GB },
+  { code: "ar", name: "العربية", Flag: SA },
+  { code: "fr", name: "Français", Flag: FR },
+  { code: "es", name: "Español",  Flag: ES },
+  { code: "zh", name: "中文",     Flag: CN },
 ];
 
-function FlagImg({ country, size = 20 }: { country: string; size?: number }) {
+function FlagIcon({ Flag, size = 20 }: { Flag: AnyFlag; size?: number }) {
   return (
-    <img
-      src={`https://flagcdn.com/w${size * 2}/${country}.png`}
-      srcSet={`https://flagcdn.com/w${size * 2}/${country}.png 2x`}
-      width={size}
-      height={Math.round(size * 0.75)}
-      alt=""
-      style={{ borderRadius: 2, objectFit: "cover", display: "inline-block", flexShrink: 0 }}
-    />
+    <Flag style={{ width: size, height: Math.round(size * 0.67), borderRadius: 2, display: "block", flexShrink: 0 }} />
   );
 }
 
@@ -51,7 +52,7 @@ export function LanguageSwitcher() {
           boxShadow: "0 2px 10px rgba(26,53,96,0.08)",
         }}>
         <Globe size={12} color="#e8607a" />
-        <FlagImg country={current.country} size={16} />
+        <FlagIcon Flag={current.Flag} size={18} />
         <span>{current.name}</span>
       </button>
 
@@ -74,7 +75,7 @@ export function LanguageSwitcher() {
                 border: "none", cursor: "pointer", fontFamily: "Inter,sans-serif", fontWeight: 500,
                 borderBottom: i < LANGUAGES.length - 1 ? "1px solid rgba(184,212,240,0.3)" : "none",
               }}>
-              <FlagImg country={lang.country} size={18} />
+              <FlagIcon Flag={lang.Flag} size={20} />
               <span>{lang.name}</span>
             </button>
           ))}

@@ -64,6 +64,7 @@ const ar: LocaleData = {
       photoHint: "اختر صورة من جهازك",
       linkCopied: "تم نسخ الرابط!",
       linkCopiedDesc: "شاركه مع شريكك",
+      qrScan: "يمكن لشريكك مسح الرمز للانضمام",
     },
     join: {
       title: "الانضمام إلى جلسة",

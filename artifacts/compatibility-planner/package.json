@@ -73,5 +73,9 @@
     "vite": "catalog:",
     "wouter": "^3.3.5",
     "zod": "catalog:"
+  },
+  "dependencies": {
+    "country-flag-icons": "^1.6.16",
+    "react-qr-code": "^2.0.21"
   }
 }

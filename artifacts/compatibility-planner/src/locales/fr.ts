@@ -64,6 +64,7 @@ const fr: LocaleData = {
       photoHint: "Choisissez une photo depuis votre appareil",
       linkCopied: "Lien copié !",
       linkCopiedDesc: "Partagez-le avec votre partenaire",
+      qrScan: "Votre partenaire scanne pour rejoindre",
     },
     join: {
       title: "Rejoindre une session",

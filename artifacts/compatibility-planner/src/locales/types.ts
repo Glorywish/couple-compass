@@ -65,6 +65,7 @@ export interface LocaleData {
       photoHint: string;
       linkCopied: string;
       linkCopiedDesc: string;
+      qrScan: string;
     };
     join: {
       title: string;

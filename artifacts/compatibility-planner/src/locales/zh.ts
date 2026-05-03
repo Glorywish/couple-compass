@@ -64,6 +64,7 @@ const zh: LocaleData = {
       photoHint: "从设备中选择一张照片",
       linkCopied: "链接已复制！",
       linkCopiedDesc: "将其分享给你的伴侣",
+      qrScan: "伴侣扫码加入",
     },
     join: {
       title: "加入会话",
