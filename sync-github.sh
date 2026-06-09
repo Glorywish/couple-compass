@@ -1,7 +1,4 @@
-#!/bin/bash
-# Push the latest Replit changes to GitHub
-# Run this from the Replit Shell after any session to keep GitHub in sync
-
+#!/usr/bin/env bash
 set -e
 
 if [ -z "$GITHUB_PERSONAL_ACCESS_TOKEN" ]; then
@@ -10,7 +7,7 @@ if [ -z "$GITHUB_PERSONAL_ACCESS_TOKEN" ]; then
 fi
 
 echo "Pushing to GitHub..."
-git --no-optional-locks push \
+git push \
   "https://Glorywish:$GITHUB_PERSONAL_ACCESS_TOKEN@github.com/Glorywish/couple-compass.git" \
   main
 

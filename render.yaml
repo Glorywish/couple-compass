@@ -1,0 +1,23 @@
+services:
+  - type: web
+    name: couple-compass
+    runtime: node
+    region: oregon
+    plan: free
+    buildCommand: bash build-for-render.sh
+    startCommand: node --enable-source-maps artifacts/api-server/dist/index.mjs
+    healthCheckPath: /api/healthz
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: DATABASE_URL
+        fromDatabase:
+          name: couple-compass-db
+          property: connectionString
+
+databases:
+  - name: couple-compass-db
+    plan: free
+    region: oregon
