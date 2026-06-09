@@ -1,0 +1,15 @@
+{
+  "version": 2,
+  "buildCommand": "pnpm install --filter '!@workspace/couple-compass-mobile' && pnpm run typecheck:libs && PORT=3000 BASE_PATH=/ pnpm --filter @workspace/compatibility-planner exec vite build --config vite.config.prod.ts",
+  "outputDirectory": "artifacts/compatibility-planner/dist/public",
+  "functions": {
+    "api/index.ts": {
+      "memory": 512,
+      "maxDuration": 30
+    }
+  },
+  "rewrites": [
+    { "source": "/api/:path*", "destination": "/api/index.ts" },
+    { "source": "/:path*", "destination": "/index.html" }
+  ]
+}

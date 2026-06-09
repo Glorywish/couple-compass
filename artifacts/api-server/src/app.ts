@@ -35,10 +35,9 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use("/api", router);
 
-// Serve frontend static files in production
-// The built bundle lives at dist/index.mjs, so __dirname === dist/
-// The frontend files are copied into dist/public/ by build-for-render.sh
-if (process.env.NODE_ENV === "production") {
+// Serve frontend static files in production (Render/Railway only).
+// On Vercel, the CDN serves static files directly — no need to do it here.
+if (process.env.NODE_ENV === "production" && !process.env.VERCEL) {
   const frontendDist = path.resolve(__dirname, "public");
   app.use(express.static(frontendDist));
   // SPA fallback — all non-API routes serve index.html
