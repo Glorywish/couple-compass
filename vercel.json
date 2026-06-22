@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "buildCommand": "PORT=3000 BASE_PATH=/ pnpm --filter @workspace/compatibility-planner exec vite build --config vite.config.prod.ts",
+  "buildCommand": "cd artifacts/compatibility-planner && npx vite build --config vite.config.prod.ts",
   "outputDirectory": "artifacts/compatibility-planner/dist/public",
   "functions": {
     "api/index.ts": {
