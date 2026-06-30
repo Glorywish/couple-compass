@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "buildCommand": "cd artifacts/compatibility-planner && npx vite build --config vite.config.prod.ts",
+  "buildCommand": "pnpm install --no-frozen-lockfile --filter @workspace/compatibility-planner... && cd artifacts/compatibility-planner && npx vite build --config vite.config.prod.ts",
   "outputDirectory": "artifacts/compatibility-planner/dist/public",
   "rewrites": [
     { "source": "/:path*", "destination": "/index.html" }
