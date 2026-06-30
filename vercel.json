@@ -2,14 +2,7 @@
   "version": 2,
   "buildCommand": "cd artifacts/compatibility-planner && npx vite build --config vite.config.prod.ts",
   "outputDirectory": "artifacts/compatibility-planner/dist/public",
-  "functions": {
-    "api/index.ts": {
-      "memory": 512,
-      "maxDuration": 30
-    }
-  },
   "rewrites": [
-    { "source": "/api/:path*", "destination": "/api/index.ts" },
     { "source": "/:path*", "destination": "/index.html" }
   ]
 }
